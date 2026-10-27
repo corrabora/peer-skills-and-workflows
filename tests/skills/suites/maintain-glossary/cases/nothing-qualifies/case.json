@@ -1,0 +1,43 @@
+{
+  "id": "nothing-qualifies",
+  "effect": "When the candidate terms are ordinary programming words used in their ordinary sense and a term already defined at its owning contract, nothing is recorded, no file is created, and the reply explains the skip briefly without defining the terms.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "observed",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary"
+    ],
+    "writes": {
+      "allowed": []
+    }
+  },
+  "semantic": [
+    {
+      "id": "nothing-recorded",
+      "criterion": "The reply says that no term in the note needs a glossary entry, and contains no entry, draft or example definition for record, index, flag, batch, status, stocktake or condition grade. A GLOSSARY.md created for any of them, or a definition offered in the reply, fails."
+    },
+    {
+      "id": "skip-explained-briefly",
+      "criterion": "The reply gives its reason in at most three sentences (the programming words are used in their ordinary sense; stocktake and condition grade are defined by the stocktake rules, which the note already names) and does not give a verdict per term."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    }
+  ]
+}

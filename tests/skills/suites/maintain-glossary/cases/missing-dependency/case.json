@@ -1,0 +1,75 @@
+{
+  "id": "missing-dependency",
+  "effect": "When a named source is absent, the reply names its path and what it blocks, the entry that depends on it is not drafted even as an example, and the independent entry is written.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary",
+      "sourceReads.docs/guidance/glossary-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "GLOSSARY.md"
+      ],
+      "required": [
+        "GLOSSARY.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "missing-path-named",
+      "criterion": "The reply says that docs/contracts/booking-rules.md is missing or absent, naming that path."
+    },
+    {
+      "id": "blocked-work-named",
+      "criterion": "The reply says what the absence blocks: the booking slot entry."
+    },
+    {
+      "id": "independent-delivered",
+      "criterion": "GLOSSARY.md gains a \"## Condition grade\" entry, between Booking and Loan, saying it is the grade (A, B or C) a tool is given at the stocktake count, with the grades' meanings stated or the stocktake rules linked, in one or two sentences."
+    },
+    {
+      "id": "no-dependent-entry",
+      "criterion": "No entry, draft, definition or example for booking slot appears in GLOSSARY.md or in the reply, and the half-hour window from the desk notes is not used to write one. A Booking slot entry, or an example of what it would say, fails."
+    },
+    {
+      "id": "no-invented-facts",
+      "criterion": "The condition grade entry and the reply state nothing the stocktake rules do not: no grade D, no regrading between counts, no price or fee tied to a grade."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the result is, naming GLOSSARY.md."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "question-shape",
+      "criterion": "If the reply asks a question, its shape is recorded: whether it is exactly one question, whether it names a concrete case that distinguishes the meanings or the file that is missing, and whether nothing dependent is drafted before it; not applicable when no question is asked. Recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    }
+  ]
+}

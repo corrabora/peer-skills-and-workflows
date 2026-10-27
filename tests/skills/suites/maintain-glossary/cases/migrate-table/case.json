@@ -1,0 +1,82 @@
+{
+  "id": "migrate-table",
+  "effect": "When an existing glossary in another shape is migrated on request, every settled meaning is carried into the house format, a proposed term keeps its standing instead of becoming settled, the old anchors still resolve or their references are updated, one authoritative copy remains, and neighbours outside the batch are untouched.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "required",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary",
+      "sourceReads.docs/guidance/glossary-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "GLOSSARY.md",
+        "docs/terms.md",
+        "README.md",
+        "docs/contracts/loan-rules.md"
+      ],
+      "required": [
+        "GLOSSARY.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "settled-terms-carried",
+      "criterion": "GLOSSARY.md holds Booking, Loan, Overdue and Write-off with the meanings docs/terms.md gave them (the wording may be tightened but the sense is the same: a booking held at the desk until collected or the date passes; a loan from issue to check-in; overdue once past the due date; a write-off beyond economic repair, leaving the catalogue once the librarian is told). A meaning dropped or changed fails."
+    },
+    {
+      "id": "proposed-term-not-settled",
+      "criterion": "GLOSSARY.md has no entry for grace period, and the reply (or a pointer page left at docs/terms.md) says the grace period stays proposed and not before the committee. A Grace period entry among the settled terms fails."
+    },
+    {
+      "id": "house-shape",
+      "criterion": "GLOSSARY.md is in the house shape: the file begins with the line \"# Glossary\", every entry is an H2 heading naming the term followed by its definition as ordinary prose of one sentence (two at most), the entries are in alphabetical order, and there are no labeled fields (Definition, Source, Status, Used in, Added), no table and no introductory boilerplate beyond at most one sentence naming the context. The Means, Used in and Status fields carried over, or a table, fails."
+    },
+    {
+      "id": "anchors-or-references",
+      "criterion": "Each link that pointed into docs/terms.md (README.md: #loan and #overdue and the page link; docs/contracts/loan-rules.md: #booking) either still resolves because docs/terms.md remains as a short pointer page whose old anchors point to the GLOSSARY.md entries, or has been updated to the GLOSSARY.md entry. A link left pointing at an anchor that no longer exists fails."
+    },
+    {
+      "id": "one-authoritative-copy",
+      "criterion": "docs/terms.md no longer carries the definitions: it is deleted, or reduced to a pointer page with no Means lines. Two full copies of the vocabulary fails."
+    },
+    {
+      "id": "no-inventory",
+      "criterion": "The reply reports the mapping of terms and anchors briefly and names any outside reference it could not check; it does not list the files it left unchanged or propose migrating other documents."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the result is, naming GLOSSARY.md."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved entries' contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than the unresolved-meaning or remaining-inconsistency sentences the skill asks for) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "settled-return",
+  "effect": "When intent is settled, clarify-artifact returns the reader, purpose and constraints and stops: nothing is written and no writing skill is loaded as an exit.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": { "clarify-artifact": "required", "write-for-humans": "forbidden", "write-for-agents": "forbidden" },
+    "premise": ["skillReads.clarify-artifact"],
+    "writes": { "allowed": [] }
+  },
+  "semantic": [
+    { "id": "no-question", "criterion": "The reply asks the user nothing." },
+    { "id": "returns-reader-purpose-constraints", "criterion": "The reply names the reader (the twelve wardens), the purpose (each warden's fortnight and what to do if they cannot cover it) and the constraints (winter only, one side of A4, pinned and emailed, names and dates from rota/winter-2026.csv, swaps through the hut secretary), as settled in editorial/rota-brief.md." },
+    { "id": "only-the-brief", "criterion": "The reply contains nothing beyond that brief: no draft of the notice, no interview history, no process narration." },
+    { "id": "no-invented-facts", "criterion": "The reply states nothing about the rota, the wardens or the huts that the brief does not say." }
+  ]
+}

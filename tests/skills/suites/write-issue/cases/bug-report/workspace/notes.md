@@ -1,0 +1,3 @@
+Engineer's notes, October 21.
+Ran `ledger import ticket-5531-redacted.csv` on macOS 15 with Ledgerlite 2.4.0. The summary reported 311 transactions and the imported ledger lacks the file's last row. The file's last row has no trailing newline. After appending a newline to a copy, the same command imported all 312 rows. On the same machine with Ledgerlite 2.3.2 the original file imported 312 rows.
+Did not test on Windows and did not look into the parser change; the cause is not confirmed. The maintainer asked for an issue that reports what is known. No fix has been chosen, and reverting the parser is not agreed.

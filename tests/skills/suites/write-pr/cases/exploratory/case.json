@@ -1,0 +1,40 @@
+{
+  "id": "exploratory",
+  "effect": "An inconclusive investigation can satisfy its bounded criteria without a claimed fix or established cause.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-pr": "required",
+      "write-for-humans": "required"
+    },
+    "premise": [],
+    "writes": {
+      "allowed": [
+        "draft.md"
+      ],
+      "required": [
+        "draft.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "exploratory-coverage",
+      "criterion": "The PR accounts for E1\u2013E3 through the completed log comparison, bounded replay and report, and connects them to their retained evidence at the report revision."
+    },
+    {
+      "id": "uncertainty",
+      "criterion": "It says the cause remains unknown and the replay did not reproduce the symptom; it does not claim retries caused duplicates, duplicates were fixed, or the bug is absent."
+    },
+    {
+      "id": "scope",
+      "criterion": "It presents added research findings and a proposed follow-up, without implying production behavior changed or the follow-up was approved."
+    },
+    {
+      "id": "completion",
+      "criterion": "It permits the bounded investigation to be complete despite the inconclusive cause, without treating lack of a fix as failure of these exploratory criteria."
+    }
+  ]
+}

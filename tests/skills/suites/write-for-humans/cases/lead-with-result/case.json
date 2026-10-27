@@ -1,0 +1,50 @@
+{
+  "id": "lead-with-result",
+  "effect": "The page leads with the result, recites no background the reader already holds, and narrates no process.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/shelf-use.md"
+      ],
+      "required": [
+        "docs/shelf-use.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "result-first",
+      "criterion": "The page opens with the result: which shelves members may use (A, B, D, E and F) and which they may not, with no background, process or other content before it; the exclusions may follow the usable shelves in the opening sentences or paragraphs."
+    },
+    {
+      "id": "no-recital",
+      "criterion": "The page does not restate what the reader already holds and the notes mark as background: when the kiln was bought, what type it is, the shelf sizes, where the rack and tubs are; a fact appears only where an instruction needs it (the blue tub)."
+    },
+    {
+      "id": "no-process-narration",
+      "criterion": "Neither the page nor the reply narrates how the audit was done or how the writer worked (what was read, checked, compared or counted)."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement about a shelf, the wash or the re-grinding is stated in notes/shelf-audit.md; nothing is added from general knowledge."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

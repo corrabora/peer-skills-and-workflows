@@ -1,0 +1,23 @@
+gaugetool 3.2: readings files for the Askerby Beck archive
+
+Usage: gaugetool <command> [options] <file>
+
+Commands
+  check <file>      Validate <file> against the archive layout and the gauge
+                    records. Exit status 0: the file is valid. Exit status 2:
+                    the file is valid but has gaps (dates with no reading);
+                    the gaps are listed on standard output, one per line.
+  normalize <file>  Convert <file> to the archive layout: ISO dates, one
+                    reading per line, feet converted to metres for a gauge
+                    whose record says it read in feet. The converted file is
+                    written to <file> itself, replacing it, unless --out is
+                    given. Exit status 0 when the conversion completed.
+  summary <file>    Print the monthly summary of <file> (one line per gauge
+                    per month) on standard output.
+
+Options
+  --out <path>      normalize only: write the converted file to <path> and
+                    leave <file> as it is.
+  --gauges <dir>    Directory of gauge records (default: references/gauges).
+
+This page describes version 3.2.

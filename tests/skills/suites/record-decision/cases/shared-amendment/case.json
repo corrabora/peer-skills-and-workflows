@@ -1,0 +1,72 @@
+{
+  "id": "shared-amendment",
+  "effect": "One accepted decision amends two records through one new ADR, preserving the old rationale and unchanged scope, with synchronized relationships and index.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0003-*.md",
+        "docs/adr/0001-admission.md",
+        "docs/adr/0002-staging.md",
+        "DECISION-LOG.md"
+      ],
+      "required": [
+        "docs/adr/0003-*.md",
+        "docs/adr/0001-admission.md",
+        "docs/adr/0002-staging.md",
+        "DECISION-LOG.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "one-amendment",
+      "criterion": "Exactly one new ADR-0003 records the typed-kind/retained-cause choice, its reason and the rejected string-parsing alternative. It links both old ADRs and names only their message-only restrictions as amended."
+    },
+    {
+      "id": "cost-and-scope",
+      "criterion": "Preserves the breaking construction API, ongoing classification contract, unchanged result types/diagnostic text, admission boundary and bounded waiting-outside-owner rule. No delivery claim appears."
+    },
+    {
+      "id": "old-rationale",
+      "criterion": "Both old records retain their original rationale and decision text readable, stay Accepted, and gain scoped Amended by links to ADR-0003. Neither becomes Superseded, and no second copy of the new decision is embedded in either old body."
+    },
+    {
+      "id": "index-consistent",
+      "criterion": "The index has one resolvable row per record, matching title/date/standing, and exposes both partial amendments to ADR-0003. The new record has Date and explicit Accepted status, supported owner authority and Context/Decision/Consequences."
+    },
+    {
+      "id": "authority-and-number",
+      "criterion": "No extra approval is sought for recording this accepted change; implementation is not claimed. The reply notes the new ADR number is provisional and should be checked against main before integration."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    }
+  ]
+}

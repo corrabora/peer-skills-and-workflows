@@ -1,0 +1,4 @@
+# Processing time
+
+The three observed samples had a mean processing time of 15 minutes.
+These observations prove that every future sample will finish within 30 minutes.

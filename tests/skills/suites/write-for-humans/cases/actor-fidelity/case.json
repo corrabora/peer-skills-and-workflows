@@ -1,0 +1,54 @@
+{
+  "id": "actor-fidelity",
+  "effect": "A procedure whose source assigns actions to parties other than the reader names those parties for their actions and uses imperatives only for the reader's own.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/booking-a-glaze-firing.md"
+      ],
+      "required": [
+        "docs/booking-a-glaze-firing.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "actors-named",
+      "criterion": "Where the page describes checking foot rings, loading, programming and starting the kiln, unloading and posting the note, and invoicing, it names the glaze monitor, the kiln steward and the treasurer as the ones who do them, as notes/firing-procedure.md assigns them."
+    },
+    {
+      "id": "imperatives-only-for-reader",
+      "criterion": "Imperatives (book, write, put, collect) direct only the member's own actions; no sentence tells the reader to load, program, start or unload the kiln, check foot rings, or add a fee."
+    },
+    {
+      "id": "no-reassigned-action",
+      "criterion": "No action is given to a different actor than the notes give it: the member does not load or unload, the steward does not check foot rings, the glaze monitor does not invoice, and so on."
+    },
+    {
+      "id": "prerequisites-and-success",
+      "criterion": "Prerequisites (dry, bisque-fired pieces; the booking; the log entry and the shelf deadline) come before the actions that depend on them, and the page says what success looks like: the unloading note is posted and the pieces are on the cooling shelf."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every step, deadline and condition on the page is stated in notes/firing-procedure.md; nothing is added from general knowledge."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

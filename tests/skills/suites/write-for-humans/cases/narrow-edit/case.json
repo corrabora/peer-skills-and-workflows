@@ -1,0 +1,48 @@
+{
+  "id": "narrow-edit",
+  "effect": "A requested revision of one passage leaves the rest of the file byte-identical.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/handbook.md"
+      ],
+      "required": [
+        "docs/handbook.md"
+      ]
+    },
+    "edits": {
+      "docs/handbook.md": {
+        "after": "the day before the firing.",
+        "before": "## Glaze room"
+      }
+    }
+  },
+  "semantic": [
+    {
+      "id": "section-reflects-minutes",
+      "criterion": "The revised section states the seven-day collection limit, the move to the overflow shelf in the store, the one-month keeping period, the email notice and the 1 November start, as minutes/2026-10.md gives them."
+    },
+    {
+      "id": "no-invented-facts",
+      "criterion": "The revised section adds nothing the minutes or the original section do not say: no new actors, deadlines or consequences."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

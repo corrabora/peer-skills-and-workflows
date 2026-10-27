@@ -1,0 +1,27 @@
+# Shared worker defaults for the plan workflow: a catalog of named profiles and
+# the profile each role and review seat uses. Edit freely. Repositories, plans,
+# phases and the operator can override these; workflow/ORCA.md owns precedence
+# and how the coordinator resolves and records them.
+
+profiles:
+  fable-high:
+    agent: claude
+    model: claude-fable-5-1
+    effort: high
+  astra-high:
+    agent: codex
+    model: gpt-6-astra
+    effort: high
+
+roles:
+  responsible-party: fable-high
+  adjudicator-1: fable-high
+  adjudicator-2: astra-high
+  investigator: fable-high
+
+# Two seats per engine; rotation is in workflow/REVIEW.md.
+review-seats:
+  R1: fable-high
+  R2: astra-high
+  R3: fable-high
+  R4: astra-high

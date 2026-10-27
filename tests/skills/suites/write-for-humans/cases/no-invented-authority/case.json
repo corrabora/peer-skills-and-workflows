@@ -1,0 +1,54 @@
+{
+  "id": "no-invented-authority",
+  "effect": "A decision recorded without a named approver stays so; a claim one source makes about another is attributed to the source that makes it; the saved page is described from its own contents and linked material is named as a reference.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/kiln-log-change.md"
+      ],
+      "required": [
+        "docs/kiln-log-change.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "no-approver",
+      "criterion": "Neither docs/kiln-log-change.md nor the reply names any person or role as having proposed, approved or decided the change. Attributing the decision to the committee, or to its 4 August meeting whose minutes record it, is the source's own attribution and passes; naming any individual, office or other body (a chair, treasurer, steward, trustees, members' vote or similar) as proposer, approver or decider fails."
+    },
+    {
+      "id": "claim-attributed",
+      "criterion": "The seven-year retention is presented as what the kiln steward's note says, not as what policies/insurance-summary.md requires; the summary names no retention period."
+    },
+    {
+      "id": "summary-referenced-not-copied",
+      "criterion": "The page refers members to policies/insurance-summary.md for the insurance terms rather than reproducing them, and neither the page nor the reply claims that the page itself contains them."
+    },
+    {
+      "id": "open-role-kept",
+      "criterion": "Who prints the monthly copy is left undecided on the page or in the reply; nobody is assigned it."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "What changes, why, and what members must do are stated as the three sources give them; nothing is added from general knowledge. Attributing the decision to the committee or its 4 August meeting is what the minutes give, not an addition."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "prerequisite-transition",
+  "effect": "At the consequential transition the brief names the prerequisite and what to report when it is missing, gives a command's exit statuses only the meanings its help defines, and says to stop and report any other result instead of assigning one.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/publish-monthly-summary.md"
+      ],
+      "required": [
+        "briefs/publish-monthly-summary.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "prerequisite-at-transition",
+      "criterion": "At the step that copies the summary to published/, briefs/publish-monthly-summary.md names calibration/<year>-<month>.md as the prerequisite, and says that when the file is missing the assistant reports to the coordinator that the calibration confirmation for that month is missing, leaves the summary in summaries/ and stops. A brief that places the prerequisite elsewhere than at the copy, or omits what to report, fails."
+    },
+    {
+      "id": "exit-statuses-from-source",
+      "criterion": "For gaugetool check the brief gives exit status 0 and exit status 2 the meanings tools/gaugetool-help.txt gives them (valid; valid with gaps listed on standard output), with the notes' handling of gaps (summarise anyway and list the gaps at the end of the summary), and for any other exit status says to stop and report it. A brief that assigns a meaning or an action to an exit status the help does not define (for example that 1 means a malformed file, or that another status is retried or ignored) fails."
+    },
+    {
+      "id": "no-invented-gate",
+      "criterion": "No prerequisite, approval or review is added beyond the calibration confirmation: the brief does not have the coordinator or the records keeper read, approve or sign off the summary before publication, and does not require the published copy to be confirmed by anyone. The notes say the coordinator reads summaries after publication."
+    },
+    {
+      "id": "ordered-steps",
+      "criterion": "The brief's steps run in the notes' order: the check on the readings file before the summary is produced, the summary before the calibration prerequisite is tested, the prerequisite before the copy to published/. A brief in which the copy can happen before the prerequisite is tested fails."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the brief is stated in notes/monthly-publish.md or tools/gaugetool-help.txt; nothing is added from general knowledge (no invented summary format, deadline, notification channel or check)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

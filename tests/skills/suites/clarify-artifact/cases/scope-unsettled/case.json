@@ -1,0 +1,20 @@
+{
+  "id": "scope-unsettled",
+  "effect": "When the sources themselves record that the artifact's scope is undecided and the decision changes the whole artifact, the clarification asks exactly one question with its premise and drafts nothing.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": { "write-for-humans": "required", "clarify-artifact": "required" },
+    "premise": ["skillReads.write-for-humans", "skillReads.clarify-artifact"],
+    "writes": { "allowed": [] }
+  },
+  "semantic": [
+    { "id": "one-question", "criterion": "The reply contains exactly one question, and it asks whether the report covers Tarn hut as well as Kestrel." },
+    { "id": "premise-stated", "criterion": "The question carries the fact that makes it necessary, drawn from the notes: the committee deferred that decision." },
+    { "id": "no-branch-outline", "criterion": "The reply does not describe what each answer would lead to, list inputs that would then be needed, or sketch either report." },
+    { "id": "reply-ends-at-question", "criterion": "Apart from the question and at most a one-sentence recommendation, the reply contains nothing: no draft, no summary of the figures, no process narration." },
+    { "id": "no-rule-quotation", "criterion": "The reply does not quote, paraphrase or cite the skill's or the writing guidance's instructions as the reason for asking." },
+    { "id": "no-invented-facts", "criterion": "The reply states nothing about the huts, the figures or the committee that the notes do not say." }
+  ]
+}

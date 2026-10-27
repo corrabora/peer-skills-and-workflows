@@ -1,0 +1,65 @@
+{
+  "id": "human-section",
+  "effect": "A brief carrying one closing section written for the human coordinator is delivered with the agent-facing part complete and, nothing being unresolved, the receipt's first line alone; whether write-for-humans is read for that section, and the section's own content, are observed only.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/rain-totals-2026.md"
+      ],
+      "required": [
+        "briefs/rain-totals-2026.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the brief is: briefs/rain-totals-2026.md."
+    },
+    {
+      "id": "receipt-first-line-only",
+      "criterion": "Beyond saying where the brief is, the reply adds nothing: no description or summary of the brief's contents or sections, no options or offers, no account of what was read, checked or done, and no assurance about the brief's quality or completeness."
+    },
+    {
+      "id": "agent-part-complete",
+      "criterion": "The agent-facing part of briefs/rain-totals-2026.md states the task (levels/rain-2026.csv, one line per gauge per month, month,gauge,total_mm), the input (the R1, R2 and R3 lines of archive/2026/readings.csv, millimetres per day), the incomplete-month rule (any day without a reading makes the month incomplete, not summed), whole-millimetre totals, the rebuild-from-scratch rule, the authority to write the file without asking, and the completion condition (every gauge, every month from January to the last complete month); each stated once."
+    },
+    {
+      "id": "agent-part-facts",
+      "criterion": "Every statement in the agent-facing part is stated in notes/rain-totals.md; nothing is added from general knowledge (no invented gauge, column, rounding rule, check, tool or approval step)."
+    },
+    {
+      "id": "coordinator-section-content",
+      "criterion": "The For the coordinator section gives the three points the notes set out (valley-floor gauges say nothing about the fells; incomplete means a missing card or unread day, not no rain; totals are as recorded, uncorrected for exposure or wind) and nothing else. Recorded for the write-for-humans suite; observed only, because that skill owns the section's content.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "inspection.json records write-for-humans as body read or invoked (pass) or not (fail). Recorded for OG-0090 only; nothing else about the coordinator section is judged here.",
+      "observe": true
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved file's contents), offers (options or offers of further work), recital (an account of what was read, checked or done) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

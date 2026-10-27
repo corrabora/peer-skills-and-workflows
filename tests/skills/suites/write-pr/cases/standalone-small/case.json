@@ -1,0 +1,32 @@
+{
+  "id": "standalone-small",
+  "effect": "A small PR without an issue gets a proportionate description with no fabricated acceptance checklist.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-pr": "required",
+      "write-for-humans": "required"
+    },
+    "premise": [],
+    "writes": {
+      "allowed": [
+        "draft.md"
+      ],
+      "required": [
+        "draft.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "proportionate",
+      "criterion": "The title and short body explain the corrected building-access link and relevant verification without invented issue references, acceptance checklists, mandatory visuals or generic risk sections."
+    },
+    {
+      "id": "truthful",
+      "criterion": "The description does not claim software behavior changed or tests were rerun, and its link-check claim is tied to the supplied verification."
+    }
+  ]
+}

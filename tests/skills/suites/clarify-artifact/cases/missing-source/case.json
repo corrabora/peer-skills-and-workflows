@@ -1,0 +1,18 @@
+{
+  "id": "missing-source",
+  "effect": "When the only required source is missing, the dependency is reported through the task's stated channel, naming the missing path, without a purpose, audience or scope question and without drafting what depends on it.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": { "write-for-humans": "required" },
+    "premise": ["skillReads.write-for-humans"],
+    "writes": { "allowed": ["handoff/status.md"], "required": ["handoff/status.md"] }
+  },
+  "semantic": [
+    { "id": "report-names-missing-source", "criterion": "handoff/status.md reports that surveys/2026-ridge-survey.md is missing, naming that path, and that the briefing waits on it." },
+    { "id": "no-intent-question", "criterion": "Neither the reply nor handoff/status.md asks about the briefing's reader, purpose or scope." },
+    { "id": "no-dependent-draft", "criterion": "No briefing content is drafted anywhere: not in a file and not in the reply." },
+    { "id": "no-invented-facts", "criterion": "Neither the reply nor handoff/status.md claims or guesses what the 2026 survey says, and neither uses the superseded 2025 survey as a substitute." }
+  ]
+}

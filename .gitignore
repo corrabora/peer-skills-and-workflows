@@ -1,0 +1,6 @@
+# Local workflow settings and run records (see workflow/RECORDS.md); never staged.
+/.agent-workflow/
+# Dependencies installed by `npm ci` from package-lock.json; never staged.
+/node_modules/
+# macOS Finder metadata; never staged.
+.DS_Store

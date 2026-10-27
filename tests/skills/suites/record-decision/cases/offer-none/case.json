@@ -1,0 +1,43 @@
+{
+  "id": "offer-none",
+  "effect": "When an assessment is asked and every choice is routine, reversible, an implementation step, progress or owned elsewhere, nothing is recorded and the reply explains the skip briefly without a verdict per item.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "observed",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision"
+    ],
+    "writes": {
+      "allowed": []
+    }
+  },
+  "semantic": [
+    {
+      "id": "nothing-recorded",
+      "criterion": "The reply says that none of the items warrants a decision record, and contains no draft, outline or example record for any of them. A record or draft for the rota spreadsheet, the noticeboard, the meeting day, the duplicate check, the water-off date or the renewals fails."
+    },
+    {
+      "id": "skip-explained-briefly",
+      "criterion": "The reply gives the test applied in at most two sentences and does not give a verdict or reason for each of the six items."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    }
+  ]
+}

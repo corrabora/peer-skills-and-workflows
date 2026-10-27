@@ -1,0 +1,16 @@
+{
+  "profileId": "profile:corrabora/defaults",
+  "version": "1.0.0",
+  "inherits": [
+    {
+      "profileId": "profile:corrabora/core-qualities",
+      "versionRequirement": "=1.0.0"
+    },
+    {
+      "profileId": "profile:corrabora/software-engineering",
+      "versionRequirement": "=1.0.0"
+    }
+  ],
+  "requires": [],
+  "sources": []
+}

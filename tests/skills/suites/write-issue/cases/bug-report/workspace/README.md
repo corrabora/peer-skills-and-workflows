@@ -1,0 +1,1 @@
+Ledgerlite imports bank CSV exports with `ledger import <file>`. ticket.md is the support ticket as received and notes.md records the engineer's reproduction attempt. Both are local source snapshots; the ticket and the redacted sample are retained at the URLs they name. Contribution guidance is in CONTRIBUTING.md.

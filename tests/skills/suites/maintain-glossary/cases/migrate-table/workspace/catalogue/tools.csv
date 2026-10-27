@@ -1,0 +1,7 @@
+id,name,class,condition,status
+T-014,Cordless drill,power,B,on loan
+T-022,Hedge trimmer,power,A,available
+T-031,Post hole digger,hand,C,at bench
+T-047,Tile cutter,hand,B,booked
+T-058,Pressure washer,power,A,available
+T-063,Mitre saw,power,B,missing

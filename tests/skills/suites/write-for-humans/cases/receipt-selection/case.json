@@ -1,0 +1,55 @@
+{
+  "id": "receipt-selection",
+  "effect": "When the request also asks why items were selected, the receipt gives the test applied in one sentence rather than a verdict per item.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/glaze-room-reminders.md"
+      ],
+      "required": [
+        "docs/glaze-room-reminders.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the page is: docs/glaze-room-reminders.md."
+    },
+    {
+      "id": "selection-test-one-sentence",
+      "criterion": "The reply gives the test it applied to choose the rules (for example, the rules the incident log shows broken more than once) in one sentence."
+    },
+    {
+      "id": "no-per-item-verdict",
+      "criterion": "The reply does not go through the rules one by one saying why each was included or left out."
+    },
+    {
+      "id": "selection-supported",
+      "criterion": "Every rule on docs/glaze-room-reminders.md is a rule in docs/handbook.md and has at least one logged incident in notes/glaze-room-incidents-2026.md; no rule is invented."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved file's contents), offers (options or offers of further work), recital (an account of what was read, checked or done) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

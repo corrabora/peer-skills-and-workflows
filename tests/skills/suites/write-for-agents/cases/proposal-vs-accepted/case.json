@@ -1,0 +1,50 @@
+{
+  "id": "proposal-vs-accepted",
+  "effect": "When the notes mark one decision accepted and another only proposed, the brief instructs the accepted one, keeps the proposal apart from it, carries the standing authority forward and adds no approval step.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/decimal-places-2025.md"
+      ],
+      "required": [
+        "briefs/decimal-places-2025.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "accepted-carried",
+      "criterion": "briefs/decimal-places-2025.md instructs the assistant to bring the river readings in archive/2025/readings.csv to metres at one decimal place, with a second decimal of 5 rounding up, as the rule accepted at the September meeting and in force from 1 October."
+    },
+    {
+      "id": "proposal-kept-apart",
+      "criterion": "The brief does not instruct removing, blanking or ignoring the initials column. If it mentions that column at all, it says the change is proposed only, returns to the December meeting, and changes nothing now; a brief that treats the proposal as decided fails."
+    },
+    {
+      "id": "no-added-approval",
+      "criterion": "The brief has the assistant change archive/2025/readings.csv on its standing authority and adds no step asking the coordinator or the records keeper for approval, confirmation or review before starting, before writing or before finishing. The one ask the notes keep (a reading that cannot be placed in a gauge record) may be carried as the notes give it; any other ask is an added approval step and fails."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the brief is stated in notes/meeting-2026-09.md; nothing is added from general knowledge (no invented rounding rule beyond the one given, no invented check, tool, deadline or backup requirement). The W7 repainting is not the assistant's and does not appear as an instruction."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "settled-in-sources",
+  "effect": "When an accessible brief in the workspace settles reader, purpose and scope, the writing skill drafts without reading clarify-artifact and asks nothing.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": { "write-for-humans": "required", "clarify-artifact": "forbidden" },
+    "premise": ["skillReads.write-for-humans"],
+    "writes": { "allowed": ["docs/route-bulletin-2026.md"], "required": ["docs/route-bulletin-2026.md"] }
+  },
+  "semantic": [
+    { "id": "no-intent-question", "criterion": "The reply asks no question about the reader, the purpose or the scope of docs/route-bulletin-2026.md: editorial/bulletin-brief.md settles all three." },
+    { "id": "no-question", "criterion": "The reply asks the user nothing at all.", "observe": true },
+    { "id": "no-invented-facts", "criterion": "Every statement about a route in docs/route-bulletin-2026.md is supported by notes/route-survey-2026.md; nothing is added from general knowledge.", "observe": true }
+  ]
+}

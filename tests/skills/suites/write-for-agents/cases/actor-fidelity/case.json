@@ -1,0 +1,50 @@
+{
+  "id": "actor-fidelity",
+  "effect": "The brief keeps the decision owner the source names, does not turn narrow evidence into a general claim, and keeps a qualification beside the rule it limits through the editing pass.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/queried-1997.md"
+      ],
+      "required": [
+        "briefs/queried-1997.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "owner-kept",
+      "criterion": "briefs/queried-1997.md keeps the records keeper as the one who decides whether a queried reading is void; the assistant flags with ? and lists in reports/queried-1997.md and nothing more. A brief that has the assistant void, remove, correct or alter a queried reading, or decide which queries count, fails."
+    },
+    {
+      "id": "narrow-evidence-not-overstated",
+      "criterion": "The brief does not state that gaugetool check accepts the ? flag in general, that the flag column is validated, or that the check is known to pass on flagged files. If it mentions the September batches, it keeps the claim to what the note gives: the two test batches of forty readings (B-1997-T1 and B-1997-T2) passed. Adding that nothing else has been tried, or that the help page says nothing about the flag column, is allowed but not required; a statement limited to the two batches, with or without that qualifier, passes. A brief that widens the claim beyond the two batches (the flag is accepted, validated or tested, with no batch limit) fails; omitting the matter also passes."
+    },
+    {
+      "id": "qualification-kept",
+      "criterion": "Where the brief gives the units for the December 1994 readings on the January page, it states the feet rule together with the W3 exception (W3 metric from 1990); the feet rule without the exception fails, and so does applying the pre-1995 rule to 1997's own readings. The brief must give the units because the list carries each queried reading in metres and two of the queried readings are from December 1994."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the brief is stated in notes/queried-readings.md or tools/gaugetool-help.txt; nothing is added from general knowledge (no invented card format, conversion factor, void procedure, deadline or approval step)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

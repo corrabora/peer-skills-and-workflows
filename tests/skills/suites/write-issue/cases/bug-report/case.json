@@ -1,0 +1,40 @@
+{
+  "id": "bug-report",
+  "effect": "Produces a bug report with the trigger, expected and observed behavior and environment, keeping the reporter's account apart from the reproduction performed and the suspected cause apart from both.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-issue": "required",
+      "write-for-humans": "required"
+    },
+    "premise": [],
+    "writes": {
+      "allowed": [
+        "draft.md"
+      ],
+      "required": [
+        "draft.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "combined",
+      "criterion": "The title names the observable problem and the body gives the trigger (importing a CSV export whose last row has no trailing newline, with Ledgerlite 2.4.0), the expected behavior (every row imported, 312 for the sample), the observed behavior (311 imported, the last row dropped with no warning) and the environment (2.4.0 on the reporter's Windows 11 and the engineer's macOS 15; 2.3.2 imports all rows), each stated explicitly in the body rather than left to be assembled from the sources."
+    },
+    {
+      "id": "boundary",
+      "criterion": "The reporter's account is attributed to the ticket, and the engineer's macOS run of the redacted sample is presented as the reproduction actually performed, with its result and what it did not cover (Windows untested); the two are not merged into one claim, and the trailing-newline observation is attributed to the engineer, not the reporter."
+    },
+    {
+      "id": "hypothesis",
+      "criterion": "The 2.4.0 parser change is kept as a suspected cause; the body neither asserts the cause nor requires reverting the parser or any particular fix, and the reporter's rollback request is not turned into a requirement."
+    },
+    {
+      "id": "usable",
+      "criterion": "A maintainer can reproduce the problem from the body alone (command, file shape, versions, platforms) and reach the ticket and the redacted sample through their retained URLs rather than local paths; the body invents no versions, counts or steps absent from the sources and has no generic filler sections."
+    }
+  ]
+}

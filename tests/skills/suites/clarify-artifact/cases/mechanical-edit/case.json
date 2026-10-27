@@ -1,0 +1,17 @@
+{
+  "id": "mechanical-edit",
+  "effect": "A mechanical correction beside the writing boundary is made directly: clarify-artifact is not read and no question is asked.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": { "clarify-artifact": "forbidden" },
+    "premise": [],
+    "writes": { "allowed": ["docs/booking-policy.md"], "required": ["docs/booking-policy.md"] }
+  },
+  "semantic": [
+    { "id": "no-intent-question", "criterion": "The reply asks no question about reader, purpose or scope: a spelling and numbering correction leaves no intent open." },
+    { "id": "no-question", "criterion": "The reply asks the user nothing at all.", "observe": true },
+    { "id": "edit-is-mechanical", "criterion": "The only changes to docs/booking-policy.md are the spelling corrections (recieved, Accomodation, calender) and the step numbers now running 1 to 5; wording, order and content are otherwise unchanged." }
+  ]
+}

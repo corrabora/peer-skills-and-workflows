@@ -1,0 +1,82 @@
+{
+  "id": "material-cost",
+  "effect": "Preserve a material known cost and the alternative rejected for it, without reproducing deliberation.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md",
+        "README.md"
+      ],
+      "required": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "cost-preserved",
+      "criterion": "The record states that the known east-row error (about half a metre on plots 14 to 16, or the east row) stands or is accepted under this decision. A record that gives the choice (boundaries follow the 1998 pegs) and the reason (a resurvey is unaffordable) without that cost fails."
+    },
+    {
+      "id": "discussion-not-reproduced",
+      "criterion": "Preserves resurvey as the rejected alternative and its unaffordable cost, but does not reproduce speakers, vote count, complaints or follow-up letters. Quotes/reserve figures are optional only when needed to explain the affordability trade-off."
+    },
+    {
+      "id": "record-shape",
+      "criterion": "The new record has an ADR title, Date and explicit Status, and Context, Decision and Consequences sections. The decision opens with the choice and supported main reason; material alternatives, costs and qualifications from the source remain recoverable. Unknown necessary information is identified, never invented. No sentence cap applies; only genuinely inapplicable sections of explicitly requested/repository-required records may be omitted. Specifically preserve: plot boundaries follow the 1998 survey pegs and figures because a resurvey is beyond what the society will spend, with the east-row error standing."
+    },
+    {
+      "id": "accepted-explicit",
+      "criterion": "The new record explicitly says Status: Accepted, with the source-supported deciding body or authority where relevant. Neither the record nor reply calls the decision proposed or awaiting a vote. Acceptance is not asserted as proof of implementation."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the record is, naming its path under docs/adr/ (docs/adr/0004-<slug>.md)."
+    },
+    {
+      "id": "receipt-number-check",
+      "criterion": "The reply says, in one sentence, that ADR-0004 is provisional and is to be rechecked against main (the target the README names) before integration, or that it is to be rechecked and the target is unknown; it does not narrate how the number was chosen. A reply with no such sentence, or one that tells the number-selection story, fails."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved record's contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than the standing and number-check sentences the skill asks for) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    },
+    {
+      "id": "linked-index",
+      "criterion": "DECISION-LOG.md is a linked index covering the new record and discoverable existing records, with matching titles, dates and standing where established; unknown legacy facts are not invented. Its links resolve and it does not duplicate ADR bodies. Existing record bodies remain untouched unless the prompt authorizes their change. Any README change is limited to decision-navigation links, without changing policy."
+    }
+  ]
+}

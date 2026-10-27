@@ -1,0 +1,40 @@
+{
+  "id": "implementation",
+  "effect": "Selects issue writing from a natural request and preserves observable outcomes and the required template.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-issue": "required",
+      "write-for-humans": "required"
+    },
+    "premise": [],
+    "writes": {
+      "allowed": [
+        "draft.md"
+      ],
+      "required": [
+        "draft.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "outcomes",
+      "criterion": "The issue requires the agreed CSV command, exact column names and order, round-trip handling of commas/quotes/newlines, header-only empty output and unchanged JSON behavior, with distinguishable acceptance criteria."
+    },
+    {
+      "id": "template",
+      "criterion": "The title describes the export outcome without a commit prefix, and the body uses the required Problem and Acceptance criteria headings."
+    },
+    {
+      "id": "scope",
+      "criterion": "It prescribes no CSV library, adds no customer email export, and presents the requested work as future work rather than delivered or tested."
+    },
+    {
+      "id": "usable",
+      "criterion": "A contributor can determine what to implement and demonstrate without reconstructing the conversation; the artifact has no generic filler sections or invented requirements."
+    }
+  ]
+}

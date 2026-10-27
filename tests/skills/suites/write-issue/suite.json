@@ -1,0 +1,17 @@
+{
+  "skill": "write-issue",
+  "description": "Issue writing: implementation outcomes, a bug report that keeps the reporter's account apart from the reproduction performed, bounded exploration with honest uncertainty, and exclusion of mechanical edits.",
+  "skills": [
+    "write-issue",
+    "write-pr",
+    "write-for-humans",
+    "write-for-agents",
+    "clarify-artifact"
+  ],
+  "cases": [
+    "implementation",
+    "bug-report",
+    "exploratory",
+    "mechanical-edit"
+  ]
+}

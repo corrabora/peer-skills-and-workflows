@@ -1,0 +1,54 @@
+{
+  "id": "input-preservation",
+  "effect": "A recipe whose command writes its result to the input path preserves the input before the first write and says how to confirm it; a help pointer or a post-run hash alone, or preservation after the write, fails.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/normalise-1996.md"
+      ],
+      "required": [
+        "briefs/normalise-1996.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "preserved-before-first-write",
+      "criterion": "In briefs/normalise-1996.md, archive/1996/readings.csv is preserved before any command that writes to it: a copy of the file at another path under archive/1996/ is made (or normalize is given --out to another path, so the original is never written) before the normalize step, and the step that writes to archive/1996/readings.csv comes after. A brief whose first write is gaugetool normalize archive/1996/readings.csv with no prior copy and no --out fails; so does a brief that makes the copy after normalising; so does a brief with no preservation step."
+    },
+    {
+      "id": "preservation-checkable",
+      "criterion": "The brief says how the records keeper can confirm afterwards that the preserved file is the 2017 transcription unchanged: a checksum or byte comparison of the original taken and recorded before the first write, which the preserved copy is compared against, or an equivalent check tied to the state before the write. A brief that offers only a checksum taken after normalising, or only points to the help page, fails."
+    },
+    {
+      "id": "help-named",
+      "criterion": "The brief names tools/gaugetool-help.txt as the reference for the gaugetool commands it gives."
+    },
+    {
+      "id": "result-and-check",
+      "criterion": "When the recipe has run, the converted file is at archive/1996/readings.csv and gaugetool check has been run on the converted content: either on archive/1996/readings.csv after the conversion was written there, or on the path normalize --out wrote to, before that file is moved or copied unchanged to archive/1996/readings.csv. Where the check falls among the preservation commands (copy, cmp, checksum) and the promotion does not matter, and it need not be the last command. A brief that leaves the converted file at another path, checks only the unconverted file or only before the conversion, or changes the converted content after its check (a move or copy to archive/1996/readings.csv is not a change), fails."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the brief is stated in notes/normalise-1996.md or tools/gaugetool-help.txt; nothing is added from general knowledge (no invented gaugetool option, exit status, backup location outside archive/1996/, or approval step)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

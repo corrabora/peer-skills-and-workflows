@@ -1,0 +1,50 @@
+{
+  "id": "conditional-dependency",
+  "effect": "For a dependency only one branch needs, the brief says when to load it, where it resolves and what depends on it, keeps the branch's detail on that branch, and refers to the maintained page rather than copying it.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/monthly-levels.md"
+      ],
+      "required": [
+        "briefs/monthly-levels.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "dependency-when-where-what",
+      "criterion": "briefs/monthly-levels.md says when the tide correction is needed (a gauge whose record under references/gauges/ carries tidal: yes; W9 at present), where it resolves (references/tide-correction.md) and what depends on it (that gauge's level in the table, which is the corrected level). A brief missing any of the three fails."
+    },
+    {
+      "id": "branch-detail-on-branch",
+      "criterion": "The subtraction procedure, the predicted tide heights and every step that applies only to a tidal gauge appear only in the tidal branch of the brief; the steps for a gauge whose record says tidal: no do not read or apply the tide page. A brief that has the assistant read references/tide-correction.md for every gauge, or apply a correction to a non-tidal gauge, fails."
+    },
+    {
+      "id": "maintained-page-referenced",
+      "criterion": "The brief refers the assistant to references/tide-correction.md for the predicted heights and the procedure and does not reproduce the heights, the table or the procedure's details (the nearest-hour rule, the floor at 0.0) in the brief."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the brief is stated in notes/level-correction.md or the gauge records; nothing is added from general knowledge (no invented gauge, column, rounding rule, check or approval). The assistant's authority to write under levels/ without asking is carried as the notes give it."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

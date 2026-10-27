@@ -1,0 +1,1261 @@
+{
+  "bindings": [],
+  "contractVersion": "quality-contract-v1",
+  "factRegistries": [
+    {
+      "contractVersion": "quality-contract-v1",
+      "facts": [
+        {
+          "absenceEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/concurrency-control-change-absent",
+            "state": "Absent"
+          },
+          "compatibility": "FrozenV1",
+          "evidenceGuidance": "Analyze the complete affected target and record a scoped assertion for this fact.",
+          "expectedConsumers": [
+            "quality:corrabora/core-qualities/reliability#RL1"
+          ],
+          "factId": "fact:portable/concurrency-control-change",
+          "meaning": "Whether the affected subject introduces or changes concurrency, ordering, retry, or conflict-control behavior.",
+          "mergeRule": "RejectConflict",
+          "presentEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/concurrency-control-change-present",
+            "state": "Present"
+          },
+          "valueType": {
+            "kind": "Boolean"
+          }
+        },
+        {
+          "absenceEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/implementation-language-declared-absent",
+            "state": "Absent"
+          },
+          "compatibility": "FrozenV1",
+          "evidenceGuidance": "Analyze the complete affected target and record a scoped assertion for this fact.",
+          "expectedConsumers": [
+            "quality:corrabora/core-qualities/maintainability#MA5"
+          ],
+          "factId": "fact:portable/implementation-language-declared",
+          "meaning": "Whether an implementation language is explicitly declared for the affected subject.",
+          "mergeRule": "RejectConflict",
+          "presentEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/implementation-language-declared-present",
+            "state": "Present"
+          },
+          "valueType": {
+            "kind": "Boolean"
+          }
+        },
+        {
+          "absenceEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/persisted-state-change-absent",
+            "state": "Absent"
+          },
+          "compatibility": "FrozenV1",
+          "evidenceGuidance": "Analyze the complete affected target and record a scoped assertion for this fact.",
+          "expectedConsumers": [
+            "quality:corrabora/core-qualities/data-quality#DQ6",
+            "quality:corrabora/core-qualities/reliability#RL4"
+          ],
+          "factId": "fact:portable/persisted-state-change",
+          "meaning": "Whether the affected subject creates, changes, migrates, restores, retains, or removes persisted state.",
+          "mergeRule": "RejectConflict",
+          "presentEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/persisted-state-change-present",
+            "state": "Present"
+          },
+          "valueType": {
+            "kind": "Boolean"
+          }
+        },
+        {
+          "absenceEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/selected-format-absent",
+            "state": "Absent"
+          },
+          "compatibility": "FrozenV1",
+          "evidenceGuidance": "Analyze the complete affected target and record a scoped assertion for this fact.",
+          "expectedConsumers": [
+            "quality:corrabora/core-qualities/compatibility#CO3"
+          ],
+          "factId": "fact:portable/selected-format",
+          "meaning": "Whether a concrete interchange or storage format is selected for the affected subject.",
+          "mergeRule": "RejectConflict",
+          "presentEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/selected-format-present",
+            "state": "Present"
+          },
+          "valueType": {
+            "kind": "Boolean"
+          }
+        },
+        {
+          "absenceEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/sensitive-data-handling-absent",
+            "state": "Absent"
+          },
+          "compatibility": "FrozenV1",
+          "evidenceGuidance": "Analyze the complete affected target and record a scoped assertion for this fact.",
+          "expectedConsumers": [
+            "quality:corrabora/core-qualities/security#SE1"
+          ],
+          "factId": "fact:portable/sensitive-data-handling",
+          "meaning": "Whether the affected subject reads, writes, derives, transmits, or discloses sensitive information.",
+          "mergeRule": "RejectConflict",
+          "presentEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/sensitive-data-handling-present",
+            "state": "Present"
+          },
+          "valueType": {
+            "kind": "Boolean"
+          }
+        },
+        {
+          "absenceEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/serialized-boundary-change-absent",
+            "state": "Absent"
+          },
+          "compatibility": "FrozenV1",
+          "evidenceGuidance": "Analyze the complete affected target and record a scoped assertion for this fact.",
+          "expectedConsumers": [
+            "quality:corrabora/core-qualities/compatibility#CO2"
+          ],
+          "factId": "fact:portable/serialized-boundary-change",
+          "meaning": "Whether the affected subject introduces or changes a serialized exchange boundary.",
+          "mergeRule": "RejectConflict",
+          "presentEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/serialized-boundary-change-present",
+            "state": "Present"
+          },
+          "valueType": {
+            "kind": "Boolean"
+          }
+        },
+        {
+          "absenceEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/trust-boundary-crossing-absent",
+            "state": "Absent"
+          },
+          "compatibility": "FrozenV1",
+          "evidenceGuidance": "Analyze the complete affected target and record a scoped assertion for this fact.",
+          "expectedConsumers": [
+            "quality:corrabora/core-qualities/security#SE2"
+          ],
+          "factId": "fact:portable/trust-boundary-crossing",
+          "meaning": "Whether information or authority crosses a boundary at which claims require validation before reliance.",
+          "mergeRule": "RejectConflict",
+          "presentEvidenceRule": {
+            "coverage": {
+              "kind": "ExactNamedScope",
+              "scopeKind": "target"
+            },
+            "evidenceClass": "Analysis",
+            "ruleId": "rule:portable/core-qualities/trust-boundary-crossing-present",
+            "state": "Present"
+          },
+          "valueType": {
+            "kind": "Boolean"
+          }
+        }
+      ],
+      "registryId": "registry:portable/core-qualities/applicability",
+      "schemaVersion": 1,
+      "version": "1.0.0"
+    }
+  ],
+  "kind": "QualitySystem",
+  "mechanicsCores": [],
+  "qualities": [
+    {
+      "authorityId": "quality:corrabora/core-qualities/compatibility",
+      "clauses": [
+        {
+          "affirmativeObligation": "The subject shares infrastructure without exclusive assumptions or unbounded interference with neighboring workloads.",
+          "clauseId": "quality:corrabora/core-qualities/compatibility#CO1",
+          "consequenceDimensions": [
+            "affected-scope",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Measure interference in connections, storage, processor use, ports, queues, or other shared resources."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Run beside a representative neighbor under shared resource limits."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Co-existence"
+        },
+        {
+          "affirmativeObligation": "Every exchange surface has a specified, versioned contract sufficient for an independent implementation, and observed bytes and behavior conform to it.",
+          "clauseId": "quality:corrabora/core-qualities/compatibility#CO2",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Compare schemas, encodings, units, error vocabulary, and observable behavior at the byte boundary."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Exchange valid, boundary, and invalid messages with an independently implemented peer."
+          ],
+          "selector": {
+            "factId": "fact:portable/serialized-boundary-change",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Interoperability"
+        },
+        {
+          "affirmativeObligation": "Supported adjacent protocol and schema versions interoperate across the stated upgrade window, with an explicit policy for unknown valid fields and version-breaking changes.",
+          "clauseId": "quality:corrabora/core-qualities/compatibility#CO3",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Record an explicit outcome or non-applicability reason for each supported matrix cell."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Exercise every supported version pair during upgrade and rollback conditions where promised."
+          ],
+          "selector": {
+            "factId": "fact:portable/selected-format",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Version tolerance"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "The subject coexists with neighbors and exchanges versioned information with independent implementations and adjacent versions.",
+      "title": "Compatibility",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/data-quality",
+      "clauses": [
+        {
+          "affirmativeObligation": "Recorded values agree with their comparison authority at the required precision, with units, zones, and rounding policy explicit.",
+          "clauseId": "quality:corrabora/core-qualities/data-quality#DQ1",
+          "consequenceDimensions": [
+            "data-loss",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Measure admitted error against the explicit tolerance; exact contracts require exact equality."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Compare representative and boundary values with the named authority using the stated units and precision."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Accuracy and precision"
+        },
+        {
+          "affirmativeObligation": "Records are whole, required references resolve, and cross-record invariants hold at every observable boundary including concurrency, retry, and partial failure.",
+          "clauseId": "quality:corrabora/core-qualities/data-quality#DQ2",
+          "consequenceDimensions": [
+            "data-loss",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Evaluate invariants at every observable transaction boundary and reject any reachable invalid state."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Exercise invariant-preserving transitions under concurrency, retry, interruption, and partial failure."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Completeness and consistency"
+        },
+        {
+          "affirmativeObligation": "Consumers can determine value age, each derived or cached value has a stated staleness bound, and behavior after the bound is explicit.",
+          "clauseId": "quality:corrabora/core-qualities/data-quality#DQ3",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Measure knowable age, eligible population, window, and the required over-bound response."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Read eligible values before, at, and after the consumer-specific staleness bound."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Freshness"
+        },
+        {
+          "affirmativeObligation": "Every assertion identifies its recording source, authority, and sufficient permitted provenance to judge trustworthiness without treating mere presence as proof.",
+          "clauseId": "quality:corrabora/core-qualities/data-quality#DQ4",
+          "consequenceDimensions": [
+            "privacy-or-security-exposure",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Verify structured, resolvable provenance while preserving declared disclosure and retention boundaries."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Reconstruct the origin and authority of every representative assertion class."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Credibility and provenance"
+        },
+        {
+          "affirmativeObligation": "Derived information can be traced to its inputs, logic version, and computation time so affected outputs can be enumerated and recomputation explained.",
+          "clauseId": "quality:corrabora/core-qualities/data-quality#DQ5",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Verify blast-radius enumeration and explain whether and why recomputation differs."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Select representative derived values, enumerate inputs, and repeat computation with the recorded logic version."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Lineage"
+        },
+        {
+          "affirmativeObligation": "Information survives named faults and migrations for exactly its stated retention, and end-of-retention removal includes derived copies, indexes, and caches.",
+          "clauseId": "quality:corrabora/core-qualities/data-quality#DQ6",
+          "consequenceDimensions": [
+            "data-loss",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Compare meaning after recovery and verify recovery bounds plus complete derivative removal by its deadline."
+          ],
+          "ordinal": 6,
+          "scenarioPrompts": [
+            "Exercise backup, restore, migration, named faults, and end-of-retention removal."
+          ],
+          "selector": {
+            "factId": "fact:portable/persisted-state-change",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Durability and retention"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Recorded information is accurate, complete, consistent, fresh enough, attributable, traceable, and durable for exactly its stated retention.",
+      "title": "Data quality",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/flexibility",
+      "clauses": [
+        {
+          "affirmativeObligation": "Behavior that legitimately varies by environment varies through explicit configuration with stated defaults rather than environment-specific branches in core behavior.",
+          "clauseId": "quality:corrabora/core-qualities/flexibility#FX1",
+          "consequenceDimensions": [
+            "affected-scope",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Verify successful behavior and declared defaults in every supported matrix cell."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Vary the supported environment matrix through configuration while holding required behavior constant."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Adaptability"
+        },
+        {
+          "affirmativeObligation": "The scaling model states how instances, state, writers, tenants, data, and traffic grow, and following that model increases capacity without redesign.",
+          "clauseId": "quality:corrabora/core-qualities/flexibility#FX2",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Measure throughput, latency, and resource use across multiple points on the scaling curve."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Apply a growth stimulus, the stated scaling action, and the relevant state-placement constraints."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Scalability and elasticity"
+        },
+        {
+          "affirmativeObligation": "Every supported deployment shape installs and initializes through repeatable supplied steps from a clean environment.",
+          "clauseId": "quality:corrabora/core-qualities/flexibility#FX3",
+          "consequenceDimensions": [
+            "safe-workaround-availability",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Record success, repeatability, initialization bounds, and any undeclared manual step."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Install each supported shape from a clean environment using only supplied artifacts and descriptions."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Deployability and installability"
+        },
+        {
+          "affirmativeObligation": "Components declared substitutable preserve a complete shared contract, pass common conformance obligations, and are not bypassed by consumers reaching concrete implementations.",
+          "clauseId": "quality:corrabora/core-qualities/flexibility#FX4",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Verify equivalent observable behavior and absence of concrete-type reach-around across the seam."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Run the same contract and conformance corpus against every claimed implementation."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Replaceability"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "The subject adapts to environments, load, deployment shapes, and substitutable components without source modification.",
+      "title": "Flexibility",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/functionality",
+      "clauses": [
+        {
+          "affirmativeObligation": "Every behavior promised by the governing need or contract is delivered, including every admitted branch, parameter, case, and documented surface.",
+          "clauseId": "quality:corrabora/core-qualities/functionality#FN1",
+          "consequenceDimensions": [
+            "affected-scope",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Compare each promise with named evidence that demonstrates the corresponding behavior."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Enumerate promised behaviors and critical journeys, then exercise every named obligation."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Completeness"
+        },
+        {
+          "affirmativeObligation": "For every admitted input, including boundary, empty, maximal, reordered, concurrent, and error inputs where relevant, behavior produces the specified observable result.",
+          "clauseId": "quality:corrabora/core-qualities/functionality#FN2",
+          "consequenceDimensions": [
+            "affected-scope",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Use examples, properties, or a conformance corpus that covers the admitted input space."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Exercise input classes, boundaries, failures, and permitted orderings against exact postconditions."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Correctness"
+        },
+        {
+          "affirmativeObligation": "The delivered functions fit the actual need without missing steps that force workarounds or speculative surface without a named need.",
+          "clauseId": "quality:corrabora/core-qualities/functionality#FN3",
+          "consequenceDimensions": [
+            "affected-scope",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Trace each delivered surface to a current need and show that the supported journey is complete."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Name the actor, goal, supported surface, and any workaround required to complete the goal."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Appropriateness"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "The subject does the right things, does them correctly, and does all of them without introducing unneeded behavior.",
+      "title": "Functionality",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/maintainability",
+      "clauses": [
+        {
+          "affirmativeObligation": "A change to one concern remains within a bounded cohesive set of owners, and unrelated concerns do not interact through hidden mutable state or ambiguous ownership.",
+          "clauseId": "quality:corrabora/core-qualities/maintainability#MA1",
+          "consequenceDimensions": [
+            "affected-scope",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Verify semantic locality without unrelated coordinated edits."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Apply a representative change stimulus and identify the artifacts expected to absorb it."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Modularity and orthogonality"
+        },
+        {
+          "affirmativeObligation": "Existing behavior is composed from one owner instead of reimplemented, and equivalent implementations preserve one shared observable contract.",
+          "clauseId": "quality:corrabora/core-qualities/maintainability#MA2",
+          "consequenceDimensions": [
+            "affected-scope",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Identify duplicate owners and compare their behavior for divergence."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Exercise the shared contract against every implementation or consumer."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Reuse and composability"
+        },
+        {
+          "affirmativeObligation": "A maintainer can determine what occurred and why from structured telemetry, preserved error causes, and inspectable decision state.",
+          "clauseId": "quality:corrabora/core-qualities/maintainability#MA3",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Verify that the affected operation, selected branch, and cause are identifiable within a bounded exercise."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Introduce a named failure or decision outcome and diagnose its branch and cause from available telemetry."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Observability and diagnosability"
+        },
+        {
+          "affirmativeObligation": "Likely changes have a local extension point, and complexity remains proportionate, without central case rewrites, speculative indirection, or avoidable cleverness.",
+          "clauseId": "quality:corrabora/core-qualities/maintainability#MA4",
+          "consequenceDimensions": [
+            "affected-scope",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Inspect whether the extension is additive and whether every abstraction has a current purpose."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Apply a plausible extension and identify the minimal owners that must change."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Modifiability and simplicity"
+        },
+        {
+          "affirmativeObligation": "Behavior is provable at the tier where it lives because dependencies have controllable seams, failures can be induced, and nondeterminism can be supplied explicitly.",
+          "clauseId": "quality:corrabora/core-qualities/maintainability#MA5",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Verify the observable contract without requiring unrelated infrastructure or ambient state."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Name the behavior and induce its success, failure, boundary, and nondeterministic cases at the owning tier."
+          ],
+          "selector": {
+            "factId": "fact:portable/implementation-language-declared",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Testability and provability"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "The subject can be understood, diagnosed, changed, reused, and proven without effort disproportionate to the change.",
+      "title": "Maintainability",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/manageability",
+      "clauses": [
+        {
+          "affirmativeObligation": "Lifecycle transitions are deliberate and lossless: accepted work is completed or handed off, load controls are invokable, and runtime-tunable settings take effect as declared.",
+          "clauseId": "quality:corrabora/core-qualities/manageability#MG1",
+          "consequenceDimensions": [
+            "data-loss",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Measure completion bounds, accepted-work loss, and state visible at the operating boundary."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Initiate drain, shutdown, shedding, backpressure, and runtime adjustment under representative in-flight load."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Operational control"
+        },
+        {
+          "affirmativeObligation": "Recurring administrative acts are supported, attributable operations with defined retry and recovery behavior rather than direct data surgery.",
+          "clauseId": "quality:corrabora/core-qualities/manageability#MG2",
+          "consequenceDimensions": [
+            "privacy-or-security-exposure",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Verify intended state, attribution, retry behavior, and absence of unsupported direct mutation."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Exercise recurring onboarding, offboarding, limit, credential, and key-lifecycle journeys where applicable."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Administration"
+        },
+        {
+          "affirmativeObligation": "Version upgrades and data migrations have a rehearsed forward path compatible with the supported topology and an explicit rollback or roll-forward posture.",
+          "clauseId": "quality:corrabora/core-qualities/manageability#MG3",
+          "consequenceDimensions": [
+            "data-loss",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Record disruption, data meaning, protocol compatibility, and the tested recovery postcondition."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Exercise every supported source-to-target version path in the relevant topology."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Upgrade and migration"
+        },
+        {
+          "affirmativeObligation": "A deployment exposes consumer-relevant health and saturation, and every condition requiring human action names that action and its urgency.",
+          "clauseId": "quality:corrabora/core-qualities/manageability#MG4",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Verify timely signals, accurate readiness, bounded cardinality, required action, and urgency."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Introduce consumer-visible failures and saturation before the failure boundary is crossed."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Monitoring and alerting"
+        },
+        {
+          "affirmativeObligation": "A responder can collect safe diagnostics, follow an available recovery path, and escalate anticipated failures without access to implementation internals or unauthorized material.",
+          "clauseId": "quality:corrabora/core-qualities/manageability#MG5",
+          "consequenceDimensions": [
+            "safe-workaround-availability",
+            "privacy-or-security-exposure"
+          ],
+          "evidencePrompts": [
+            "Measure time to safe diagnostics, correct recovery branch, and the stated recovery or escalation point."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Rehearse an anticipated failure with a responder unfamiliar with the implementation."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Supportability"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "A deployed subject can be controlled, administered, upgraded, observed, and supported by operators who did not construct it.",
+      "title": "Manageability",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/performance",
+      "clauses": [
+        {
+          "affirmativeObligation": "Quality-significant operations have stated latency budgets at meaningful percentiles and meet those budgets under the stated load and payload conditions.",
+          "clauseId": "quality:corrabora/core-qualities/performance#PE1",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Report the latency distribution and the proportion of eligible operations meeting the threshold."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Exercise an eligible operation under its stated load, payload class, percentile, and measurement point."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Responsiveness"
+        },
+        {
+          "affirmativeObligation": "The subject sustains stated request, event, and batch rates, and deadline-bearing work completes within its stated window.",
+          "clauseId": "quality:corrabora/core-qualities/performance#PE2",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Measure offered work, completed work, completion windows, and the eligible completion ratio."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Offer the stated rate and exercise expiry, propagation, or scheduled work against its deadline."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Throughput and timeliness"
+        },
+        {
+          "affirmativeObligation": "Memory, processor, storage, and connection use remain bounded and proportionate to the unit of work, with no leak or unrelated-state scaling across an operation boundary.",
+          "clauseId": "quality:corrabora/core-qualities/performance#PE3",
+          "consequenceDimensions": [
+            "affected-scope",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Measure resource ceilings per request, retained record, subject, or time window and detect drift."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Exercise representative and boundary workloads through steady state and recovery."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Resource efficiency"
+        },
+        {
+          "affirmativeObligation": "Operating limits exist for bounded resources and behavior at and beyond each limit is an explicit rejection, shedding, or backpressure decision.",
+          "clauseId": "quality:corrabora/core-qualities/performance#PE4",
+          "consequenceDimensions": [
+            "affected-scope",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Show that admitted work meets its objective and excess work receives the defined response."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Exercise each stated boundary and at least one beyond-boundary case."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Capacity"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Quality-significant operations respond within stated time, rate, resource, and capacity limits under named conditions.",
+      "title": "Performance",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/reliability",
+      "clauses": [
+        {
+          "affirmativeObligation": "Repeated, concurrent, reordered, and retried inputs produce outcomes within an explicit accepted set, including any permitted nondeterminism.",
+          "clauseId": "quality:corrabora/core-qualities/reliability#RL1",
+          "consequenceDimensions": [
+            "reversibility-and-recovery-cost",
+            "data-loss"
+          ],
+          "evidencePrompts": [
+            "Assert the complete accepted outcome set and zero invariant violations across controlled schedules."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Exercise duplicates, reordered delivery, concurrency, and retries where the interface admits them."
+          ],
+          "selector": {
+            "factId": "fact:portable/concurrency-control-change",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Stability and predictability"
+        },
+        {
+          "affirmativeObligation": "The subject serves within a stated failure model that names tolerated faults, service-limiting faults, and restart posture.",
+          "clauseId": "quality:corrabora/core-qualities/reliability#RL2",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Measure the good-event ratio over the stated window and record which failure modes the objective includes."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Introduce each named failure mode while exercising consumer-visible eligible events."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Availability"
+        },
+        {
+          "affirmativeObligation": "When a dependency fails or misbehaves, the subject exhibits a designed bounded response such as shedding, queuing, retry, disclosed staleness, or loud refusal.",
+          "clauseId": "quality:corrabora/core-qualities/reliability#RL3",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Verify the degraded response, bounds, disclosure, and time to a terminal decision for every row."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Exercise a dependency-fault matrix covering timeout, refusal, lag, malformed response, and recovery where relevant."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Fault tolerance and graceful degradation"
+        },
+        {
+          "affirmativeObligation": "After interruption at any admitted point, the subject returns to a recognized correct state and completes, compensates, or reports in-flight work without silent partial effect.",
+          "clauseId": "quality:corrabora/core-qualities/reliability#RL4",
+          "consequenceDimensions": [
+            "reversibility-and-recovery-cost",
+            "data-loss"
+          ],
+          "evidencePrompts": [
+            "Verify accepted postconditions plus stated recovery-time and recovery-point bounds."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Interrupt each persisted transition point and restart under permitted duplicate delivery."
+          ],
+          "selector": {
+            "factId": "fact:portable/persisted-state-change",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Recoverability"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "The subject behaves predictably, remains available within a stated failure model, degrades deliberately, and recovers to a known-good state.",
+      "title": "Reliability",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/safety",
+      "clauses": [
+        {
+          "affirmativeObligation": "The affected boundary and possible physical consequences are declared so informational harms and physical hazards route to their appropriate obligations.",
+          "clauseId": "quality:corrabora/core-qualities/safety#SA1",
+          "consequenceDimensions": [
+            "physical-harm",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Inspect deployment-boundary evidence and classify every credible harm path."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Identify what the subject controls or gates and the consequence of an incorrect allow, deny, delay, or stale result."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Scope declaration"
+        },
+        {
+          "affirmativeObligation": "Before a boundary can actuate or gate a physical-consequence process, its hazards, safe failure states, operating constraints, warnings, and verification obligations are defined.",
+          "clauseId": "quality:corrabora/core-qualities/safety#SA2",
+          "consequenceDimensions": [
+            "physical-harm",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Verify the safe state, response deadline, warning path, constraint, and exact acceptance evidence."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "For each material hazard, exercise the initiating stimulus in normal, boundary, and fault environments."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Activation obligation"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Hazards to people, property, and the environment are explicitly bounded, and physical-consequence integrations define safe failure behavior before use.",
+      "title": "Safety",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/security",
+      "clauses": [
+        {
+          "affirmativeObligation": "Information is readable only by authorized principals and does not leak through responses, timing, caches, diagnostics, or auxiliary surfaces.",
+          "clauseId": "quality:corrabora/core-qualities/security#SE1",
+          "consequenceDimensions": [
+            "privacy-or-security-exposure",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Verify zero unauthorized disclosure and preservation of the declared custody boundary."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Exercise authorized and unauthorized actor classes across every relevant read and side channel."
+          ],
+          "selector": {
+            "factId": "fact:portable/sensitive-data-handling",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Confidentiality"
+        },
+        {
+          "affirmativeObligation": "State changes only through authorized, validated paths, with external input validated before reliance and tampering detectable where the trust model requires it.",
+          "clauseId": "quality:corrabora/core-qualities/security#SE2",
+          "consequenceDimensions": [
+            "privacy-or-security-exposure",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Verify zero unauthorized effects and validation before any decision or mutation."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Attempt authorized, unauthorized, malformed, replayed, and tampered mutations at each trust boundary."
+          ],
+          "selector": {
+            "factId": "fact:portable/trust-boundary-crossing",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Integrity"
+        },
+        {
+          "affirmativeObligation": "Every consequential action is attributable to a specific principal with enough structured evidence to reconstruct who acted, what occurred, when, and under which authority.",
+          "clauseId": "quality:corrabora/core-qualities/security#SE3",
+          "consequenceDimensions": [
+            "privacy-or-security-exposure",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Recover the principal, action, authority, ordering information, and protected evidence from retained records."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Perform consequential actions and later reconstruct them without ambient memory."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Accountability and auditability"
+        },
+        {
+          "affirmativeObligation": "Identities are verified at the point of reliance, and dispute-relevant actions retain durable proof binding the actor to the act.",
+          "clauseId": "quality:corrabora/core-qualities/security#SE4",
+          "consequenceDimensions": [
+            "privacy-or-security-exposure",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Verify the identity proof and durable binding between actor, authority, and action."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Exercise identity claims at reliance points and later dispute representative consequential acts."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Authenticity and non-repudiation"
+        },
+        {
+          "affirmativeObligation": "External input is distrusted by default, work before verification is bounded, abuse opportunities are rate-limited where needed, and exposed attack surface is deliberately minimal.",
+          "clauseId": "quality:corrabora/core-qualities/security#SE5",
+          "consequenceDimensions": [
+            "privacy-or-security-exposure",
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Measure work, amplification, concurrency, and rate ceilings before trust is established."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Apply hostile, malformed, amplified, concurrent, and over-rate inputs at and beyond stated bounds."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Resistance"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Information and operations are protected so authorized identities alone may read or change them, consequential acts are attributable, and deliberate misuse is resisted.",
+      "title": "Security",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/usability",
+      "clauses": [
+        {
+          "affirmativeObligation": "A person can determine what the subject offers and whether it fits their need from its visible description and interaction surfaces.",
+          "clauseId": "quality:corrabora/core-qualities/usability#US1",
+          "consequenceDimensions": [
+            "affected-scope",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Observe successful capability discovery using only the available description and self-description surfaces."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Begin at the shipped entry point and locate a named capability without inspecting its implementation."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Discoverability"
+        },
+        {
+          "affirmativeObligation": "The path from no prior knowledge to first success is short, documented, complete, and honest about prerequisites.",
+          "clauseId": "quality:corrabora/core-qualities/usability#US2",
+          "consequenceDimensions": [
+            "affected-scope",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Record completion, missing knowledge, prerequisite accuracy, and recovery from any failed step."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Have a competent newcomer complete a first-success journey from a clean environment."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Learnability"
+        },
+        {
+          "affirmativeObligation": "Routine tasks require proportionate effort, use consistent vocabulary, and begin from defaults that do not surprise in a harmful direction.",
+          "clauseId": "quality:corrabora/core-qualities/usability#US3",
+          "consequenceDimensions": [
+            "reversibility-and-recovery-cost",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Observe task outcome, required steps, consistency, and recovery burden."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Exercise recurring tasks in clean and previously configured environments, including dangerous defaults."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Operability and defaults"
+        },
+        {
+          "affirmativeObligation": "Irreversible effects are difficult to trigger accidentally, errors name corrective action, and partial failures state the resulting condition.",
+          "clauseId": "quality:corrabora/core-qualities/usability#US4",
+          "consequenceDimensions": [
+            "reversibility-and-recovery-cost",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Verify prevention or explicit blast radius, resulting state, and actionable correction."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Induce representative mistakes, irreversible requests, and partial failures."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Error prevention and recovery"
+        },
+        {
+          "affirmativeObligation": "Responses explain current state and requirements with actionable detail, and descriptive surfaces match the behavior that is available.",
+          "clauseId": "quality:corrabora/core-qualities/usability#US5",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Verify that each response identifies the condition, required action, and available state without implementation archaeology."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Exercise success, refusal, and degraded states using only information available at the interaction boundary."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Self-descriptiveness and assistance"
+        },
+        {
+          "affirmativeObligation": "Interaction surfaces remain meaningful without color or interactivity and provide machine-readable forms where text scraping would otherwise be required.",
+          "clauseId": "quality:corrabora/core-qualities/usability#US6",
+          "consequenceDimensions": [
+            "affected-scope",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Verify equivalent meaning and task completion across the supported human-readable and machine-readable paths."
+          ],
+          "ordinal": 6,
+          "scenarioPrompts": [
+            "Exercise relevant non-color, non-interactive, assistive, and constrained environments."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Accessibility"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "People can discover, learn, operate, recover, and automate the available interaction surfaces in differing environments.",
+      "title": "Usability",
+      "version": "1.0.0"
+    }
+  ],
+  "retirements": [],
+  "schemaVersion": 1,
+  "systemId": "system:corrabora/core-qualities",
+  "systemVersion": "1.0.0"
+}

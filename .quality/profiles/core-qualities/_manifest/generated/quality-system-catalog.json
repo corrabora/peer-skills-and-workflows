@@ -1,0 +1,227 @@
+{
+  "bindings": [],
+  "contractVersion": "quality-contract-v1",
+  "factRegistries": [
+    {
+      "registryId": "registry:portable/core-qualities/applicability",
+      "sourceDigest": "sha256:c25a5abd7f7aeeadf43089dd3c81aaf948bae8600101c5294d50670f8aa23761",
+      "version": "1.0.0"
+    }
+  ],
+  "facts": [
+    {
+      "definitionDigest": "sha256:a978477da1ad00e218e0ea5eb56bf4fba701fbdb988b559189a836f61941d106",
+      "factId": "fact:portable/concurrency-control-change",
+      "registryId": "registry:portable/core-qualities/applicability",
+      "valueType": {
+        "kind": "Boolean"
+      }
+    },
+    {
+      "definitionDigest": "sha256:646c20287908bd13f1e4cb0b2b2179e43651e75ed826a861a094626e2e955db1",
+      "factId": "fact:portable/implementation-language-declared",
+      "registryId": "registry:portable/core-qualities/applicability",
+      "valueType": {
+        "kind": "Boolean"
+      }
+    },
+    {
+      "definitionDigest": "sha256:78b3da543f8635df51e9a3fcb4348d42333a678479f627e1c531758dd5de7a71",
+      "factId": "fact:portable/persisted-state-change",
+      "registryId": "registry:portable/core-qualities/applicability",
+      "valueType": {
+        "kind": "Boolean"
+      }
+    },
+    {
+      "definitionDigest": "sha256:05cc88c3ecfa9ebdfcf45305e72228a5f5421cb724385a416cb28c08218ec28b",
+      "factId": "fact:portable/selected-format",
+      "registryId": "registry:portable/core-qualities/applicability",
+      "valueType": {
+        "kind": "Boolean"
+      }
+    },
+    {
+      "definitionDigest": "sha256:414f7cdaf0f5f8e9768cae542be2b72f162f0f69afd43248976fe12581d05c20",
+      "factId": "fact:portable/sensitive-data-handling",
+      "registryId": "registry:portable/core-qualities/applicability",
+      "valueType": {
+        "kind": "Boolean"
+      }
+    },
+    {
+      "definitionDigest": "sha256:fd80f30c649f2427d7cdf3287d3bbaaf42f7c58dce230f5647158f5202e68925",
+      "factId": "fact:portable/serialized-boundary-change",
+      "registryId": "registry:portable/core-qualities/applicability",
+      "valueType": {
+        "kind": "Boolean"
+      }
+    },
+    {
+      "definitionDigest": "sha256:bf1e9de71f5ad6f762f14d22395359bbade607f8135cf1f0b5c993fbe7bbea0e",
+      "factId": "fact:portable/trust-boundary-crossing",
+      "registryId": "registry:portable/core-qualities/applicability",
+      "valueType": {
+        "kind": "Boolean"
+      }
+    }
+  ],
+  "mechanicsCores": [],
+  "qualities": [
+    {
+      "authorityId": "quality:corrabora/core-qualities/compatibility",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/compatibility#CO1",
+        "quality:corrabora/core-qualities/compatibility#CO2",
+        "quality:corrabora/core-qualities/compatibility#CO3"
+      ],
+      "documentPath": "quality.compatibility.md",
+      "sourceDigest": "sha256:caef70cdb91bde38ad5b75cc2cdaf93a0aada130d6b33187c06f84f4ccab04eb",
+      "title": "Compatibility",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/data-quality",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/data-quality#DQ1",
+        "quality:corrabora/core-qualities/data-quality#DQ2",
+        "quality:corrabora/core-qualities/data-quality#DQ3",
+        "quality:corrabora/core-qualities/data-quality#DQ4",
+        "quality:corrabora/core-qualities/data-quality#DQ5",
+        "quality:corrabora/core-qualities/data-quality#DQ6"
+      ],
+      "documentPath": "quality.data-quality.md",
+      "sourceDigest": "sha256:d2166bbbafa3e17461cab369ddd10a1511b924e32461517f7a766836824204c1",
+      "title": "Data quality",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/flexibility",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/flexibility#FX1",
+        "quality:corrabora/core-qualities/flexibility#FX2",
+        "quality:corrabora/core-qualities/flexibility#FX3",
+        "quality:corrabora/core-qualities/flexibility#FX4"
+      ],
+      "documentPath": "quality.flexibility.md",
+      "sourceDigest": "sha256:40e219a7f6d633f2e787114049901edceb04ff2086d3ea71c1730d387b44e054",
+      "title": "Flexibility",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/functionality",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/functionality#FN1",
+        "quality:corrabora/core-qualities/functionality#FN2",
+        "quality:corrabora/core-qualities/functionality#FN3"
+      ],
+      "documentPath": "quality.functionality.md",
+      "sourceDigest": "sha256:0f359b4afd3991b892d65f0c3e2ef96ec82ce7d2540c41caa44f6a4c6bb34172",
+      "title": "Functionality",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/maintainability",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/maintainability#MA1",
+        "quality:corrabora/core-qualities/maintainability#MA2",
+        "quality:corrabora/core-qualities/maintainability#MA3",
+        "quality:corrabora/core-qualities/maintainability#MA4",
+        "quality:corrabora/core-qualities/maintainability#MA5"
+      ],
+      "documentPath": "quality.maintainability.md",
+      "sourceDigest": "sha256:8f44b157b7399296025cb08fcd28bcda63008835fed2c6407be4fc0b29aaf97b",
+      "title": "Maintainability",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/manageability",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/manageability#MG1",
+        "quality:corrabora/core-qualities/manageability#MG2",
+        "quality:corrabora/core-qualities/manageability#MG3",
+        "quality:corrabora/core-qualities/manageability#MG4",
+        "quality:corrabora/core-qualities/manageability#MG5"
+      ],
+      "documentPath": "quality.manageability.md",
+      "sourceDigest": "sha256:c3f5ecb48158da58d6d224c9595c9265428476014357cdb36025dea8b52399f6",
+      "title": "Manageability",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/performance",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/performance#PE1",
+        "quality:corrabora/core-qualities/performance#PE2",
+        "quality:corrabora/core-qualities/performance#PE3",
+        "quality:corrabora/core-qualities/performance#PE4"
+      ],
+      "documentPath": "quality.performance.md",
+      "sourceDigest": "sha256:136d60541eaf21c8d9a0e0a7709f89ec2dd43f945d70f391d6fc8cca149e16d5",
+      "title": "Performance",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/reliability",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/reliability#RL1",
+        "quality:corrabora/core-qualities/reliability#RL2",
+        "quality:corrabora/core-qualities/reliability#RL3",
+        "quality:corrabora/core-qualities/reliability#RL4"
+      ],
+      "documentPath": "quality.reliability.md",
+      "sourceDigest": "sha256:0750cd2f459bd82db22593902a48af5bf706abc7fb26e77d16076bee49b10804",
+      "title": "Reliability",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/safety",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/safety#SA1",
+        "quality:corrabora/core-qualities/safety#SA2"
+      ],
+      "documentPath": "quality.safety.md",
+      "sourceDigest": "sha256:6734e7887e3c04ce784641284ab41e13e7c6e2bfe30eeef87759024efac78574",
+      "title": "Safety",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/security",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/security#SE1",
+        "quality:corrabora/core-qualities/security#SE2",
+        "quality:corrabora/core-qualities/security#SE3",
+        "quality:corrabora/core-qualities/security#SE4",
+        "quality:corrabora/core-qualities/security#SE5"
+      ],
+      "documentPath": "quality.security.md",
+      "sourceDigest": "sha256:6b11158106fcfe57fdec249b689a66f91ddb5c80bcf7ee64b3b37272b277d1dd",
+      "title": "Security",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "quality:corrabora/core-qualities/usability",
+      "clauseIds": [
+        "quality:corrabora/core-qualities/usability#US1",
+        "quality:corrabora/core-qualities/usability#US2",
+        "quality:corrabora/core-qualities/usability#US3",
+        "quality:corrabora/core-qualities/usability#US4",
+        "quality:corrabora/core-qualities/usability#US5",
+        "quality:corrabora/core-qualities/usability#US6"
+      ],
+      "documentPath": "quality.usability.md",
+      "sourceDigest": "sha256:b8c553518a065e83c258c06ddab9291b09eed25682f584b9ee2a322c786bebc6",
+      "title": "Usability",
+      "version": "1.0.0"
+    }
+  ],
+  "retirements": [],
+  "schemaVersion": 1,
+  "system": {
+    "contractVersion": "quality-contract-v1",
+    "schemaVersion": 1,
+    "sourceDigest": "sha256:ac552affbe4ddaa49d015214b74a5f7867b3a16a684e1869cc3362fc16f9524c",
+    "systemId": "system:corrabora/core-qualities",
+    "version": "1.0.0"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "skill": "write-for-agents",
+  "description": "Behavioral contract of the write-for-agents skill: reads the shared writing guidance, states a brief's task, inputs, result and scope with each obligation once and a fresh recipient able to act from the brief alone, keeps a proposal apart from an accepted decision and adds no approval step, names the prerequisite at a consequential transition and gives undefined results no meaning, loads a conditional dependency on its branch with when, where and what depends on it, writes a handoff that carries state, identity, evidence, dependencies and the next authorized action without the session's abandoned approaches, revises a maintained instruction to durable rules with exceptions beside them, preserves a recipe's inputs before its first write checkably, keeps the decision owner and a qualification the source gives and does not overstate narrow evidence, reports a missing dependency by path while delivering independent work, keeps a narrow edit narrow, and closes a saved brief with a delivery receipt that never reports an unrun recipe as run.",
+  "skills": [
+    "write-for-agents",
+    "write-for-humans",
+    "clarify-artifact",
+    "maintain-glossary",
+    "record-decision"
+  ],
+  "cases": [
+    "brief-from-notes",
+    "proposal-vs-accepted",
+    "prerequisite-transition",
+    "conditional-dependency",
+    "handoff",
+    "maintained-revision",
+    "input-preservation",
+    "actor-fidelity",
+    "missing-dependency",
+    "narrow-edit",
+    "receipt-unresolved",
+    "human-section"
+  ]
+}

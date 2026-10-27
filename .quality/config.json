@@ -1,0 +1,8 @@
+{
+  "profiles": [
+    {
+      "profileId": "profile:corrabora/defaults",
+      "path": "profiles/corrabora-defaults"
+    }
+  ]
+}

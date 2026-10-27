@@ -1,0 +1,50 @@
+{
+  "id": "missing-dependency",
+  "effect": "When a named source is absent, the reply reports its path, the part that depends on it waits with nothing substituted, and the independent part is delivered.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/quarterly-check.md"
+      ],
+      "required": [
+        "briefs/quarterly-check.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "missing-path-reported",
+      "criterion": "The reply reports that references/gauge-register.md is missing, naming that path."
+    },
+    {
+      "id": "dependent-part-paused",
+      "criterion": "No gauge register content is drafted anywhere: the Gauge register section of briefs/quarterly-check.md is absent or says only that it waits on the missing file, and references/gauge-register-2019.md is not used in its place (no gauge, position, unit or reader from it appears in the brief)."
+    },
+    {
+      "id": "independent-part-delivered",
+      "criterion": "The Readings files section is written in briefs/quarterly-check.md from notes/readings-files.md: the check on every readings file changed in the quarter, the output path checks/<year>-q<n>.txt, files with gaps listed in reports/<year>-q<n>.md, no gaps filled."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the Readings files section is stated in notes/readings-files.md; nothing is added from general knowledge (no invented schedule, exit-status handling, approval step or check beyond the note's)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

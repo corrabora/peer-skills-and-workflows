@@ -1,0 +1,81 @@
+{
+  "id": "replacement-proposed",
+  "effect": "A proposed replacement explains its relationship and reason while the accepted old record remains in force and byte-identical.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md",
+        "README.md"
+      ],
+      "required": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "proposed-status",
+      "criterion": "The new record explicitly says Status: Proposed, and the index shows the same standing."
+    },
+    {
+      "id": "title-neutral",
+      "criterion": "The title names the choice under consideration (ordering the waiting list by distance from the site) without implying it is decided: no \"accepted\", \"adopted\", \"decided\", \"agreed\" or a future-tense \"will\" in the title."
+    },
+    {
+      "id": "names-what-it-changes",
+      "criterion": "The new record says that it would replace or change the application-date order of ADR-0002 and why (parish residents waiting while outside applicants take plots, or the lease's expectation); a record that does not relate itself to ADR-0002 fails."
+    },
+    {
+      "id": "old-record-in-force",
+      "criterion": "Neither the new record nor the reply says ADR-0002 is superseded, replaced, amended or no longer in force, and no \"Superseded by\" or \"Amended by\" notice is written anywhere; the application-date order is stated or left as the order in force until the vote."
+    },
+    {
+      "id": "record-shape",
+      "criterion": "The new record has an ADR title, Date and explicit Status, and Context, Decision and Consequences sections. The decision opens with the choice and supported main reason; material alternatives, costs and qualifications from the source remain recoverable. Unknown necessary information is identified, never invented. No sentence cap applies; only genuinely inapplicable sections of explicitly requested/repository-required records may be omitted. Specifically preserve: the waiting list would be ordered by distance from the site because parish residents wait while outside applicants take plots."
+    },
+    {
+      "id": "receipt-standing",
+      "criterion": "The reply states, in one sentence, that the record is a proposal awaiting the members' vote at the annual general meeting; a reply that omits the standing, or spreads it over several sentences, fails."
+    },
+    {
+      "id": "receipt-number-check",
+      "criterion": "The reply says, in one sentence, that ADR-0004 is provisional and is to be rechecked against main (the target the README names) before integration, or that it is to be rechecked and the target is unknown; it does not narrate how the number was chosen. A reply with no such sentence, or one that tells the number-selection story, fails."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "linked-index",
+      "criterion": "DECISION-LOG.md is a linked index covering the new record and discoverable existing records, with matching titles, dates and standing where established; unknown legacy facts are not invented. Its links resolve and it does not duplicate ADR bodies. Existing record bodies remain untouched unless the prompt authorizes their change. Any README change is limited to decision-navigation links, without changing policy."
+    }
+  ]
+}

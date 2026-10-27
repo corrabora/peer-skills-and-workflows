@@ -1,0 +1,59 @@
+{
+  "id": "receipt-unresolved",
+  "effect": "When one fact in the sources is left unsettled, the receipt states it in one sentence as something that changes how the page is used, with no verdict per item and no description of the page's contents.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/firing-fees-2027.md"
+      ],
+      "required": [
+        "docs/firing-fees-2027.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the fee page is: docs/firing-fees-2027.md."
+    },
+    {
+      "id": "unresolved-stated",
+      "criterion": "The reply states, in one sentence, that the private firing fee is not yet set and waits on the treasurer after the December contract renewal."
+    },
+    {
+      "id": "no-contents-description",
+      "criterion": "Apart from the location and that one sentence, the reply does not describe the fee page's contents, list its items, or give a verdict or status per item."
+    },
+    {
+      "id": "artifact-marks-unresolved",
+      "criterion": "docs/firing-fees-2027.md says the private firing fee is not yet set and gives no figure for it."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every fee and condition in docs/firing-fees-2027.md matches minutes/2026-10.md; nothing is added from general knowledge."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved file's contents), offers (options or offers of further work), recital (an account of what was read, checked or done) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

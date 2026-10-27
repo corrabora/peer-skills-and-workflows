@@ -1,0 +1,52 @@
+{
+  "id": "narrow-edit",
+  "effect": "A requested revision of one section of an existing brief leaves the rest of the file byte-identical and states the changed rules as the note gives them.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/monthly-summary.md"
+      ],
+      "required": [
+        "briefs/monthly-summary.md"
+      ]
+    },
+    "edits": {
+      "briefs/monthly-summary.md": {
+        "after": "## Checks before publishing",
+        "before": "## Completion"
+      }
+    }
+  },
+  "semantic": [
+    {
+      "id": "section-reflects-note",
+      "criterion": "The revised section states that the prerequisite for copying to published/ is the file calibration/<year>-<month>.md (not an email), that when it is missing the assistant reports to the coordinator that the month's confirmation is missing and leaves the summary in summaries/, and that a readings file whose check exits 2 blocks publication, with the gaps listed in the report to the coordinator, the records keeper filling them, and publication only once the check exits 0."
+    },
+    {
+      "id": "undefined-status-kept",
+      "criterion": "The revised section still treats an exit status other than 0 and 2 as a reason to halt and tell the coordinator; the revision does not assign such a status a meaning or drop the rule."
+    },
+    {
+      "id": "no-invented-facts",
+      "criterion": "The revised section adds nothing the note or the original section does not say: no new actor, deadline, retry, notification channel or consequence; the email is gone, not kept as an alternative."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

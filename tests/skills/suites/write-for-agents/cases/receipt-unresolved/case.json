@@ -1,0 +1,63 @@
+{
+  "id": "receipt-unresolved",
+  "effect": "When one fact the brief needs is unsettled in the sources, the receipt states it in one sentence; a recipe the author ran nothing of is never reported as run, tested or verified, and any check reporting keeps inspection, mechanical validation and observed behavior distinct.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/rebuild-levels-2026.md"
+      ],
+      "required": [
+        "briefs/rebuild-levels-2026.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the brief is: briefs/rebuild-levels-2026.md."
+    },
+    {
+      "id": "unresolved-one-sentence",
+      "criterion": "The reply states, in one sentence, that which months are to be rebuilt is not settled and waits on the coordinator naming them."
+    },
+    {
+      "id": "no-false-verification",
+      "criterion": "The reply does not say that the recipe (gaugetool summary, the table rewrite) was run, tested, tried, verified or shown to work. If the reply reports checks at all, it says which were inspection of the brief's text against the sources, which were mechanical (a path exists, a file matches) and which, if any, came from running a command, and it marks the recipe as not run; a reply that blurs these, or that calls the brief verified or ready on the strength of inspection alone, fails."
+    },
+    {
+      "id": "no-contents-description",
+      "criterion": "Apart from the location, the one unresolved sentence and any check facts of the kind above, the reply does not describe the brief's contents, list its sections or steps, give a status per item, or offer further work."
+    },
+    {
+      "id": "brief-marks-unresolved",
+      "criterion": "briefs/rebuild-levels-2026.md does not name the months to rebuild (no May, June or any other month assigned); it says the months come from the coordinator and that the rebuild of each month starts once the coordinator has named it. A brief that assigns May and June, or any month, from the records keeper's guess fails."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the brief is stated in notes/levels-rebuild.md or tools/gaugetool-help.txt; nothing is added from general knowledge (no invented replacement date, offset handling, backup, check or approval step beyond the coordinator naming the months)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved file's contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than a check fact of the kind no-false-verification allows) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

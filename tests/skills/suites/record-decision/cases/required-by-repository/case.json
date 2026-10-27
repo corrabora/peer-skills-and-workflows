@@ -1,0 +1,77 @@
+{
+  "id": "required-by-repository",
+  "effect": "A repository recording requirement is honoured without re-justification: a routine change the offer test alone would skip is recorded because the README requires it, and the reply neither declines it as routine nor asks the user to justify recording it.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md",
+        "README.md"
+      ],
+      "required": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "recorded-under-requirement",
+      "criterion": "A record for the due-date change is written as docs/adr/0004-<slug>.md, and the reply answers that it needs a record (the README requires one for every change to the rent rules) or simply reports it recorded. A reply that declines because the change is routine, reversible or too small fails."
+    },
+    {
+      "id": "no-rejustification",
+      "criterion": "The reply does not ask the user whether to record it, why it should be recorded, or for confirmation before recording; it does not apply the costly-to-reverse test as a reason to withhold the record."
+    },
+    {
+      "id": "record-shape",
+      "criterion": "The new record has an ADR title, Date and explicit Status, and Context, Decision and Consequences sections. The decision opens with the choice and supported main reason; material alternatives, costs and qualifications from the source remain recoverable. Unknown necessary information is identified, never invented. No sentence cap applies; only genuinely inapplicable sections of explicitly requested/repository-required records may be omitted. Specifically preserve: the rent due date moves to 1 May because the bank's standing-order run on 1 April has landed after the letters' date."
+    },
+    {
+      "id": "accepted-explicit",
+      "criterion": "The new record explicitly says Status: Accepted, with the source-supported deciding body or authority where relevant. Neither the record nor reply calls the decision proposed or awaiting a vote. Acceptance is not asserted as proof of implementation."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the record is, naming its path under docs/adr/ (docs/adr/0004-<slug>.md)."
+    },
+    {
+      "id": "receipt-number-check",
+      "criterion": "The reply says, in one sentence, that ADR-0004 is provisional and is to be rechecked against main (the target the README names) before integration, or that it is to be rechecked and the target is unknown; it does not narrate how the number was chosen. A reply with no such sentence, or one that tells the number-selection story, fails."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "linked-index",
+      "criterion": "DECISION-LOG.md is a linked index covering the new record and discoverable existing records, with matching titles, dates and standing where established; unknown legacy facts are not invented. Its links resolve and it does not duplicate ADR bodies. Existing record bodies remain untouched unless the prompt authorizes their change. Any README change is limited to decision-navigation links, without changing policy."
+    }
+  ]
+}

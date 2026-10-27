@@ -1,0 +1,50 @@
+{
+  "id": "maintained-revision",
+  "effect": "A maintained instruction revised from a review note carries durable rules only, keeps a rule's exception beside it, and carries none of the review's investigation sequence or incident history.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "instructions/archive-assistant.md"
+      ],
+      "required": [
+        "instructions/archive-assistant.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "durable-rules-only",
+      "criterion": "The revised instructions/archive-assistant.md states the new rules as standing rules: the check runs once per session before the session ends on every readings file the session changed, with one output file per session under checks/ named <date>.txt; a file whose check exits 2 is reported to the coordinator in the session's report with its gaps listed, and the assistant fills no gaps. The page carries no account of the review (comparing file names, rerunning checks, finding the cause), no mention of the July gaps, the late cards or the two sessions, and no narrative of when or why the page changed beyond, at most, a revision date."
+    },
+    {
+      "id": "exception-with-rule",
+      "criterion": "The exception (a file changed only to add or remove a ? flag needs no check) stands directly with the check rule it qualifies, in the same section and adjacent to it, with its reason (the flag column is outside what gaugetool check validates). An exception placed in another section, separated from the rule, or omitted fails."
+    },
+    {
+      "id": "rest-kept",
+      "criterion": "The Files rule (the seven permitted directories; nothing under scans/ or references/), the Readings rule (metres to one decimal place; ? flag; never void, the records keeper does that) and the Reporting rule (reports/<date>.md, kept to what the coordinator must act on) remain in substance; no rule is dropped, and no rule is added beyond the review's three changes. The old file-by-file check and its <year>-<gauge>.txt naming are gone."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement on the revised page is stated in the original page or notes/review-2026-10.md; nothing is added from general knowledge (no invented check command options, retention rule, escalation or schedule)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

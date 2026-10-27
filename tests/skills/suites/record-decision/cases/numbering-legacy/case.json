@@ -1,0 +1,88 @@
+{
+  "id": "numbering-legacy",
+  "effect": "When records exist in a legacy log and in docs/adr/, the new record takes the next number after the highest across both, the legacy index gets a pointer to it, and the neighbours and the log's entries are left as they are.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "required",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0010-*.md",
+        "records/decisions-log.md",
+        "DECISION-LOG.md",
+        "README.md"
+      ],
+      "required": [
+        "docs/adr/0010-*.md",
+        "DECISION-LOG.md",
+        "records/decisions-log.md"
+      ]
+    },
+    "edits": {
+      "records/decisions-log.md": {
+        "after": "# Decisions log"
+      }
+    }
+  },
+  "semantic": [
+    {
+      "id": "numbered-after-legacy",
+      "criterion": "The new record is ADR-0010: its file is docs/adr/0010-<slug>.md and its title line reads \"# ADR-0010: ...\". A record numbered 0008 (after docs/adr/ alone) or any other number fails."
+    },
+    {
+      "id": "legacy-pointer-added",
+      "criterion": "The legacy log gains a working link to the root index or new ADR, so readers reach ADR-0010 without a duplicate index. A top-of-log pointer that identifies the root index as covering newer records also qualifies; the old filed-records list must not misleadingly claim completeness."
+    },
+    {
+      "id": "log-entries-unchanged",
+      "criterion": "The seven entries D-1 to D-5, D-8 and D-9 in records/decisions-log.md are unchanged in text, order, numbering and shape (the Status, Context, Decision and Consequences lines stay), and the existing pointers to 0006 and 0007 remain; no entry is reformatted, renumbered, moved to docs/adr/ or marked. Any change to an entry fails."
+    },
+    {
+      "id": "record-shape",
+      "criterion": "The new record has an ADR title, Date and explicit Status, and Context, Decision and Consequences sections. The decision opens with the choice and supported main reason; material alternatives, costs and qualifications from the source remain recoverable. Unknown necessary information is identified, never invented. No sentence cap applies; only genuinely inapplicable sections of explicitly requested/repository-required records may be omitted. Specifically preserve: payments above 250 need two signatories because one signatory cannot catch a repeated invoice, with the delay accepted."
+    },
+    {
+      "id": "accepted-explicit",
+      "criterion": "The new record explicitly says Status: Accepted, with the source-supported deciding body or authority where relevant. Neither the record nor reply calls the decision proposed or awaiting a vote. Acceptance is not asserted as proof of implementation."
+    },
+    {
+      "id": "no-migration-commentary",
+      "criterion": "The reply does not propose or describe reformatting or migrating the legacy log or inventory untouched neighbors. It may name the navigation update and concise unresolved metadata gaps that affect use."
+    },
+    {
+      "id": "receipt-number-check",
+      "criterion": "The reply says, in one sentence, that ADR-0010 is provisional and is to be rechecked against main (the target the README names) before integration, or that it is to be rechecked and the target is unknown; it does not narrate how the number was chosen. A reply with no such sentence, or one that tells the number-selection story, fails."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "linked-index",
+      "criterion": "DECISION-LOG.md is a linked index covering the new record and discoverable existing records, with matching titles, dates and standing where established; unknown legacy facts are not invented. Its links resolve and it does not duplicate ADR bodies. Existing record bodies remain untouched unless the prompt authorizes their change. The README establishes that the existing unmarked ADR-0006/0007 are accepted; preserve that standing. Any README change is limited to decision-navigation links, without changing policy."
+    }
+  ]
+}

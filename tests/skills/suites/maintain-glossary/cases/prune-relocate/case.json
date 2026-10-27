@@ -1,0 +1,78 @@
+{
+  "id": "prune-relocate",
+  "effect": "When an entry has grown into behavior detail owned by a contract, the entry is cut to its definition inside its own passage, detail the contract already states is simply removed, and detail stated nowhere else is relocated to the contract or reported as not relocated, never silently dropped.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary",
+      "sourceReads.docs/guidance/glossary-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "GLOSSARY.md",
+        "docs/contracts/loan-rules.md"
+      ],
+      "required": [
+        "GLOSSARY.md"
+      ]
+    },
+    "edits": {
+      "GLOSSARY.md": {
+        "after": "## Overdue",
+        "before": "## Renewal"
+      }
+    }
+  },
+  "semantic": [
+    {
+      "id": "entry-pruned",
+      "criterion": "The Overdue entry is now its definition (a loan that has passed its due date without the tool being checked in) in one sentence, with at most one further sentence or link pointing to the loan rules, and no longer states the daily rates, the 25.00 cap or the repair waiver. An entry that keeps any fee figure, or is rewritten to a different meaning, fails."
+    },
+    {
+      "id": "detail-relocated-or-reported",
+      "criterion": "The 25.00 cap and the repair waiver, which the loan rules do not state, are each either present in docs/contracts/loan-rules.md after the edit with their meaning kept (the fee for one loan is capped at 25.00; the fee is waived when the tool was recalled for repair before its due date) or named in the reply, in one sentence each, as detail removed from the glossary and not yet recorded in the loan rules. A cap or waiver that is in neither place after the edit fails."
+    },
+    {
+      "id": "rates-not-duplicated",
+      "criterion": "The daily rates (1.00 and 2.50) are not added to the loan rules a second time and are not reported as lost; they were already there."
+    },
+    {
+      "id": "loan-rules-otherwise-kept",
+      "criterion": "If docs/contracts/loan-rules.md was edited, its existing sentences (the loan period, the renewal, the day-after rule, the daily rates, the hire deposit) are still there unchanged; only the cap and waiver were added."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the result is, naming GLOSSARY.md."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved entries' contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than the unresolved-meaning or remaining-inconsistency sentences the skill asks for) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

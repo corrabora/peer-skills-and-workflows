@@ -1,0 +1,41 @@
+{
+  "id": "reply-as-artifact",
+  "effect": "When the requested prose is the reply itself, it is delivered without preface, recap or receipt.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": []
+    }
+  },
+  "semantic": [
+    {
+      "id": "no-preface",
+      "criterion": "The reply begins with the notice itself: no sentence introducing it, no heading about the task, and no comment before the notice text."
+    },
+    {
+      "id": "no-recap-or-receipt",
+      "criterion": "The reply ends with the notice itself: nothing after it about what was done, what it covers, where it could be saved, or what else could be done."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every point on the notice comes from notes/spray-booth.md, and the glaze monitor remains the one who changes the filter."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

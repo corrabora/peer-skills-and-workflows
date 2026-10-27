@@ -1,0 +1,40 @@
+{
+  "id": "issue-complete",
+  "effect": "Connects every issue criterion and accepted qualification to a complete multi-commit comparison and matching test evidence.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-pr": "required",
+      "write-for-humans": "required"
+    },
+    "premise": [],
+    "writes": {
+      "allowed": [
+        "draft.md"
+      ],
+      "required": [
+        "draft.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "whole-change",
+      "criterion": "The PR describes CSV serialization and command routing, including the header and escaping behavior; it is consistent with the complete two-commit comparison rather than only its last commit."
+    },
+    {
+      "id": "ac-evidence",
+      "criterion": "The body accounts for AC1, AC2 and AC3 without weakening them, including UTF-8/no BOM, and connects each to the relevant behavior and named passing checks. It identifies the command or retained run and the proposed revision that the evidence covers."
+    },
+    {
+      "id": "evidence-honesty",
+      "criterion": "It attributes results to the retained run, does not claim to have rerun tests, and does not use a generic all-tests-pass statement as the sole support for the ACs."
+    },
+    {
+      "id": "template-links",
+      "criterion": "It uses a descriptive title without a commit prefix, the Change and Acceptance evidence headings, and usable issue/evidence destination links rather than machine-local scratch paths."
+    }
+  ]
+}

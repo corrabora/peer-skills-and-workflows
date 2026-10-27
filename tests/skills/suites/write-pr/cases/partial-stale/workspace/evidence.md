@@ -1,0 +1,2 @@
+Run 80, https://example.test/selectiondesk/actions/runs/80, revision eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee: `node checks/list-acceptance.mjs` passed its cancelled-order check. This was a previous experimental implementation, with no established equivalence to the proposed revision.
+Run 81, https://example.test/selectiondesk/actions/runs/81, revision dddddddddddddddddddddddddddddddddddddddd: `npm run lint` exited 0. It checks syntax/style only. No behavior tests were run for this revision.

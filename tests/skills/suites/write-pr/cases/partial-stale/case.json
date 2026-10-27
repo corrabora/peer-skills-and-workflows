@@ -1,0 +1,40 @@
+{
+  "id": "partial-stale",
+  "effect": "A green but irrelevant check and an older test run cannot make a partial change fulfill the whole issue.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-pr": "required",
+      "write-for-humans": "required"
+    },
+    "premise": [],
+    "writes": {
+      "allowed": [
+        "draft.md"
+      ],
+      "required": [
+        "draft.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "partial",
+      "criterion": "The PR describes filtering cancelled orders, accounts for both ACs, and states that clearing selection on a sort change is not implemented."
+    },
+    {
+      "id": "stale-proof",
+      "criterion": "It distinguishes implemented AC1 behavior from unverified current acceptance, explaining that the older behavior test does not establish the proposed revision and the current lint result proves no acceptance behavior."
+    },
+    {
+      "id": "no-closure",
+      "criterion": "It removes or corrects the stale completion and all-tests-pass claims and does not promise to close issue 23; it preserves the issue criteria instead of weakening them."
+    },
+    {
+      "id": "usable-gap",
+      "criterion": "The reader can identify the remaining implementation work and missing current behavior verification without reconstructing the source files; no evidence is invented or silently relabeled as current."
+    }
+  ]
+}

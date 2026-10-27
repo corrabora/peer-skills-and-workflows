@@ -1,0 +1,62 @@
+{
+  "id": "handoff",
+  "effect": "A handoff carries the current state, the exact work identity, where the evidence is, the unresolved dependency and the next authorized action, and omits the session's abandoned approaches.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "handoffs/1999-digitisation.md"
+      ],
+      "required": [
+        "handoffs/1999-digitisation.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "current-state",
+      "criterion": "handoffs/1999-digitisation.md states that W1 to W4 are transcribed and checked, W5 is waiting on rescans, and W6 to W9 are not started with their scans present from page-037 onward."
+    },
+    {
+      "id": "work-identity",
+      "criterion": "The handoff names the work exactly: the brief briefs/digitise-1999.md, the file archive/1999/readings.csv, the batches B-1999-01 to B-1999-04 and commit a41c9e2 as the last written state. A handoff that gives the state without the batch or commit identity fails."
+    },
+    {
+      "id": "evidence-accessible",
+      "criterion": "The handoff names checks/B-1999-04.txt as where the check output for the last batch is."
+    },
+    {
+      "id": "unresolved-dependency",
+      "criterion": "The handoff names the W5 rescans (page-028 to page-036) as outstanding from the records keeper, promised on 12 October and not yet delivered."
+    },
+    {
+      "id": "next-authorized-action",
+      "criterion": "The next action the handoff gives is to continue transcription and checks under archive/1999/ and checks/ (W6 to W9 while W5 waits, and W5 when its scans arrive), and it says that copying to published/ is not authorised and that the coordinator's early-publication question is for the coordinator and the records keeper. A handoff that directs the next session to publish, to decide the early-publication question, or to wait for W5 before doing anything else fails."
+    },
+    {
+      "id": "abandoned-omitted",
+      "criterion": "The handoff does not mention the text-layer pattern attempt or the ledgerconv script; the two abandoned approaches are absent in every form, including as warnings about what not to try."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the handoff is stated in notes/session-2026-10-14.md; nothing is added from general knowledge (no invented deadline, contact, reason for the jam or page count)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

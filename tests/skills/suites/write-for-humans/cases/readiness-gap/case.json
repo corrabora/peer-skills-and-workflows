@@ -1,0 +1,46 @@
+{
+  "id": "readiness-gap",
+  "effect": "A consequential claim the sources do not support is identified as a gap: the reply does not call the artifact ready and invents no support.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/new-kiln-notice.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "gap-identified",
+      "criterion": "The reply says that the sources do not support the claim that the new kiln halved the cost of a firing: there is one bill, for the whole studio, and nothing to compare it with."
+    },
+    {
+      "id": "not-called-ready",
+      "criterion": "The reply does not call the notice ready, complete or final; any readiness is tied to the unsupported claim being resolved."
+    },
+    {
+      "id": "no-invented-support",
+      "criterion": "Neither the reply nor docs/new-kiln-notice.md, if written, gives a figure, comparison or reason that supports the halving; no earlier bill, per-firing cost or saving is invented."
+    },
+    {
+      "id": "claim-not-asserted",
+      "criterion": "If docs/new-kiln-notice.md is written, it does not state as fact that the cost of a firing has halved."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "When docs/new-kiln-notice.md is written, every statement in it is supported by notes/new-kiln.md or accounts/electricity-2026-09.md, including who did what: the supplier's engineer installed the new kiln and the supplier took the old kiln away (not the engineer); the installation date, the kiln's size, type and position, the first member firings and their outcome, and the programme facts (the steward wrote the bisque and glaze programs into the controller as programs 1 and 2; members do not change them) are as the notes give them; nothing is added from general knowledge. When no notice is written the criterion is not applicable (recorded as such in the judgment, never as a pass)."
+    }
+  ]
+}

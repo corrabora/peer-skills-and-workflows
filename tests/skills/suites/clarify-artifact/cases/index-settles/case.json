@@ -1,0 +1,18 @@
+{
+  "id": "index-settles",
+  "effect": "When a source index leads to a decision that settles reader, purpose and constraints, clarify-artifact asks nothing, returns only those three, writes nothing and loads no writing skill.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": { "clarify-artifact": "required", "write-for-humans": "forbidden", "write-for-agents": "forbidden" },
+    "premise": ["skillReads.clarify-artifact"],
+    "writes": { "allowed": [] }
+  },
+  "semantic": [
+    { "id": "no-question", "criterion": "The reply asks the user nothing." },
+    { "id": "returns-reader-purpose-constraints", "criterion": "The reply names the reader (overnight guests), the purpose (lighting, shutting off, and what to do on smelling gas) and the constraints (one page, fixed beside the heater, no history of the stove replacement, supplier checks the wording), as settled in minutes/2026-09.md item 4." },
+    { "id": "only-the-brief", "criterion": "The reply contains nothing beyond that brief: no draft of the notice, no account of how the answer was found, no restatement of the index." },
+    { "id": "no-invented-facts", "criterion": "The reply states nothing about the notice, the heater or the guests that the minutes do not say." }
+  ]
+}

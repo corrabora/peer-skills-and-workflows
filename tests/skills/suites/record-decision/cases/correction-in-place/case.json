@@ -1,0 +1,72 @@
+{
+  "id": "correction-in-place",
+  "effect": "A wording error in an existing record is corrected in place: the meaning and standing are preserved, nothing outside the body changes, and no new record or amendment notice is written.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0003-rent-letters-from-register.md"
+      ],
+      "required": [
+        "docs/adr/0003-rent-letters-from-register.md"
+      ]
+    },
+    "edits": {
+      "docs/adr/0003-rent-letters-from-register.md": {
+        "after": "# ADR-0003: Rent letters generated from the register"
+      }
+    }
+  },
+  "semantic": [
+    {
+      "id": "corrected-in-place",
+      "criterion": "docs/adr/0003-rent-letters-from-register.md now says the letters are generated each March (or before the rent year starts) and still states the choice (letters generated from the register rather than hand-written) and its reason (wrong amounts in hand-written letters)."
+    },
+    {
+      "id": "standing-and-shape-kept",
+      "criterion": "The corrected record has no standing prefix added, no \"Amended by\", \"Superseded by\", \"Corrected\" or dated note, no new section, and is still a title line and one or two sentences. A correction note, an amendment notice or a second record fails."
+    },
+    {
+      "id": "receipt-no-false-number-check",
+      "criterion": "The reply does not call ADR-0003 provisional, does not ask for its number to be rechecked and does not say a new record was created."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the record is, naming its path under docs/adr/ (docs/adr/0003-rent-letters-from-register.md)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved record's contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than the standing and number-check sentences the skill asks for) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

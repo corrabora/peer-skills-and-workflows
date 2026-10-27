@@ -1,0 +1,58 @@
+{
+  "id": "brief-from-notes",
+  "effect": "A brief written from planning notes states the task, its inputs, the result and the scope, states each obligation once with the completion check assessing rather than restating, omits the discarded approach and the internal name, and lets a fresh recipient recover its allowed actions, dependencies, decision owner and end condition from the brief alone.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-agents": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-agents",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "briefs/digitise-1998.md"
+      ],
+      "required": [
+        "briefs/digitise-1998.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "task-inputs-result-scope",
+      "criterion": "briefs/digitise-1998.md states the task (transcribe the 1998 ledger scans into archive/1998/readings.csv in the archive layout), the inputs by path (scans/ledger-1998/page-001.png to page-064.png, instructions/archive-layout.md, tools/gaugetool-help.txt), the result (archive/1998/readings.csv and archive/1998/transcription-notes.md) and the scope (1998 only; 1997 and 1999 are not part of the job)."
+    },
+    {
+      "id": "obligation-once",
+      "criterion": "Each obligation appears once. The completion condition names what is assessed (every page transcribed, gaugetool check on archive/1998/readings.csv exits 0, transcription-notes.md lists every non-reconciling page and every blank figure) and does not restate the page-by-page transcription, the reconciliation against the page total or the enter-as-read rule as a second description of the task; a brief whose completion section repeats those instructions fails."
+    },
+    {
+      "id": "no-discarded-or-internal",
+      "criterion": "The brief does not mention the name Mole, optical character recognition, or the August attempt on pages 1 to 3; the discarded approach and the diary name are absent in every form."
+    },
+    {
+      "id": "recipient-walk",
+      "criterion": "From the brief alone a reader who has only the inputs can tell what it may do without asking (create and change files under archive/1998/; change nothing under scans/), what it depends on (the 64 scans, the layout page, the help page), who decides an unreadable figure (the records keeper; the assistant enters it blank, lists it and continues) and when it is finished (the completion condition above). A brief that leaves any of the four to be inferred from the notes fails."
+    },
+    {
+      "id": "no-added-approval",
+      "criterion": "The brief adds no approval, confirmation or sign-off step the notes do not contain: the assistant is not told to ask the coordinator or the records keeper before starting, before writing under archive/1998/, or before finishing. The one decision the notes reserve for the records keeper (blank or duplicate card) is kept as the notes give it and is not turned into a stop before the assistant may continue."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement in the brief is stated in notes/digitising-plan.md, instructions/archive-layout.md or tools/gaugetool-help.txt; nothing is added from general knowledge (no invented file formats, deadlines, tools, checks or reporting lines)."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

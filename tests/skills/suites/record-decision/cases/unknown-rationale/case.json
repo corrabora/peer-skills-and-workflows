@@ -1,0 +1,64 @@
+{
+  "id": "unknown-rationale",
+  "effect": "A requested historical record preserves known acceptance while leaving missing rationale, alternatives, costs and date visibly unknown.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0001-*.md",
+        "DECISION-LOG.md"
+      ],
+      "required": [
+        "docs/adr/0001-*.md",
+        "DECISION-LOG.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "known-versus-unknown",
+      "criterion": "Preserves known Accepted standing and the owner confirmation separately from unknown decision date, rationale, alternatives and costs. Does not replace Accepted with Standing unknown merely because the reason is lost."
+    },
+    {
+      "id": "no-invention",
+      "criterion": "No performance, memory, fairness, scheduling or other rationale is invented for 64. No fabricated historical date or approval is supplied; a labeled new recording date is allowed if the unknown historical date remains clear."
+    },
+    {
+      "id": "visible-gaps",
+      "criterion": "Context and Consequences retain concise specific gap statements rather than saying no costs exist or omitting unknown information. Decision states the 64 limit and identifies its reason as unrecorded."
+    },
+    {
+      "id": "index-and-scope",
+      "criterion": "Index points to ADR-0001 with matching standing/date, source inputs are unchanged, and no follow-up question blocks the requested record. The reply carries unresolved rationale and provisional-number qualifications."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    }
+  ]
+}

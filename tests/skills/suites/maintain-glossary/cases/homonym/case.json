@@ -1,0 +1,77 @@
+{
+  "id": "homonym",
+  "effect": "When one word has two settled meanings in two contexts, the glossary gets two entries qualified by context, neither merged into the other, placed alphabetically among the existing entries, with the policy amount left in its contract.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary",
+      "sourceReads.docs/guidance/glossary-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "GLOSSARY.md"
+      ],
+      "required": [
+        "GLOSSARY.md"
+      ]
+    },
+    "edits": {
+      "GLOSSARY.md": {
+        "after": "A member's request for a named tool on a future date, held at the desk until the tool is collected or the date passes.",
+        "before": "## Loan"
+      }
+    }
+  },
+  "semantic": [
+    {
+      "id": "two-qualified-entries",
+      "criterion": "GLOSSARY.md gains two entries for the word deposit, each an H2 of the form \"## Deposit (<context>)\" whose qualifier names its context (hire, loan or power tool for the money; donation or intake for the tool), so that the two headings differ. One entry covering both meanings, or an entry for only one of them, fails. The exact qualifier words are not prescribed."
+    },
+    {
+      "id": "meanings-from-contracts",
+      "criterion": "The hire entry says the deposit is money a member leaves at the desk against a power tool loan, returned when the tool comes back complete and undamaged; the donation entry says the deposit is a tool a donor hands to the desk with an intake slip, assessed at the bench before it enters the catalogue. An entry that swaps or blends the two fails."
+    },
+    {
+      "id": "amount-stays-in-contract",
+      "criterion": "Neither entry states the amount 20.00; the amount stays in the loan rules, which the entry may link."
+    },
+    {
+      "id": "neighbours-unchanged",
+      "criterion": "The Booking, Loan and Overdue entries are unchanged in text, and the glossary is still alphabetical with the new entries between Booking and Loan."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the result is, naming GLOSSARY.md."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved entries' contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than the unresolved-meaning or remaining-inconsistency sentences the skill asks for) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

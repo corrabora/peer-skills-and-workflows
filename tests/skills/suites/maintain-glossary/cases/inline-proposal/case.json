@@ -1,0 +1,62 @@
+{
+  "id": "inline-proposal",
+  "effect": "When entries are requested in the reply and no file, the settled terms are proposed inline in the house shape, the unresolved term is carried as a qualification with its concrete case instead of being defined, and nothing is written.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary",
+      "sourceReads.docs/guidance/glossary-format.md"
+    ],
+    "writes": {
+      "allowed": []
+    }
+  },
+  "semantic": [
+    {
+      "id": "entries-proposed-inline",
+      "criterion": "The reply contains proposed entries for Intake slip and Bench check, each a term heading or term line followed by a one-sentence definition with the note's meaning (the donor's form recording donor, tool and known fault; the bench's assessment of a deposited tool before cataloguing, ending in accept, repair first or reject), presented as proposals for the committee, not as entries already added."
+    },
+    {
+      "id": "unresolved-carried",
+      "criterion": "The reply does not propose an entry or definition for scrap, and says in one sentence that its meaning is unresolved, naming the concrete case (a rejected tool kept for parts is scrapped under the bench's reading, where scrap means kept for parts, and not under the intake rules' reading, where scrap means disposed of). A Scrap entry, or a reply that drops the question, fails."
+    },
+    {
+      "id": "nothing-written",
+      "criterion": "The reply does not say a file was written, saved, created or updated, and offers no file path as the location of the entries."
+    },
+    {
+      "id": "no-invented-facts",
+      "criterion": "The proposed entries state nothing the note does not: no retention period for the slip, no time limit for the check, no outcome other than accept, repair first or reject."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "question-shape",
+      "criterion": "If the reply asks a question, its shape is recorded: whether it is exactly one question, whether it names a concrete case that distinguishes the meanings or the file that is missing, and whether nothing dependent is drafted before it; not applicable when no question is asked. Recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    }
+  ]
+}

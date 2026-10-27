@@ -1,0 +1,82 @@
+{
+  "id": "missing-dependency",
+  "effect": "When a named source is absent, the reply names its path and what it blocks, the record that depends on it is not drafted even as an example, and the independent record is written.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md",
+        "README.md"
+      ],
+      "required": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "missing-path-named",
+      "criterion": "The reply says that minutes/2026-09-finance.md is missing or absent, naming that path."
+    },
+    {
+      "id": "blocked-work-named",
+      "criterion": "The reply says what the absence blocks: the record of the finance meeting's decision (the bank mandate or whatever that meeting decided)."
+    },
+    {
+      "id": "independent-delivered",
+      "criterion": "The lane-boundary decision is written as docs/adr/0004-<slug>.md with explicit Accepted standing, Date and the three sections: fence replacing hedge because of rats and cutting effort, with loss of shelter preserved as the accepted cost. The independent record is indexed."
+    },
+    {
+      "id": "no-dependent-draft",
+      "criterion": "No record, draft, outline, title or example for the finance decision appears in the reply or in any file; the bank-mandate paragraph of the plots minutes is not used to write one. A \"Proposed\" bank-mandate record, or an example of what the finance record would look like, fails."
+    },
+    {
+      "id": "no-invented-facts",
+      "criterion": "The lane-boundary record and the reply state nothing the plots minutes do not: no fence date beyond \"over the winter\", no contractor name, no approval by anyone else. Date identifies the dated minutes as the earliest available durable record and uses their date, rather than the later ADR-writing date. Source-supported authority is allowed."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "question-shape",
+      "criterion": "If the reply asks a question, its shape is recorded: whether it is exactly one question, whether it names the fact or file that is missing, and whether nothing is drafted before it; not applicable when no question is asked. Recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "linked-index",
+      "criterion": "DECISION-LOG.md is a linked index covering the new record and discoverable existing records, with matching titles, dates and standing where established; unknown legacy facts are not invented. Its links resolve and it does not duplicate ADR bodies. Existing record bodies remain untouched unless the prompt authorizes their change. Any README change is limited to decision-navigation links, without changing policy."
+    },
+    {
+      "id": "date-source",
+      "criterion": "Date identifies the source minutes and uses their date as the earliest available dated durable record. A later ADR-writing date does not replace that known source date; historical meanings are not relabeled as implementation or acceptance dates without evidence."
+    }
+  ]
+}

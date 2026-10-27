@@ -1,0 +1,11 @@
+{
+  "comment": "Standing parameters for skill suites. The runner reads these as defaults; every one of them can be overridden on the command line. Change this file when the operator's standing engines, models or effort move.",
+  "standingEngines": ["claude", "codex"],
+  "engines": {
+    "claude": { "model": "claude-opus-5-5", "effort": "high" },
+    "codex": { "model": "gpt-6.1-sol", "effort": "high" }
+  },
+  "replicates": 3,
+  "timeoutSeconds": 900,
+  "transportRetry": { "cooldownSeconds": 60, "maxPerCell": 2 }
+}

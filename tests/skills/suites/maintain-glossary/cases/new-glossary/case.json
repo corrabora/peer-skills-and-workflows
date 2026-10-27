@@ -1,0 +1,71 @@
+{
+  "id": "new-glossary",
+  "effect": "When no glossary exists and the sources settle several terms, the root GLOSSARY.md is created in the house format: a title, one H2 per term in alphabetical order, a one-sentence definition each, no labeled fields, no entries for the ordinary words the sources also use, and no policy values copied in.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary",
+      "sourceReads.docs/guidance/glossary-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "GLOSSARY.md"
+      ],
+      "required": [
+        "GLOSSARY.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "house-shape",
+      "criterion": "GLOSSARY.md is in the house shape: the file begins with the line \"# Glossary\", every entry is an H2 heading naming the term followed by its definition as ordinary prose of one sentence (two at most), the entries are in alphabetical order, and there are no labeled fields (Definition, Source, Status, Used in, Added), no table and no introductory boilerplate beyond at most one sentence naming the context. A table, a labeled-field list, or definitions longer than two sentences fails."
+    },
+    {
+      "id": "three-terms-as-agreed",
+      "criterion": "The entries are Booking, Loan and Overdue, in that order, each stating the meaning the minutes agreed: a booking is a member's request for a named tool on a future date held at the desk until collected or the date passes; a loan runs from issue at the desk until the tool is checked back in; a loan is overdue from the day after its due date until the tool is checked in. An entry that defines a booking as a kind of loan, or overdue by its fee, fails."
+    },
+    {
+      "id": "only-settled-terms",
+      "criterion": "No entry exists for status, the status values (available, on loan, booked, at bench, missing), catalogue, desk sheet, stocktake, shelving, id or any other word the minutes use in its ordinary sense, and no entry carries the fee amounts, the loan period or the deposit from the loan rules. A glossary with such an entry fails."
+    },
+    {
+      "id": "no-invented-facts",
+      "criterion": "The entries and the reply state nothing the minutes and the loan rules do not: no renewal of a booking, no booking fee, no limit on bookings, no grace period, no date."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the result is, naming GLOSSARY.md."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved entries' contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than the unresolved-meaning or remaining-inconsistency sentences the skill asks for) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

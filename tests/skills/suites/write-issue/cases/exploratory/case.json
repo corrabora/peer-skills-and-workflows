@@ -1,0 +1,40 @@
+{
+  "id": "exploratory",
+  "effect": "Defines a bounded investigation without promoting a suspected cause to an accepted fix.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-issue": "required",
+      "write-for-humans": "required"
+    },
+    "premise": [],
+    "writes": {
+      "allowed": [
+        "draft.md"
+      ],
+      "required": [
+        "draft.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "hypothesis",
+      "criterion": "The title and body describe duplicate notifications to investigate; they do not assert retries caused them or require removing retries. Reporter accounts and correlation are not represented as a verified reproduction or cause."
+    },
+    {
+      "id": "bounded-ac",
+      "criterion": "E1\u2013E3 retain their identities and require the complete October 18\u201319 log comparison, a reproduction attempt capped at 20 minutes, and a report containing evidence, limitations and a next-action recommendation. Missing required evidence or incomplete agreed work is not excused as completion."
+    },
+    {
+      "id": "inconclusive",
+      "criterion": "The issue permits an inconclusive finding after the agreed investigation, with remaining uncertainty explained; it does not require a preferred answer or implemented fix."
+    },
+    {
+      "id": "authority",
+      "criterion": "The issue preserves unchanged production configuration and keeps fix selection/implementation outside this investigation; the reply neither claims to have investigated nor asks to reopen the settled scope."
+    }
+  ]
+}

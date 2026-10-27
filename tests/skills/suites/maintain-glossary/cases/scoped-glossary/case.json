@@ -1,0 +1,72 @@
+{
+  "id": "scoped-glossary",
+  "effect": "When a separately owned context settles enough vocabulary of its own, it gets a scoped GLOSSARY.md linked from the root, while a single shared word used two ways is qualified in the root glossary and gets no glossary of its own.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary",
+      "sourceReads.docs/guidance/glossary-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "GLOSSARY.md",
+        "repairs/GLOSSARY.md"
+      ],
+      "required": [
+        "GLOSSARY.md",
+        "repairs/GLOSSARY.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "scoped-glossary-created",
+      "criterion": "repairs/GLOSSARY.md exists with the five bench terms (Bench ticket, Parts bin, Service hold, Strip-down, Write-off) as H2 entries in alphabetical order, each a one-sentence definition with the note's meaning, in the house shape (the file begins with the line \"# Glossary\", every entry is an H2 heading naming the term followed by its definition as ordinary prose of one sentence (two at most), the entries are in alphabetical order, and there are no labeled fields (Definition, Source, Status, Used in, Added), no table and no introductory boilerplate beyond at most one sentence naming the context), and may open with one sentence saying it is the repair bench's vocabulary. The five terms dumped into the root glossary instead fails."
+    },
+    {
+      "id": "root-links-scoped",
+      "criterion": "The root GLOSSARY.md links to repairs/GLOSSARY.md and says whose vocabulary it is (the repair bench), in one sentence or one link line; the five bench terms are not also defined in the root."
+    },
+    {
+      "id": "hold-qualified-not-split",
+      "criterion": "The desk's hold is handled in the root glossary by an entry whose heading or first sentence ties it to the desk or booking context (for example \"## Hold (desk)\" or \"## Hold (booking)\"), so that it cannot be read as the bench's service hold; no new glossary file for the desk is created, and the reply does not propose one. A desk/GLOSSARY.md or a one-term glossary anywhere fails."
+    },
+    {
+      "id": "meanings-as-agreed",
+      "criterion": "Every new entry states the meaning the note gives and nothing more: no repair times, no parts suppliers, no rule about who may authorise a write-off beyond the librarian being told. An entry stating a fact the note does not fails."
+    },
+    {
+      "id": "root-neighbours-unchanged",
+      "criterion": "The Booking, Loan and Overdue entries in the root glossary are unchanged in text and the root stays alphabetical."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the result is, naming both GLOSSARY.md and repairs/GLOSSARY.md."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    }
+  ]
+}

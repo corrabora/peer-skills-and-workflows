@@ -1,0 +1,12 @@
+{
+  "profileId": "profile:corrabora/core-qualities",
+  "version": "1.0.0",
+  "inherits": [],
+  "requires": [],
+  "sources": [
+    {
+      "kind": "QualitySystem",
+      "path": "_manifest/source/quality-system.json"
+    }
+  ]
+}

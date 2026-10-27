@@ -1,0 +1,28 @@
+{
+  "skill": "record-decision",
+  "description": "Behavioral contract of record-decision: preserves decision context, supported reasons, material alternatives and consequences in structured ADRs with explicit dates and standing, a linked root index, scoped substantive amendments and faithful migration. Retains offer selection, unknown/proposed standing, bounded corrections, legacy numbering, dependency boundaries and concise receipts.",
+  "skills": [
+    "record-decision",
+    "write-for-humans",
+    "write-for-agents",
+    "clarify-artifact",
+    "maintain-glossary"
+  ],
+  "cases": [
+    "explicit-accepted",
+    "proposed-standing",
+    "standing-unknown",
+    "offer-qualifies",
+    "offer-none",
+    "replacement-proposed",
+    "correction-in-place",
+    "numbering-legacy",
+    "missing-dependency",
+    "material-cost",
+    "inline-draft",
+    "required-by-repository",
+    "shared-amendment",
+    "migration-preserves-information",
+    "unknown-rationale"
+  ]
+}

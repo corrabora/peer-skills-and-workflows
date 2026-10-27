@@ -1,0 +1,1 @@
+Write the PR title and body in draft.md for the supplied orderdesk comparison. Its associated issue is issue.md. The comparison and retained verification are comparison.md and evidence.md; use those snapshots, not this fixture repository's Git history. Do not rerun tests, modify code, or publish.

@@ -1,0 +1,1 @@
+Write the issue title and body in draft.md reporting the problem in ticket.md, using the engineer's notes in notes.md. Follow the repository's contribution guidance. This is a writing task; do not reproduce the problem, change code or publish anything.

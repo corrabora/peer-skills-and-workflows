@@ -1,0 +1,1 @@
+Rewrite the exploratory issue in issue.md into draft.md, preserving its identity and incorporating the maintainer's notes. We want a useful investigation brief, not an implementation ticket. Do not change issue.md or perform the investigation.

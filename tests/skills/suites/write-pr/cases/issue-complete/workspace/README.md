@@ -1,0 +1,1 @@
+This disposable fixture holds all authoritative source snapshots for a PR-writing task. Read CONTRIBUTING.md. No external fetch is needed; example.test URLs are stable destination references in this fixture.

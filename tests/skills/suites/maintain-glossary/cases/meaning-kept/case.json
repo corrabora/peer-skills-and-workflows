@@ -1,0 +1,49 @@
+{
+  "id": "meaning-kept",
+  "effect": "When a note proposes a new meaning for a term and nothing has accepted it, the existing entry keeps the established meaning, the proposal is left visibly pending in the planning record or the reply, and nothing is written to the glossary.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "observed",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary"
+    ],
+    "writes": {
+      "allowed": [
+        "planning/2026-10-overdue.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "entry-kept",
+      "criterion": "GLOSSARY.md is unchanged: the Overdue entry still reads that a loan is overdue once it has passed its due date, with no grace period, and the reply does not describe the glossary as updated, changed or brought into line with the proposal. A rewritten entry, or a reply that reports an update, fails."
+    },
+    {
+      "id": "proposal-left-pending",
+      "criterion": "The reply says the proposal is not yet accepted and the entry stays as it is until the committee decides, and says where the proposal stands pending (the planning note, as it is or as marked). A reply that treats the three-day grace period as the library's meaning fails."
+    },
+    {
+      "id": "note-preserved",
+      "criterion": "If planning/2026-10-overdue.md was edited, the proposal and its reason are still there in full and only a mark of its pending standing was added; otherwise the note is untouched."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    }
+  ]
+}

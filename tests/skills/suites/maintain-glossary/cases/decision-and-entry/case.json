@@ -1,0 +1,80 @@
+{
+  "id": "decision-and-entry",
+  "effect": "When a recording request accompanies the glossary work, the accepted meaning replaces the old one in the entry, the affected use in scope is reconciled or reported, and whether the decision skill was loaded for the record is observed, never certified.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "maintain-glossary": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/glossary-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.maintain-glossary",
+      "sourceReads.docs/guidance/glossary-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "GLOSSARY.md",
+        "README.md",
+        "docs/adr/0001-*.md",
+        "DECISION-LOG.md"
+      ],
+      "required": [
+        "GLOSSARY.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "member-entry-updated",
+      "criterion": "The Member entry in GLOSSARY.md now names the accepted household borrowing unit: everyone living at one address under one member number. A separate Membership entry may describe its subscription, but no entry retains the superseded person-level Member meaning. The shared one-tool limit may appear in the definition but is not required there; its presence or absence alone neither passes nor fails this criterion."
+    },
+    {
+      "id": "entry-shape",
+      "criterion": "The changed entry is one sentence (two at most) in prose, states no fee amount, no vote, no reason for the decision and no date, and the glossary stays alphabetical with Booking, Loan and Overdue unchanged."
+    },
+    {
+      "id": "affected-use-reconciled",
+      "criterion": "The README sentence saying each member is one person and a membership covers that person alone is either revised to the household meaning or named in the reply, in one sentence, as a remaining inconsistency. A README left contradicting the glossary with no mention in the reply fails."
+    },
+    {
+      "id": "receipt-location",
+      "criterion": "The reply says where the result is, naming GLOSSARY.md."
+    },
+    {
+      "id": "record-decision-read",
+      "criterion": "Whether record-decision was loaded for the decision record, read off inspection.json (skillReads[\"record-decision\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "decision-record-observed",
+      "criterion": "Whether a file matching docs/adr/0001-*.md was written and, if so, whether it states the household membership decision with its reason in the shape the ADR format asks for; record-decision owns that content, so this is recorded, never counts. Observe whether the ADR preserves the shared one-tool limit; in the related-term case, also whether it avoids claiming that Member was redefined.",
+      "observe": true
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved entries' contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than the unresolved-meaning or remaining-inconsistency sentences the skill asks for) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "contractVersion": "quality-contract-v1",
+  "diagnosticRegistryDigest": "sha256:5a2994c1b5cd4adeb6c61c88a222f8cf0516ef8fac8e3d1f460cd521beed6cfd",
+  "inputDigest": "sha256:5acd839e26637e64e029a8c0b3f62f1ca4f75aeeabd9a7bd1ee430348e7c3468",
+  "inputKind": "QualitySystem",
+  "outputs": [
+    {
+      "contentDigest": "sha256:830fafccf120e83c00d516bfab57315f87af1466ceb2187c106c007c213f679d",
+      "mediaType": "Markdown",
+      "path": "README.md"
+    },
+    {
+      "contentDigest": "sha256:9faed32b8505c003be8afcf8f8b2edaec53fccbc0292e93db2e065083e9acc72",
+      "mediaType": "Json",
+      "path": "_manifest/generated/quality-system-catalog.json"
+    },
+    {
+      "contentDigest": "sha256:2aa52c78043116d1d7280706403fc5e803fbd498da4fb58b4c1267d75d4a5dda",
+      "mediaType": "Json",
+      "path": "_manifest/generated/quality-system.json"
+    },
+    {
+      "contentDigest": "sha256:cd7c7a9993673f26218948f3f4ea88b9a2cc700af514733f5df9cd18600c3e2c",
+      "mediaType": "Markdown",
+      "path": "mechanics.semantic-naming.md"
+    },
+    {
+      "contentDigest": "sha256:e43a0604eb95d8fe80eb0cc9a6395ecef9f0428debc2dd74a63b740f3886e5a2",
+      "mediaType": "Markdown",
+      "path": "mechanics.serialization-contract-integrity.md"
+    },
+    {
+      "contentDigest": "sha256:a99663294e13d6da08f7d20001d111ce9d21a8695ed653d6c6c10378a3fe849d",
+      "mediaType": "Markdown",
+      "path": "mechanics.source-organization.md"
+    },
+    {
+      "contentDigest": "sha256:8f5df61720f10ee11fdce5b4a4f7fd6616ce9867d1c2b0e52a7eb13c92f11255",
+      "mediaType": "Markdown",
+      "path": "mechanics.structural-design.md"
+    },
+    {
+      "contentDigest": "sha256:0f3e31f7b48c58ff724a59445328e01c461a577573c9a7e5574f14ad1590df74",
+      "mediaType": "Markdown",
+      "path": "mechanics.verification-testability.md"
+    }
+  ],
+  "schemaBundleDigest": "sha256:fb018bfe01aed5421c99009b28a6aa606ad9e5b2d3a50aba11a62c8bf5ca9d69",
+  "schemaDigests": [
+    {
+      "digest": "sha256:2bfff434c4d567e52f76059549099260f6b0e3f8e8b9ffc7ba6984a1a62002ba",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/binding-pack-source.schema.json"
+    },
+    {
+      "digest": "sha256:7b857569f4f4adac6dbb399c352576337d130de5c6752566d14a15d7823fb1d3",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/conformance-case.schema.json"
+    },
+    {
+      "digest": "sha256:5afd22f6194ad58f749d06c43a3d25a7f488e954724c272c362eef78956e545e",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/conformance-observation.schema.json"
+    },
+    {
+      "digest": "sha256:b6c93d9512a88b957707e9a380b286ee1e16e004439b4706ff91482af4aa4c35",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/conformance-request.schema.json"
+    },
+    {
+      "digest": "sha256:8cac380cd9d757e2dc51f880f26f250fae2af47cc4bcea926e433012dffbc899",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/conformance-result.schema.json"
+    },
+    {
+      "digest": "sha256:0dd5b416e0796d8d72831909af029ce02d220a9cf545225f191c607f3ac3d8be",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/evidence-receipt.schema.json"
+    },
+    {
+      "digest": "sha256:b550e08fbde9649db58ea9696340216fc8842f40292d7a8fb06ab213f4f865c3",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/evidence-rule.schema.json"
+    },
+    {
+      "digest": "sha256:c2db9e629184d33ce5ce5fd69802a00aff1f4ffd9e1525006bd16f4cb4cc4ee4",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/fact-registry.schema.json"
+    },
+    {
+      "digest": "sha256:2c6f60b272388033db7b044d2dcb10366e1f1b63e8324b26a0922d9de4e757d4",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/generation-manifest.schema.json"
+    },
+    {
+      "digest": "sha256:80cea0472acc0a5b4bf315c3b762f02e11d334188ef4f9017f71c9c0a49c011c",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/logical-tree.schema.json"
+    },
+    {
+      "digest": "sha256:c914c0d78880c74bd5cc3e38b52de5b11aab5099f8c1b97fb51c6212fc531dc4",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/mechanics-core-source.schema.json"
+    },
+    {
+      "digest": "sha256:5a2c18050a97079a3d55a79fe7f08d6069369e396a1dd67b7ef3d61425bb1229",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/product-binding-catalog.schema.json"
+    },
+    {
+      "digest": "sha256:ad581f18cdcca929c7d1a62bd6910856116aab0b42e4871fcf3ca95514e64c74",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/product-binding-identity.schema.json"
+    },
+    {
+      "digest": "sha256:44d1d68fed38fc81563f7d318dca89cc341bb0c655b1335606ae8edcbe5e608d",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/product-binding-source.schema.json"
+    },
+    {
+      "digest": "sha256:c08dc7bc311ef820953ffe9860c60c4cafe26a7d04900e681790daa4e9b8449e",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/protocol-error-result.schema.json"
+    },
+    {
+      "digest": "sha256:25dd578d5ed07214d3857eafc9dfcd28eb889732de8db240ad5cde4c05da7372",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-command-request.schema.json"
+    },
+    {
+      "digest": "sha256:8cbdda049cc2545e6b6ccf0082e77495d432b10834c92a8602bfbb62df380330",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-command-result.schema.json"
+    },
+    {
+      "digest": "sha256:7fe32deff5c60afeab13d5947d7911ea2d9f33836ead7d7d9a3b4be9cf49a535",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-diagnostic-registry.schema.json"
+    },
+    {
+      "digest": "sha256:a7e2320ddf79945513b842c35317b6c21aaec9ae849f92e4361ee916aae58767",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-diagnostic.schema.json"
+    },
+    {
+      "digest": "sha256:73f32205b64eec4dd0b245618346c0472e4ce923ab90528b08f4c98baaa84a86",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-primitives.schema.json"
+    },
+    {
+      "digest": "sha256:53fe24f3ac4e0066ceb3069ef2a95b3cdec01cd60d7584b2d399383121e18a44",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-source.schema.json"
+    },
+    {
+      "digest": "sha256:c1dbff1ab640baac4c809f2ee9cca9e58b209728ed098fe8a84bc5ac673c131c",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-system-catalog.schema.json"
+    },
+    {
+      "digest": "sha256:b3660f92e640d2399ff94b135cb6ae49209359d6883349e2b2b6edeb49e71295",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-system-identity.schema.json"
+    },
+    {
+      "digest": "sha256:ec24da91725f6cd49ee08da09096e56cb681759b953c6a060a8e9673a563dc0a",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-system-source.schema.json"
+    },
+    {
+      "digest": "sha256:d901f50244eaa49d5d5544bafc2d1e2b584a7695ce8d2e61d505542fe47d7904",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-universe-catalog.schema.json"
+    },
+    {
+      "digest": "sha256:555397e8ce38cd0b1c9c91086a37d005ce719c9c02c235f6447d96c0fdbcf64d",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-universe-identity.schema.json"
+    },
+    {
+      "digest": "sha256:0cfd435624b8d4f2d9b5cfcb3143fc4fe0c1aba034dd5ec859d44de83071062f",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/quality-universe-snapshot.schema.json"
+    },
+    {
+      "digest": "sha256:9e218d62c98b23c3222447d572f511614a27563509cf7cbe2ccfce964ac4067f",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/resolution-reason.schema.json"
+    },
+    {
+      "digest": "sha256:80057f061dc7a2e0e7345c2b8e57d0e01acabd1eb42fdd76b5d219417b5e1c68",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/resolution-request.schema.json"
+    },
+    {
+      "digest": "sha256:75e3e09548516b99a63ec7e32d7c87773ba1e26a258c578df9b6636a7088ca3d",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/resolution-result.schema.json"
+    },
+    {
+      "digest": "sha256:c2e181c46b21608c494219f4dc13ff910f366f677b4c0511923fec784a209d4e",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/schema-bundle-identity.schema.json"
+    },
+    {
+      "digest": "sha256:c1b3f208cefb71f650a27b08cb896a08e547969736c47f00d3fcd185b44c01d3",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/schema-bundle.schema.json"
+    },
+    {
+      "digest": "sha256:42f9d00de9d8aacad345fcc5bbcf05ea1092267c183b9abe73577a45ffee3a55",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/selection-closure.schema.json"
+    },
+    {
+      "digest": "sha256:f870beec2e9109ee07f5683875658c0742564cf5d9dfa66e88abe38902fb138c",
+      "schemaId": "https://corrabora.example/quality/quality-contract-v1/schemas/selector.schema.json"
+    }
+  ],
+  "schemaVersion": 1
+}

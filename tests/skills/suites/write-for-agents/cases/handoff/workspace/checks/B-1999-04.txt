@@ -1,0 +1,3 @@
+$ gaugetool check archive/1999/readings.csv
+archive/1999/readings.csv: valid (W1 W2 W3 W4, 1999-01-01 to 1999-12-31)
+exit 0

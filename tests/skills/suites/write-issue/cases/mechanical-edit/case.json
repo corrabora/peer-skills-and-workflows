@@ -1,0 +1,27 @@
+{
+  "id": "mechanical-edit",
+  "effect": "A neighboring typo correction stays mechanical and does not select issue-writing work.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-issue": "forbidden"
+    },
+    "premise": [],
+    "writes": {
+      "allowed": [
+        "draft.md"
+      ],
+      "required": [
+        "draft.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "confined",
+      "criterion": "draft.md differs from its original only by replacing notifcations with notifications, and the reply does not propose scope or criteria changes."
+    }
+  ]
+}

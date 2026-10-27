@@ -1,0 +1,109 @@
+{
+  "bindings": [],
+  "contractVersion": "quality-contract-v1",
+  "factRegistries": [],
+  "facts": [],
+  "mechanicsCores": [
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/semantic-naming",
+      "clauseIds": [
+        "mechanics:corrabora/software-engineering/semantic-naming#SN1",
+        "mechanics:corrabora/software-engineering/semantic-naming#SN2",
+        "mechanics:corrabora/software-engineering/semantic-naming#SN3",
+        "mechanics:corrabora/software-engineering/semantic-naming#SN4",
+        "mechanics:corrabora/software-engineering/semantic-naming#SN5",
+        "mechanics:corrabora/software-engineering/semantic-naming#SN6",
+        "mechanics:corrabora/software-engineering/semantic-naming#SN7",
+        "mechanics:corrabora/software-engineering/semantic-naming#SN8"
+      ],
+      "documentPath": "mechanics.semantic-naming.md",
+      "sourceDigest": "sha256:01f5746ecff08f98089aa3b1dc970e087a9345282d68ae7b8c746cf1fdf828a8",
+      "title": "Semantic Naming",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/serialization-contract-integrity",
+      "clauseIds": [
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC1",
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC2",
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC3",
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC4",
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC5",
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC6",
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC7",
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC8",
+        "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC9"
+      ],
+      "documentPath": "mechanics.serialization-contract-integrity.md",
+      "sourceDigest": "sha256:982aa322f1d5fb9201f34d57e8b419146080619e90eb119f8b43dbaf389368ea",
+      "title": "Serialization Contract Integrity",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/source-organization",
+      "clauseIds": [
+        "mechanics:corrabora/software-engineering/source-organization#SO1",
+        "mechanics:corrabora/software-engineering/source-organization#SO10",
+        "mechanics:corrabora/software-engineering/source-organization#SO11",
+        "mechanics:corrabora/software-engineering/source-organization#SO12",
+        "mechanics:corrabora/software-engineering/source-organization#SO13",
+        "mechanics:corrabora/software-engineering/source-organization#SO2",
+        "mechanics:corrabora/software-engineering/source-organization#SO3",
+        "mechanics:corrabora/software-engineering/source-organization#SO4",
+        "mechanics:corrabora/software-engineering/source-organization#SO5",
+        "mechanics:corrabora/software-engineering/source-organization#SO6",
+        "mechanics:corrabora/software-engineering/source-organization#SO7",
+        "mechanics:corrabora/software-engineering/source-organization#SO8",
+        "mechanics:corrabora/software-engineering/source-organization#SO9"
+      ],
+      "documentPath": "mechanics.source-organization.md",
+      "sourceDigest": "sha256:f01d4961669566e27db780827dad258bad1de97bac8e7e006a063c97e66b0bb6",
+      "title": "Source Organization",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/structural-design",
+      "clauseIds": [
+        "mechanics:corrabora/software-engineering/structural-design#SD1",
+        "mechanics:corrabora/software-engineering/structural-design#SD2",
+        "mechanics:corrabora/software-engineering/structural-design#SD3",
+        "mechanics:corrabora/software-engineering/structural-design#SD4",
+        "mechanics:corrabora/software-engineering/structural-design#SD5",
+        "mechanics:corrabora/software-engineering/structural-design#SD6",
+        "mechanics:corrabora/software-engineering/structural-design#SD7",
+        "mechanics:corrabora/software-engineering/structural-design#SD8"
+      ],
+      "documentPath": "mechanics.structural-design.md",
+      "sourceDigest": "sha256:34dc40de49cba1e0b1adedbbf0e8a38a3109da2d0f8a4be12ee1e9a86570c577",
+      "title": "Structural Design",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/verification-testability",
+      "clauseIds": [
+        "mechanics:corrabora/software-engineering/verification-testability#VT1",
+        "mechanics:corrabora/software-engineering/verification-testability#VT2",
+        "mechanics:corrabora/software-engineering/verification-testability#VT3",
+        "mechanics:corrabora/software-engineering/verification-testability#VT4",
+        "mechanics:corrabora/software-engineering/verification-testability#VT5",
+        "mechanics:corrabora/software-engineering/verification-testability#VT6",
+        "mechanics:corrabora/software-engineering/verification-testability#VT7",
+        "mechanics:corrabora/software-engineering/verification-testability#VT8"
+      ],
+      "documentPath": "mechanics.verification-testability.md",
+      "sourceDigest": "sha256:b64f4b495dedbaeb130ef6e4b04e3deb0818d4532d5c961f1a711b665ff1cdfe",
+      "title": "Verification Testability",
+      "version": "1.0.0"
+    }
+  ],
+  "qualities": [],
+  "retirements": [],
+  "schemaVersion": 1,
+  "system": {
+    "contractVersion": "quality-contract-v1",
+    "schemaVersion": 1,
+    "sourceDigest": "sha256:5acd839e26637e64e029a8c0b3f62f1ca4f75aeeabd9a7bd1ee430348e7c3468",
+    "systemId": "system:corrabora/software-engineering",
+    "version": "1.0.0"
+  }
+}

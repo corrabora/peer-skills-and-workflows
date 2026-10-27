@@ -1,0 +1,3 @@
+# Current task
+
+Draft the Atlas FAQ for existing customers. The user corrected the product name from Aurora to Atlas and specified plain English. The introduction is done; the pricing answer is unfinished pending the approved price sheet. The user authorized drafting only, not publication or contacting the pricing team. Existing drafts are in draft.md. Evidence of the copy check is checks.txt. Retain the open question: should legacy plans be mentioned? The user owns that answer. The next permitted action after succession is drafting the remaining non-pricing answers while waiting for the price sheet.

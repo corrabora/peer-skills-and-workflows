@@ -1,0 +1,87 @@
+{
+  "id": "standing-unknown",
+  "effect": "Historical standing remains explicitly unknown in record and index, without inferring acceptance from implementation.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "record-decision": "required"
+    },
+    "sourceReads": {
+      "docs/guidance/adr-format.md": "required",
+      "docs/guidance/record-format-adoption.md": "observed",
+      "docs/writing-guidance.md": "observed"
+    },
+    "premise": [
+      "skillReads.record-decision",
+      "sourceReads.docs/guidance/adr-format.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md",
+        "README.md"
+      ],
+      "required": [
+        "docs/adr/0004-*.md",
+        "DECISION-LOG.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "standing-unknown-status",
+      "criterion": "The record explicitly says Status: Standing unknown; the index does not present it as accepted or proposed."
+    },
+    {
+      "id": "no-inferred-acceptance",
+      "criterion": "Neither the record nor reply presents the script, its age or the treasurer\u2019s contentment as acceptance. Standing remains explicitly unknown, not Accepted or Proposed; missing historical approval and date are not invented."
+    },
+    {
+      "id": "reason-as-given",
+      "criterion": "The record states the rule (arrears under 5.00 are not pursued) and the only reason the sources give (chasing a small amount costs more than it brings in), and adds no other reason or history beyond, at most, that it has applied since 2015."
+    },
+    {
+      "id": "record-shape",
+      "criterion": "The new record has an ADR title, Date and explicit Status, and Context, Decision and Consequences sections. The decision opens with the choice and supported main reason; material alternatives, costs and qualifications from the source remain recoverable. Unknown necessary information is identified, never invented. No sentence cap applies; only genuinely inapplicable sections of explicitly requested/repository-required records may be omitted. Specifically preserve: arrears under 5.00 are not pursued because chasing them costs more than they bring in."
+    },
+    {
+      "id": "receipt-standing",
+      "criterion": "The reply states, in one sentence, that the standing of the rule is unknown because no minute deciding it was found; a reply that omits the standing, or spreads it over several sentences, fails."
+    },
+    {
+      "id": "receipt-number-check",
+      "criterion": "The reply says, in one sentence, that ADR-0004 is provisional and is to be rechecked against main (the target the README names) before integration, or that it is to be rechecked and the target is unknown; it does not narrate how the number was chosen. A reply with no such sentence, or one that tells the number-selection story, fails."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    },
+    {
+      "id": "question-shape",
+      "criterion": "If the reply asks a question, its shape is recorded: whether it is exactly one question, whether it names the fact or file that is missing, and whether nothing is drafted before it; not applicable when no question is asked. Recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "write-for-humans-read",
+      "criterion": "Whether write-for-humans was loaded for the prose, read off inspection.json (skillReads[\"write-for-humans\"].body or .invoked true); recorded for the shared-reference question, never counts.",
+      "observe": true
+    },
+    {
+      "id": "writing-guidance-read",
+      "criterion": "Whether docs/writing-guidance.md was read whole, read off inspection.json (sourceReads[\"docs/writing-guidance.md\"].body true, through the skill-local copy or the canonical path); recorded, never counts.",
+      "observe": true
+    },
+    {
+      "id": "receipt-sentence-counts",
+      "criterion": "Counts of reply sentences that are preface (sentences before the location line), contents (description of the saved record's contents), offers (options or offers of further work), recital (an account of what was read, checked or done, other than the standing and number-check sentences the skill asks for) and assurance (claims about the result's quality or completeness), recorded in the note as preface/contents/offers/recital/assurance; pass when all five are 0. This is the suite's sentence rubric, not the cycle015 item rubric (which counts saved artifacts described, confirmed checks, named omissions, recovered incidents and extra-work offers over whole replies); the two are not interchangeable.",
+      "observe": true
+    },
+    {
+      "id": "linked-index",
+      "criterion": "DECISION-LOG.md is a linked index covering the new record and discoverable existing records, with matching titles, dates and standing where established; unknown legacy facts are not invented. Its links resolve and it does not duplicate ADR bodies. Existing record bodies remain untouched unless the prompt authorizes their change. Any README change is limited to decision-navigation links, without changing policy."
+    }
+  ]
+}

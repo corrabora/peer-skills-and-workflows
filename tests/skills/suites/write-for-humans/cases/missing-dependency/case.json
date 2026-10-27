@@ -1,0 +1,50 @@
+{
+  "id": "missing-dependency",
+  "effect": "When a named source is absent, the reply reports its path, the dependent part waits, and the independent part is still delivered.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/members-guide-2027.md"
+      ],
+      "required": [
+        "docs/members-guide-2027.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "missing-path-reported",
+      "criterion": "The reply reports that schedules/2027-firing-calendar.md is missing, naming that path."
+    },
+    {
+      "id": "dependent-part-paused",
+      "criterion": "No 2027 calendar content is drafted anywhere: the Firing calendar section is absent or says it waits on the missing file, and schedules/2026-firing-calendar.md is not used in its place."
+    },
+    {
+      "id": "independent-part-delivered",
+      "criterion": "The Fees section is written in docs/members-guide-2027.md from minutes/2026-10.md."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every fee and condition in the Fees section matches minutes/2026-10.md; nothing is added from general knowledge."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

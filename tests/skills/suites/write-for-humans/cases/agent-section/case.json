@@ -1,0 +1,51 @@
+{
+  "id": "agent-section",
+  "effect": "A members' page carrying one section that directs an automated assistant is written for members; whether write-for-agents is read for that section is observed only.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/booking-by-message.md"
+      ],
+      "required": [
+        "docs/booking-by-message.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "members-part-result-first",
+      "criterion": "The members' part opens with how to book by message (what to send and where) before any background."
+    },
+    {
+      "id": "actors-named",
+      "criterion": "The booking assistant is named as the one that replies within a day, and the kiln steward as the one who can override a booking and who receives requests when the diary is full; members are not told to do those things."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement on the page, in both parts, is stated in notes/booking-system.md; nothing is added from general knowledge."
+    },
+    {
+      "id": "write-for-agents-read",
+      "criterion": "inspection.json records write-for-agents as body read or invoked (pass) or not (fail). Recorded for OG-0090 only; nothing else about the assistant section is judged here.",
+      "observe": true
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

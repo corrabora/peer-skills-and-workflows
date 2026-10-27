@@ -1,0 +1,25 @@
+{
+  "skill": "write-for-humans",
+  "description": "Behavioral contract of the write-for-humans skill: reads the shared writing guidance, establishes the reader's task and starting knowledge, leads with the result, names the actor the source gives unless the actor is the reader, keeps a necessary exception and a stated uncertainty through editing, invents no approver and attributes a claim about another source to the source that makes it, identifies an unsupported consequential claim instead of calling the artifact ready, reports a missing dependency by path while delivering independent work, delivers reply-as-artifact prose without preface or recap, keeps a narrow edit narrow, and closes a saved artifact with a delivery receipt and nothing else.",
+  "skills": [
+    "write-for-humans",
+    "clarify-artifact",
+    "write-for-agents",
+    "maintain-glossary",
+    "record-decision"
+  ],
+  "cases": [
+    "receipt-clean",
+    "receipt-unresolved",
+    "receipt-selection",
+    "actor-fidelity",
+    "no-invented-authority",
+    "lead-with-result",
+    "terse-complete",
+    "readiness-gap",
+    "missing-dependency",
+    "reply-as-artifact",
+    "narrow-edit",
+    "agent-section"
+  ]
+}

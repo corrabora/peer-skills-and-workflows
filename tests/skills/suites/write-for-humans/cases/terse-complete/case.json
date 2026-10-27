@@ -1,0 +1,50 @@
+{
+  "id": "terse-complete",
+  "effect": "After editing for brevity, a rule's necessary exception and its stated uncertainty survive in complete, connected prose; fragments and dense shorthand fail.",
+  "prompt": "prompt.md",
+  "workspace": "workspace",
+  "deterministic": {
+    "exit": 0,
+    "skillReads": {
+      "write-for-humans": "required"
+    },
+    "sourceReads": {
+      "docs/writing-guidance.md": "required"
+    },
+    "premise": [
+      "skillReads.write-for-humans",
+      "sourceReads.docs/writing-guidance.md"
+    ],
+    "writes": {
+      "allowed": [
+        "docs/bucket-labels.md"
+      ],
+      "required": [
+        "docs/bucket-labels.md"
+      ]
+    }
+  },
+  "semantic": [
+    {
+      "id": "exception-kept",
+      "criterion": "The page keeps the exception, house glazes H1 to H4 need only the code, together with its reason, that their mixing dates are in the house batch book."
+    },
+    {
+      "id": "uncertainty-kept",
+      "criterion": "The page says the lead-release result for the current H3 batch is not back, and that until it is H3 is not used on pieces that will hold food or drink."
+    },
+    {
+      "id": "connected-prose",
+      "criterion": "The rule, the exception and the open test are stated in complete sentences that connect them (what the rule is, what is excepted and why, what is not yet known and what follows from it), not as fragments, abbreviations, bullets of bare keywords or a table of shorthand."
+    },
+    {
+      "id": "artifact-facts",
+      "criterion": "Every statement on the page is stated in notes/labelling-rule.md; nothing is added from general knowledge."
+    },
+    {
+      "id": "no-question",
+      "criterion": "The reply asks the user nothing at all.",
+      "observe": true
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "skill": "clarify-artifact",
+  "description": "Behavioral contract of the clarify-artifact skill: loaded by a writing skill only when the request and the accessible governing sources leave a material choice about reader, purpose or scope unresolved; asks exactly one question when it must; returns reader, purpose and constraints and stops when intent is settled; never loads a writing skill as an exit.",
+  "skills": ["clarify-artifact", "write-for-humans", "write-for-agents", "maintain-glossary", "record-decision"],
+  "cases": [
+    "settled-in-prompt",
+    "settled-in-sources",
+    "purpose-unsettled",
+    "audience-unsettled",
+    "scope-unsettled",
+    "index-settles",
+    "contradiction",
+    "missing-source",
+    "mechanical-edit",
+    "settled-return"
+  ]
+}

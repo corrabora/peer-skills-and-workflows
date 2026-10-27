@@ -1,0 +1,17 @@
+{
+  "skill": "write-pr",
+  "description": "PR writing: complete AC-to-change-to-evidence accounting, partial work and stale proof, exploratory completion, and proportionate descriptions without an associated issue.",
+  "skills": [
+    "write-issue",
+    "write-pr",
+    "write-for-humans",
+    "write-for-agents",
+    "clarify-artifact"
+  ],
+  "cases": [
+    "issue-complete",
+    "partial-stale",
+    "exploratory",
+    "standalone-small"
+  ]
+}

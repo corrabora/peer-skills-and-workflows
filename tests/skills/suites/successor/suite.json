@@ -1,0 +1,25 @@
+{
+  "skill": "successor",
+  "description": "Source-backed succession and scoped stalled-transfer recovery on both engines. Scripted runtime scenarios verify protocol ordering, instruction preservation and authority holds; live successors, UI and hooks remain separate.",
+  "skills": [
+    "successor",
+    "write-for-agents",
+    "write-for-humans",
+    "clarify-artifact"
+  ],
+  "cases": [
+    "handoff-now",
+    "confirmation-missing",
+    "degraded-source",
+    "later-amendment",
+    "scope-boundary",
+    "ambiguous-source",
+    "source-limitation",
+    "confirmation-contradiction",
+    "cancel-exited",
+    "cancel-uncertain",
+    "cancel-authorized",
+    "finish-authorized",
+    "finish-unapproved"
+  ]
+}

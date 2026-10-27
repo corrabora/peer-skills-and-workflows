@@ -1,0 +1,26 @@
+{
+  "skill": "maintain-glossary",
+  "description": "Behavioral contract of the maintain-glossary skill: reads the glossary format before drafting, creates the root glossary only from settled terms in the house format, records nothing when only ordinary words and owner-defined terms are offered, qualifies a word with two settled meanings instead of merging them, leaves an unresolved meaning out of the glossary and names it pending with the concrete distinguishing case, keeps an established meaning until its replacement is accepted, prunes an overgrown entry to its definition while relocating or reporting still-needed detail, links an externally owned definition instead of copying it, gives a separately owned context a scoped glossary while a single shared word is qualified in place, migrates a legacy vocabulary on request preserving meanings, standing and anchors, reports a missing source by path while writing the independent entry and drafting nothing dependent, delivers proposed entries inline with the unresolved term carried, and carries an accepted meaning into the entry while reconciling or reporting affected uses in scope. Separates an accepted decision from a related term whose replacement remains pending, under an explicit edit boundary.",
+  "skills": [
+    "maintain-glossary",
+    "write-for-humans",
+    "write-for-agents",
+    "clarify-artifact",
+    "record-decision"
+  ],
+  "cases": [
+    "new-glossary",
+    "nothing-qualifies",
+    "homonym",
+    "unresolved-meaning",
+    "meaning-kept",
+    "prune-relocate",
+    "reuse-at-owner",
+    "scoped-glossary",
+    "migrate-table",
+    "missing-dependency",
+    "inline-proposal",
+    "decision-and-entry",
+    "related-term-unresolved"
+  ]
+}

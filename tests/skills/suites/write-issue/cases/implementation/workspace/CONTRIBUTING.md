@@ -1,0 +1,1 @@
+Issue bodies must use the headings Problem and Acceptance criteria. Use descriptive titles, without commit prefixes. Order quantities are integers. No issue labeling or publication is part of drafting.

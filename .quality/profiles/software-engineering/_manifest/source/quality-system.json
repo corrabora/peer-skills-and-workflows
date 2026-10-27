@@ -1,0 +1,992 @@
+{
+  "bindings": [],
+  "contractVersion": "quality-contract-v1",
+  "factRegistries": [],
+  "kind": "QualitySystem",
+  "mechanicsCores": [
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/semantic-naming",
+      "clauses": [
+        {
+          "affirmativeObligation": "A declaration names what its value is at the declaration's abstraction level.",
+          "clauseId": "mechanics:corrabora/software-engineering/semantic-naming#SN1",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Compare declaration names with the concepts their values represent."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Read a declaration without its implementation detail and identify the represented concept."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Declarations state what values are"
+        },
+        {
+          "affirmativeObligation": "An operation's name states its full observable effect or the answer it returns.",
+          "clauseId": "mechanics:corrabora/software-engineering/semantic-naming#SN2",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Compare operation names with their returned answers and externally observable effects."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Invoke an operation and compare every observable result with the promise made by its name."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Operations state effects or answers"
+        },
+        {
+          "affirmativeObligation": "One established term denotes one concept, and one concept uses one term within its declared scope.",
+          "clauseId": "mechanics:corrabora/software-engineering/semantic-naming#SN3",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Search the subject vocabulary for aliases and overloaded terms."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Trace one concept across its consumers and verify the term stays stable and unambiguous."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "One term per concept"
+        },
+        {
+          "affirmativeObligation": "When an identifier's meaning changes, the identifier is renamed in the same change.",
+          "clauseId": "mechanics:corrabora/software-engineering/semantic-naming#SN4",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Compare changed meaning with touched declarations, uses, and explanatory material."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Follow a changed concept through every touched use and confirm its name still states its meaning."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Meaning changes rename"
+        },
+        {
+          "affirmativeObligation": "Identifiers use deliberately established domain vocabulary instead of local synonyms.",
+          "clauseId": "mechanics:corrabora/software-engineering/semantic-naming#SN5",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Compare identifiers with the vocabulary source that owns their concepts."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Navigate between two consumers of the same concept and observe the same established term."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Established domain vocabulary"
+        },
+        {
+          "affirmativeObligation": "A name carries enough qualifying context to remain unambiguous across the distance it travels.",
+          "clauseId": "mechanics:corrabora/software-engineering/semantic-naming#SN6",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Inspect names at local and wide-travel boundaries for sufficient distinguishing context."
+          ],
+          "ordinal": 6,
+          "scenarioPrompts": [
+            "Move from a name's declaration to its farthest consumer and verify its meaning remains clear."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Context matches travel distance"
+        },
+        {
+          "affirmativeObligation": "A constant names the semantic role of its value rather than restating the value itself.",
+          "clauseId": "mechanics:corrabora/software-engineering/semantic-naming#SN7",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Explain the role named by each constant independently of its current literal value."
+          ],
+          "ordinal": 7,
+          "scenarioPrompts": [
+            "Change a constant's value without changing its role and verify the name remains accurate."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Constants name roles"
+        },
+        {
+          "affirmativeObligation": "Externally imposed names are preserved only at their translation boundary and are translated to the subject's established vocabulary inside it.",
+          "clauseId": "mechanics:corrabora/software-engineering/semantic-naming#SN8",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Identify each foreign naming owner and the boundary where its terms are translated."
+          ],
+          "ordinal": 8,
+          "scenarioPrompts": [
+            "Carry an externally named value through ingress and verify foreign vocabulary does not spread past translation."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Foreign names stay at translation boundaries"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Portable naming obligations that keep declarations, operations, concepts, context, constants, and foreign vocabulary semantically accurate.",
+      "title": "Semantic Naming",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/serialization-contract-integrity",
+      "clauses": [
+        {
+          "affirmativeObligation": "Each serialized representation has one declared contract owner for its shape, spelling, and evolution.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC1",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Name the owner of each representation and locate the contract that defines it."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Change a serialized boundary and verify one owner determines the resulting representation."
+          ],
+          "selector": {
+            "kind": "Any",
+            "terms": [
+              {
+                "factId": "fact:portable/persisted-state-change",
+                "kind": "Fact",
+                "predicate": "Present"
+              },
+              {
+                "factId": "fact:portable/serialized-boundary-change",
+                "kind": "Fact",
+                "predicate": "Present"
+              }
+            ]
+          },
+          "title": "One representation owner"
+        },
+        {
+          "affirmativeObligation": "Encoding and decoding preserve the represented semantic value across every supported round trip.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC2",
+          "consequenceDimensions": [
+            "data-loss",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Provide representative and boundary round-trip vectors with semantic equality checks."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Encode, decode, and compare representative, empty, maximum, and nested values."
+          ],
+          "selector": {
+            "kind": "Any",
+            "terms": [
+              {
+                "factId": "fact:portable/persisted-state-change",
+                "kind": "Fact",
+                "predicate": "Present"
+              },
+              {
+                "factId": "fact:portable/serialized-boundary-change",
+                "kind": "Fact",
+                "predicate": "Present"
+              }
+            ]
+          },
+          "title": "Semantic encode/decode fidelity"
+        },
+        {
+          "affirmativeObligation": "Where encoded bytes participate in identity, signing, replay, or stable comparison, one canonical encoding exists for each semantic value.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC3",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "privacy-or-security-exposure"
+          ],
+          "evidencePrompts": [
+            "Provide canonical vectors and show that equivalent values cannot produce competing accepted byte sequences."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Encode the same semantic value repeatedly and across independent implementations where byte identity is claimed."
+          ],
+          "selector": {
+            "factId": "fact:portable/selected-format",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Canonical identity bytes"
+        },
+        {
+          "affirmativeObligation": "Machine output emits one canonical spelling for each serialized value.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC4",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "List the canonical emitted spellings and compare outputs from every writer."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Emit each closed value through every supported machine-output path and compare exact spelling."
+          ],
+          "selector": {
+            "factId": "fact:portable/selected-format",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Canonical machine spelling"
+        },
+        {
+          "affirmativeObligation": "Lenient or normalizing human input is confined to ingress and becomes the canonical internal value before further storage, emission, or comparison.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC5",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Show accepted human-input variants, the ingress normalization step, and the one emitted canonical form."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Enter documented human variants and verify all subsequent output uses one canonical value."
+          ],
+          "selector": {
+            "factId": "fact:portable/selected-format",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Human-input normalization at ingress"
+        },
+        {
+          "affirmativeObligation": "A nested representation obeys the contract owner and format rules of each layer independently.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC6",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "data-loss"
+          ],
+          "evidencePrompts": [
+            "Identify every nested layer and show which owner and format governs each one."
+          ],
+          "ordinal": 6,
+          "scenarioPrompts": [
+            "Round-trip a nested value while checking the contract at both the container and nested layers."
+          ],
+          "selector": {
+            "factId": "fact:portable/serialized-boundary-change",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Layer-owned nested representations"
+        },
+        {
+          "affirmativeObligation": "Serialized contracts state explicit schema, version, compatibility, and evolution rules for every supported transition.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC7",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Provide the supported version matrix and the handling rule for additions, removals, and unknown valid data."
+          ],
+          "ordinal": 7,
+          "scenarioPrompts": [
+            "Exercise each promised adjacent-version transition in both directions where supported."
+          ],
+          "selector": {
+            "kind": "Any",
+            "terms": [
+              {
+                "factId": "fact:portable/persisted-state-change",
+                "kind": "Fact",
+                "predicate": "Present"
+              },
+              {
+                "factId": "fact:portable/selected-format",
+                "kind": "Fact",
+                "predicate": "Present"
+              }
+            ]
+          },
+          "title": "Explicit schema evolution"
+        },
+        {
+          "affirmativeObligation": "Decoding is unambiguous and bounded, and malformed, unsupported, or trailing input is refused without partial acceptance.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC8",
+          "consequenceDimensions": [
+            "privacy-or-security-exposure",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Provide negative decoding vectors for malformed, truncated, oversized, ambiguous, unsupported, and trailing input."
+          ],
+          "ordinal": 8,
+          "scenarioPrompts": [
+            "Decode adversarial boundary inputs and verify exact refusal with no partially accepted value."
+          ],
+          "selector": {
+            "factId": "fact:portable/serialized-boundary-change",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Bounded unambiguous decoding"
+        },
+        {
+          "affirmativeObligation": "Foreign contract names and representations remain contained at an explicit translation boundary.",
+          "clauseId": "mechanics:corrabora/software-engineering/serialization-contract-integrity#SC9",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Name the foreign contract owner and show the translation into internal semantic values."
+          ],
+          "ordinal": 9,
+          "scenarioPrompts": [
+            "Carry a foreign representation through translation and verify its spelling does not leak beyond the boundary."
+          ],
+          "selector": {
+            "factId": "fact:portable/serialized-boundary-change",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Foreign contracts stay at translation boundaries"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Portable serialization obligations for ownership, semantic fidelity, canonical bytes and spelling, ingress normalization, nested formats, evolution, bounded decoding, and foreign-contract containment.",
+      "title": "Serialization Contract Integrity",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/source-organization",
+      "clauses": [
+        {
+          "affirmativeObligation": "Every behavior has a predictable semantic owner and can be found from that ownership boundary.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO1",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Navigate from a behavior's concept to its declared source owner without relying on accidental placement."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Ask an unfamiliar maintainer to locate one behavior from its semantic role."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Predictable semantic ownership"
+        },
+        {
+          "affirmativeObligation": "Source units are cohesive around a type or tightly bound concern without prescribing one type per file or requiring files as a language construct.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO2",
+          "consequenceDimensions": [
+            "affected-scope",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Show the concern that binds each source unit and the unrelated concerns it excludes."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Change one concern and observe whether unrelated source units remain untouched."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Cohesive source units"
+        },
+        {
+          "affirmativeObligation": "Public surfaces expose only intentional stable entry points and keep internal organization private.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO3",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Enumerate public entry points and identify the stability promise for each."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Reorganize an internal source unit while a consumer continues through the declared public surface."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Intentional public surfaces"
+        },
+        {
+          "affirmativeObligation": "Unrelated behavior is not accumulated in a generic holding pen whose name does not state a narrow semantic owner.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO4",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Inspect broad containers and show the single narrow concern that justifies each one."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Locate a newly added behavior and verify its container name predicts its ownership."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "No unrelated holding pens"
+        },
+        {
+          "affirmativeObligation": "Proof is located with the behavior it establishes or carries an explicit durable link to that behavior.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO5",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Trace each proof artifact to the exact behavior and claim it establishes."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Change a behavior and locate every proof that must move or be updated with it."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Proof travels with behavior"
+        },
+        {
+          "affirmativeObligation": "An organization change preserves declared public contracts unless the contract change is explicitly versioned and communicated.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO6",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Compare public contracts before and after the organization change and identify any deliberate version transition."
+          ],
+          "ordinal": 6,
+          "scenarioPrompts": [
+            "Exercise an existing consumer against the reorganized source through the unchanged public surface."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Organization preserves contracts"
+        },
+        {
+          "affirmativeObligation": "Implementation comments add information an experienced developer cannot readily recover from clear names, types, and ordinary language idioms. Explain intent, rationale, or a non-obvious algorithm at the level needed to understand or change it. Prefer clearer names or simpler structure when they remove the need for explanation; retain necessary rationale without introducing abstractions solely to eliminate comments.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO7",
+          "consequenceDimensions": [
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Identify the information each disputed comment adds, or show the specific code that already conveys it.",
+            "Before removing a comment, distinguish redundant narration from rationale or a warning needed for a correct change. Comment counts, density, and similarity scores alone establish no defect."
+          ],
+          "ordinal": 7,
+          "scenarioPrompts": [
+            "Read a commented block as a developer fluent in the language but unfamiliar with the local decision."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Informative implementation comments"
+        },
+        {
+          "affirmativeObligation": "Document intentional public interfaces at their declaration or through a discoverable authoritative contract. State purpose, observable behavior, and the caller obligations not evident from the signature, including relevant failure, side-effect, ownership, and concurrency semantics. Describe how to use the interface without requiring callers to read its implementation. Follow the ecosystem's documentation requirements without duplicating signature facts or internal mechanics.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO8",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Identify a caller decision supported by the documentation, or a missing contract fact that forces implementation inspection.",
+            "Check required public documentation against the applicable ecosystem convention; an obvious signature does not waive that requirement."
+          ],
+          "ordinal": 8,
+          "scenarioPrompts": [
+            "Use an interface from its declaration and documentation without inspecting its implementation."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Discoverable interface contracts"
+        },
+        {
+          "affirmativeObligation": "Record constraints needed for a correct change when types, contracts, and clear code do not express them: units, ranges, coordinate systems, invariants, aliasing, ownership, lock order, timing assumptions, and external quirks. Explain the relevant hazard or reason at unsafe operations, intentional rule suppressions, workarounds, and surprising choices. Keep local essentials beside the affected code and link to a durable specification or decision for longer rationale.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO9",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Name the constraint, the change that would violate it, and where a maintainer learns it.",
+            "Check that each disputed safety or workaround comment explains the actual hazard; a label such as \"safe\" or \"required\" is insufficient."
+          ],
+          "ordinal": 9,
+          "scenarioPrompts": [
+            "Attempt the apparently simpler implementation or vary an unstated unit, lifetime, ordering, or external assumption."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Explicit non-obvious constraints"
+        },
+        {
+          "affirmativeObligation": "Keep comments with the declaration or behavior they describe; place shared contracts at their common owner and reference them from dependents. When behavior or assumptions change, verify the affected comments and linked documentation, and correct or remove invalid claims in the same change. Preserve still-valid explanation without requiring a textual edit merely because nearby code changed.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO10",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Compare each affected claim with the resulting behavior and assumptions. Cite the contradiction or missing update for a stale-comment finding.",
+            "Verify that a maintainer can find shared rationale from each dependent location without maintaining competing copies."
+          ],
+          "ordinal": 10,
+          "scenarioPrompts": [
+            "Change or move a behavior and inspect the explanatory claims that cover it, including claims outside the edited lines."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Comments remain true at their owner"
+        },
+        {
+          "affirmativeObligation": "Write comments in concise, direct language. Use imperative phrasing for instructions and present-tense statements for facts; follow the ecosystem's established form for documentation summaries. Lead with the useful point and include only detail needed to use or change the code correctly. Remove filler, signature recitals, and tutorial narration of familiar language features while preserving necessary qualifications.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO11",
+          "consequenceDimensions": [
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Show the removable words or repeated facts and the resulting wording; length alone is not a finding.",
+            "Check that the opening summary states the contract or constraint directly and that any claimed mood violation accounts for the ecosystem convention."
+          ],
+          "ordinal": 11,
+          "scenarioPrompts": [
+            "Shorten an explanation while retaining every fact needed for a correct use or change."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Concise direct prose"
+        },
+        {
+          "affirmativeObligation": "A TODO or FIXME identifies the unresolved work, a responsible owner or durable tracking reference, and an observable condition for resolution. Keep the local consequence understandable without opening the tracker. Remove resolved notes and repair or transfer abandoned ones without losing an unresolved obligation. Identifier syntax and tracking systems follow the consumer's conventions.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO12",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Locate the responsible context and decide from the stated condition whether the note can be resolved.",
+            "Treat formatting patterns as discovery aids; substantiate missing ownership, context, or resolution conditions from the actual note."
+          ],
+          "ordinal": 12,
+          "scenarioPrompts": [
+            "Revisit a deferred-work note after its original author is unavailable or its removal condition becomes true."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Actionable deferred work"
+        },
+        {
+          "affirmativeObligation": "Keep retired implementations and authorship or change chronology in version history or durable decision records. Source comments explain the current contract, constraint, or rationale and do not archive commented-out executable code or narrate the author's edits. Preserve required legal notices, tool directives, and clearly identified examples or counterexamples that serve the current documentation.",
+          "clauseId": "mechanics:corrabora/software-engineering/source-organization#SO13",
+          "consequenceDimensions": [
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "For an archival-comment finding, identify the retired code or edit-history claim and distinguish it from a necessary current rationale, example, directive, or legal notice."
+          ],
+          "ordinal": 13,
+          "scenarioPrompts": [
+            "Read a changed source unit without knowing when, by whom, or in which editing session it was written."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Current source commentary"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Portable source-organization obligations for predictable ownership, cohesive units, intentional public surfaces, colocated proof, contract-preserving reorganization, and concise, accurate code commentary.",
+      "title": "Source Organization",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/structural-design",
+      "clauses": [
+        {
+          "affirmativeObligation": "Each unit has one cohesive responsibility and one primary reason to change.",
+          "clauseId": "mechanics:corrabora/software-engineering/structural-design#SD1",
+          "consequenceDimensions": [
+            "affected-scope",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Show the responsibility boundary and the changes it contains or excludes."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Change one responsibility and observe whether unrelated behavior must change."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Cohesive responsibility"
+        },
+        {
+          "affirmativeObligation": "Expected extensions add a localized alternative without rewriting stable behavior that is outside the extension point.",
+          "clauseId": "mechanics:corrabora/software-engineering/structural-design#SD2",
+          "consequenceDimensions": [
+            "affected-scope",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Identify the extension boundary and compare an added alternative with unchanged stable behavior."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Add a representative supported alternative through the declared extension boundary."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Localized extension"
+        },
+        {
+          "affirmativeObligation": "Where a substitutable contract is declared, every replacement preserves that contract's observable behavior; no substitution mechanism is required where no such contract exists.",
+          "clauseId": "mechanics:corrabora/software-engineering/structural-design#SD3",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Compare the observable contract across each meaningful replacement."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Exercise the same contract scenario against each declared replacement."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Observable-contract preservation"
+        },
+        {
+          "affirmativeObligation": "A consumer depends only on the minimal explicit contract needed for its behavior.",
+          "clauseId": "mechanics:corrabora/software-engineering/structural-design#SD4",
+          "consequenceDimensions": [
+            "affected-scope",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Show which contract members each consumer requires and why no unrelated member is imposed."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Change an unrelated capability and confirm consumers outside it remain unaffected."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Minimal explicit contracts"
+        },
+        {
+          "affirmativeObligation": "Policy depends on stable abstractions, while replaceable implementation details depend toward those abstractions.",
+          "clauseId": "mechanics:corrabora/software-engineering/structural-design#SD5",
+          "consequenceDimensions": [
+            "affected-scope",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Trace dependency direction from policy through each abstraction to its replaceable realization."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Replace an implementation detail without changing the policy that consumes its contract."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Policy-directed dependency flow"
+        },
+        {
+          "affirmativeObligation": "Composition choices and effect boundaries are explicit and kept outside invariant-bearing policy.",
+          "clauseId": "mechanics:corrabora/software-engineering/structural-design#SD6",
+          "consequenceDimensions": [
+            "affected-scope",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Locate composition decisions and identify every boundary that performs an external effect."
+          ],
+          "ordinal": 6,
+          "scenarioPrompts": [
+            "Run policy with a controlled effect provider and observe the same policy decision."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Explicit composition and effects"
+        },
+        {
+          "affirmativeObligation": "Mutable state has one declared owner, and ordering or concurrency behavior is explicit wherever concurrent access exists.",
+          "clauseId": "mechanics:corrabora/software-engineering/structural-design#SD7",
+          "consequenceDimensions": [
+            "data-loss",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Name the state owner and show the ordering, conflict, or synchronization contract where concurrent access exists."
+          ],
+          "ordinal": 7,
+          "scenarioPrompts": [
+            "Exercise competing state transitions when concurrency is part of the subject."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Owned state and concurrency"
+        },
+        {
+          "affirmativeObligation": "Every intentional boundary or structural deviation records its scope, rationale, and consequence.",
+          "clauseId": "mechanics:corrabora/software-engineering/structural-design#SD8",
+          "consequenceDimensions": [
+            "affected-scope",
+            "safe-workaround-availability"
+          ],
+          "evidencePrompts": [
+            "Provide the decision evidence for each intentional deviation and identify the boundary it affects."
+          ],
+          "ordinal": 8,
+          "scenarioPrompts": [
+            "Review an exceptional structure and recover its declared rationale and bounded scope."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Intentional boundary evidence"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Portable structural obligations for cohesive responsibilities, stable extension and substitution, explicit dependency direction, composition, effects, state ownership, and documented deviations.",
+      "title": "Structural Design",
+      "version": "1.0.0"
+    },
+    {
+      "authorityId": "mechanics:corrabora/software-engineering/verification-testability",
+      "clauses": [
+        {
+          "affirmativeObligation": "Every substitutable or effectful boundary has a stable name and a controllable seam.",
+          "clauseId": "mechanics:corrabora/software-engineering/verification-testability#VT1",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Name each seam and show the observable boundary it controls."
+          ],
+          "ordinal": 1,
+          "scenarioPrompts": [
+            "Replace or control each effectful boundary while exercising the behavior that consumes it."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Named controllable seams"
+        },
+        {
+          "affirmativeObligation": "Where substitution is claimed, the seam is exercised by more than one meaningful independently implemented substitute; no interface is required without that claim, and a canned mock or second label over one implementation is not independent.",
+          "clauseId": "mechanics:corrabora/software-engineering/verification-testability#VT2",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Identify independently implemented substitutes and the scenario that would expose a substitution defect."
+          ],
+          "ordinal": 2,
+          "scenarioPrompts": [
+            "Run the same observable contract scenario through each meaningful substitute."
+          ],
+          "selector": {
+            "factId": "fact:portable/implementation-language-declared",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Meaningful independent substitutes"
+        },
+        {
+          "affirmativeObligation": "Each proof lives at the collaborator tier that owns the behavior and the real collaborators it exercises, without prescribing a repository-specific tier roster.",
+          "clauseId": "mechanics:corrabora/software-engineering/verification-testability#VT3",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Name the behavior owner, the real collaborators in the proof, and why that proof boundary is sufficient."
+          ],
+          "ordinal": 3,
+          "scenarioPrompts": [
+            "Exercise the claim at the lowest boundary that still includes every collaborator the claim depends on."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Proof at the owning collaborator tier"
+        },
+        {
+          "affirmativeObligation": "Failures and nondeterminism that affect a behavioral claim are inducible, observable, and controllable.",
+          "clauseId": "mechanics:corrabora/software-engineering/verification-testability#VT4",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Show the control used to induce each relevant failure or nondeterministic outcome and the observation that distinguishes it."
+          ],
+          "ordinal": 4,
+          "scenarioPrompts": [
+            "Induce each relevant failure and scheduling or time variation without relying on chance."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Controlled failure and nondeterminism"
+        },
+        {
+          "affirmativeObligation": "Verification covers happy, failure, boundary, seam, and concurrency scenarios whenever each class is relevant to the claim.",
+          "clauseId": "mechanics:corrabora/software-engineering/verification-testability#VT5",
+          "consequenceDimensions": [
+            "affected-scope",
+            "duration-and-detectability"
+          ],
+          "evidencePrompts": [
+            "Map every behavioral claim to its relevant scenario classes and name any class whose premise is absent."
+          ],
+          "ordinal": 5,
+          "scenarioPrompts": [
+            "Execute one representative scenario from every class relevant to the behavior."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Complete scenario classes"
+        },
+        {
+          "affirmativeObligation": "A claim spanning substitutes has wired conformance or parity scenarios and independent implementation proof; generic scenario wiring remains distinct from a product-specific implementation's claim proof.",
+          "clauseId": "mechanics:corrabora/software-engineering/verification-testability#VT6",
+          "consequenceDimensions": [
+            "contract-or-boundary-violation",
+            "affected-scope"
+          ],
+          "evidencePrompts": [
+            "Show the shared scenario set, each independent implementation entry point, and the separate proof for implementation-specific claims."
+          ],
+          "ordinal": 6,
+          "scenarioPrompts": [
+            "Run the same conformance scenario against each independent implementation and inject a defective substitute."
+          ],
+          "selector": {
+            "factId": "fact:portable/implementation-language-declared",
+            "kind": "Fact",
+            "predicate": "Present"
+          },
+          "title": "Cross-substitute conformance"
+        },
+        {
+          "affirmativeObligation": "Every behavioral claim traces to factual verification and acceptance gates in both directions without depending on workflow phase, hook, role, or lifecycle vocabulary.",
+          "clauseId": "mechanics:corrabora/software-engineering/verification-testability#VT7",
+          "consequenceDimensions": [
+            "duration-and-detectability",
+            "contract-or-boundary-violation"
+          ],
+          "evidencePrompts": [
+            "Provide a bidirectional claim-to-gate map and the factual result for each gate."
+          ],
+          "ordinal": 7,
+          "scenarioPrompts": [
+            "Select a claim and a gate independently and trace each to its reciprocal evidence relationship."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Bidirectional claim-to-gate trace"
+        },
+        {
+          "affirmativeObligation": "An established behavioral baseline is retained unless an intentional change is named and the changed behavior is re-proven.",
+          "clauseId": "mechanics:corrabora/software-engineering/verification-testability#VT8",
+          "consequenceDimensions": [
+            "affected-scope",
+            "reversibility-and-recovery-cost"
+          ],
+          "evidencePrompts": [
+            "Compare the prior behavioral baseline with current results and identify every intentional difference and its new proof."
+          ],
+          "ordinal": 8,
+          "scenarioPrompts": [
+            "Run retained regression scenarios and one deliberately changed scenario against the current subject."
+          ],
+          "selector": {
+            "kind": "Always"
+          },
+          "title": "Preserved behavioral baseline"
+        }
+      ],
+      "contractVersion": "quality-contract-v1",
+      "schemaVersion": 1,
+      "summary": "Portable proof obligations for named seams, meaningful substitutes, owning-tier evidence, controlled failures, scenario coverage, conformance, claim traceability, and retained baselines.",
+      "title": "Verification Testability",
+      "version": "1.0.0"
+    }
+  ],
+  "qualities": [],
+  "retirements": [],
+  "schemaVersion": 1,
+  "systemId": "system:corrabora/software-engineering",
+  "systemVersion": "1.0.0"
+}
