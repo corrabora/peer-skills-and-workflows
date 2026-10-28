@@ -32,8 +32,11 @@ If Codex reports changed plugin contents, start a new session and review the
 hooks again.
 
 To try the plugin beside a linked installation, set an absolute, disposable
-`CODEX_HOME` or `CLAUDE_CONFIG_DIR` for those commands and sessions, and sign in
-to that profile before running models. Your linked setup stays untouched.
+`CODEX_HOME` or `CLAUDE_CONFIG_DIR` for those commands and sessions. On macOS,
+leave `HOME` unchanged so Claude can access the login Keychain. Sign in to that
+profile before running models. Your linked setup stays untouched. Before
+deleting a Claude test profile, run `claude auth logout` with the same
+`CLAUDE_CONFIG_DIR`.
 
 ### Update
 
@@ -77,12 +80,12 @@ installation automatically.
 Plugin installation, update, disable and removal were exercised on macOS with
 Codex CLI 0.165.0-alpha.1.2 and Claude Code 2.1.309, through each client's Git
 marketplace commands against a local repository. Installation was also verified
-from the public GitHub repository over anonymous HTTPS. Unverified:
+from the public GitHub repository over anonymous HTTPS. Both clients loaded a
+packaged writing skill and its reference from the registered installation and
+ran the three successor hooks. Unverified:
 private-repository authentication, Windows and Linux, the Codex and Claude desktop
-apps, other client versions, Claude model sessions in a profile with the
-marketplace installation enabled (sessions loaded the installed copy with
-`--plugin-dir`), and Codex trust through the `/hooks` screen (tested through
-its configuration record).
+apps, other client versions, and Codex trust through the `/hooks` screen (tested
+through its configuration record).
 
 ## Linked checkout
 

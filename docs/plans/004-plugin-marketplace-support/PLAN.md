@@ -66,8 +66,8 @@ not successful installation of this package.
 
 The tested targets are Codex CLI `0.165.0-alpha.1.2` and Claude Code `2.1.309`
 on macOS 26.7.1, with Node.js 24.18.0. Codex desktop, other client versions,
-and native Windows/Linux execution remain unverified, as do private Git
-authentication and Claude model sessions through a marketplace-enabled profile.
+and native Windows/Linux execution remain unverified, as does private Git
+authentication.
 Platform path mappings have deterministic tests; those tests do not establish
 native host execution.
 
@@ -162,8 +162,9 @@ Keep retained state independent of host plugin-data cleanup and uninstall behavi
 
 ## Phase 0: prove the installation contract
 
-Use disposable homes, target repositories and a Git-backed marketplace fixture
-containing this package. Keep probe files and evidence outside tracked
+Use isolated engine profiles following the [installation guide](../../installation.md#plugin),
+disposable target repositories and a Git-backed marketplace fixture containing
+this package. Keep probe files and evidence outside tracked
 deliverables. Consult the installed clients' authoritative help and the official
 references above for current commands; do not change personal plugin settings
 or interrupt unrelated ongoing work to conduct these tests.
