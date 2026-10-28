@@ -84,10 +84,13 @@ function fixture() {
     fs.writeFileSync(file, '# Fixture reference\n');
   }
   generateWritingReferences(root);
-  // Skill validation has its own tests. Here its small stand-in lets us
-  // exercise the real gate, reference checker and test runner without copying
-  // this repository's suite recursively into every nested hook invocation.
+  // Skill validation and the vendor and plugin package checks have their own
+  // tests. Here small stand-ins let us exercise the real gate, reference
+  // checker and test runner without copying this repository's payload and suite
+  // into every nested hook invocation.
   fs.writeFileSync(path.join(root, 'tools/validate.mjs'), "console.log('fixture metadata ran');\n");
+  fs.writeFileSync(path.join(root, 'tools/lib/vendor.mjs'), 'export const checkVendor = () => true;\n');
+  fs.writeFileSync(path.join(root, 'tools/lib/plugin-package.mjs'), 'export const checkPluginPackage = () => true;\n');
   fs.mkdirSync(path.join(root, 'tools/test'));
   fs.writeFileSync(path.join(root, 'tools/test/suite.test.mjs'), "import test from 'node:test';\ntest('fixture suite ran', () => {});\n");
   git(root, ['init', '-q']);

@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { canonicalLocation, hostContext, isWithin, machineBase } from './paths.mjs';
+import { canonicalLocation, hostContext, isWithin, LOCAL_DIRECTORY, localDirectory, machineBase } from './paths.mjs';
 import { assessSuccession, establishLog, locateLog, mergeObservation, observationFor, readCounts, readSessionLog, writeCounts } from './succession.mjs';
 import { captureSources, freezeSources, reconcileSource, verifyFrozenSources, verifyCurrentSource } from './successor-instructions.mjs';
 import { cancelledTitle, retainRecovery, verifyRecoveryRetry } from './successor-recovery.mjs';
@@ -130,11 +130,11 @@ export function currentSession({ engine, session, log, host = hostContext() }) {
   return { engine, session, log };
 }
 function localStorage(workspace) {
-  const local = path.join(workspace, '.agent-workflow');
+  const local = localDirectory(workspace);
   if (!fs.existsSync(local)) return false;
   assert(fs.lstatSync(local).isDirectory() && !fs.lstatSync(local).isSymbolicLink(), `${local} is not a plain directory`);
-  const tracked = spawnSync('git', ['-C', workspace, 'ls-files', '--', '.agent-workflow'], { encoding: 'utf8' });
-  const ignored = spawnSync('git', ['-C', workspace, 'check-ignore', '-q', '--', '.agent-workflow/']);
+  const tracked = spawnSync('git', ['-C', workspace, 'ls-files', '--', LOCAL_DIRECTORY], { encoding: 'utf8' });
+  const ignored = spawnSync('git', ['-C', workspace, 'check-ignore', '-q', '--', `${LOCAL_DIRECTORY}/`]);
   assert(tracked.status === 0 && tracked.stdout.trim() === '' && ignored.status === 0, `${local} must be wholly untracked and the directory itself ignored`);
   return true;
 }
@@ -161,12 +161,12 @@ export function initialize({ caller, workspace, task, storage = 'auto', runRoot 
   let root;
   if (runRoot) {
     runRoot = fs.realpathSync(runRoot);
-    assert(localStorage(workspace) && isWithin(path.join(workspace, '.agent-workflow', 'runs'), runRoot), 'Run records must be inside this checkout’s established local runs directory');
+    assert(localStorage(workspace) && isWithin(path.join(localDirectory(workspace), 'runs'), runRoot), 'Run records must be inside this checkout’s established local runs directory');
     root = path.join(runRoot, 'control', 'successor');
   } else {
     const local = storage !== 'external' && localStorage(workspace);
     assert(storage !== 'local' || local, 'local storage is not established; use external storage or establish the ignored directory first');
-    root = local ? path.join(workspace, '.agent-workflow', 'successions', id) : path.join(machineBase(host), 'successions', id);
+    root = local ? path.join(localDirectory(workspace), 'successions', id) : path.join(machineBase(host), 'successions', id);
   }
   assert(canonicalLocation(root) === root, `succession root crosses a symlink: ${root}`);
   assert(!fs.existsSync(controlFile(root)), `succession state already exists at ${root}; read it instead of reinitializing`);

@@ -1,9 +1,97 @@
 # Installation
 
+Install the package as the `peer` plugin from Git, or link a checkout's skills
+for development and writing-only use. Use one mode per engine: a linked
+`workflow` set and the plugin together run each successor event twice (see
+[Overlap](#overlap)).
+
+Both modes need Node.js 22 or later. The binding tools require Git 2.31 or
+later; peer work, succession and supervised workers require Orca and its
+installed `orchestration` skill. The YAML and Ajv dependencies ship in
+`tools/vendor/`, so neither mode runs npm or downloads anything at run time.
+
+## Plugin
+
+The repository is its own marketplace, `peer`, holding one plugin, `peer`:
+
+```sh
+claude plugin marketplace add https://github.com/corrabora/peer-skills-and-workflows.git
+claude plugin install peer@peer
+
+codex plugin marketplace add https://github.com/corrabora/peer-skills-and-workflows.git
+codex plugin add peer@peer
+```
+
+Start a new session after installing or updating. Select a packaged skill as
+`/peer:<skill>` in Claude Code or `$peer:<skill>` in Codex; a matching request
+also selects it automatically. For Codex, add the
+[session instructions](../README.md#codex-environment) yourself, then review the
+plugin's three successor hooks in `/hooks`; installation never records hook
+trust. Without an enabled succession chain, the hooks return nothing.
+If Codex reports changed plugin contents, start a new session and review the
+hooks again.
+
+To try the plugin beside a linked installation, set an absolute, disposable
+`CODEX_HOME` or `CLAUDE_CONFIG_DIR` for those commands and sessions. On macOS,
+leave `HOME` unchanged so Claude can access the login Keychain. Sign in to that
+profile before running models. Your linked setup stays untouched. Before
+deleting a Claude test profile, run `claude auth logout` with the same
+`CLAUDE_CONFIG_DIR`.
+
+### Update
+
+| Step | Claude Code | Codex |
+| --- | --- | --- |
+| Refresh the marketplace | `claude plugin marketplace update peer` | `codex plugin marketplace upgrade peer` |
+| Refresh the installed plugin | `claude plugin update peer@peer` | done by the marketplace upgrade |
+| Show the installed revision | `version` and `installPath` in `claude plugin list --json` | `git -C "${CODEX_HOME:-$HOME/.codex}/plugins/cache/peer/peer/local" rev-parse HEAD` |
+
+Claude Code names each installed copy after the commit's first 12 hex digits;
+Codex replaces its `local` copy in place. Start a new session after updating;
+hot reload is unverified.
+When an update changes the instructions, tools or plugin metadata, a bound
+checkout reports its workflow source as changed: run `bind-agent-workflow` to
+refresh the binding. Recorded paths of active succession chains are kept for
+recovery, not rewritten.
+
+### Disable and remove
+
+| Action | Claude Code | Codex |
+| --- | --- | --- |
+| Disable or enable | `claude plugin disable peer@peer`, `claude plugin enable peer@peer` | set `enabled = false` or `true` under `[plugins."peer@peer"]` in `~/.codex/config.toml` (or `$CODEX_HOME`) |
+| Remove the plugin | `claude plugin uninstall peer@peer` | `codex plugin remove peer@peer` |
+| Remove the marketplace | `claude plugin marketplace remove peer --scope user` | `codex plugin marketplace remove peer` |
+
+Removal leaves bindings, run records, scratch and succession state in the
+[state locations](#state-locations).
+
+### Overlap
+
+A linked `workflow` set installs user hooks; the plugin declares the same three
+hooks, and both run. Writing-only links install no hooks. Linked skills also
+appear unqualified beside the `peer:` ones. Check `/hooks` in each engine for
+successor commands from both sources. To keep the plugin, run
+`node tools/install.mjs unlink` from the linked checkout, which removes only its
+own links and hooks; otherwise remove the plugin. Nothing removes either
+installation automatically.
+
+### Tested compatibility
+
+Plugin installation, update, disable and removal were exercised on macOS with
+Codex CLI 0.165.0-alpha.1.2 and Claude Code 2.1.309, through each client's Git
+marketplace commands against a local repository. Installation was also verified
+from the public GitHub repository over anonymous HTTPS. Both clients loaded a
+packaged writing skill and its reference from the registered installation and
+ran the three successor hooks. Unverified:
+private-repository authentication, Windows and Linux, the Codex and Claude desktop
+apps, other client versions, and Codex trust through the `/hooks` screen (tested
+through its configuration record).
+
+## Linked checkout
+
 Run the installer from the checkout you want both engines to use:
 
 ```sh
-npm ci
 node tools/install.mjs link [<set>]
 node tools/install.mjs check [<set>]
 node tools/install.mjs unlink [<set>]
@@ -13,16 +101,11 @@ node tools/install.mjs unlink [<set>]
 `workflow` installs binding, the peer skills, successor and the four plan roles,
 plus the writing set they depend on. Omit the set to select both.
 `unlink workflow` leaves writing installed; `unlink writing` removes it even
-when workflow links still depend on it.
+when workflow links still depend on it. The tools load their dependencies from
+this checkout's `tools/vendor/`, never from the target repository; a missing or
+damaged payload is reported by name.
 
-Requires Node.js 22 or later and npm. The binding tools require Git 2.31 or
-later; peer work, succession and supervised workers require Orca. The tools load
-pinned dependencies from this checkout, not the target repository. Rerun `npm ci`
-when `package-lock.json` changes. Tools never download missing dependencies
-implicitly; YAML operations name `yaml`, and binding operations name `ajv`, when
-installation is missing.
-
-## Skill links
+### Skill links
 
 | Engine | Personal skill directory |
 | --- | --- |
@@ -55,7 +138,7 @@ and required shared files must be readable regular files. Without a set it
 checks both sets, so a writing-only installation should use `check writing`.
 A successful check does not establish what a running engine session can read.
 
-## Engine access
+### Engine access
 
 Confirm that the engine can locate and read the linked skill's required files
 from the target repository. `check` validates filesystem access, not the running
@@ -73,7 +156,7 @@ For Codex, also apply the printed session instructions as described in
 [Codex environment](../README.md#codex-environment). Installation does not edit
 Codex configuration.
 
-## Successor support hooks
+### Successor support hooks
 
 Workflow installation merges successor's `SessionStart`, `UserPromptSubmit`
 and `Stop` commands into `~/.codex/hooks.json` and `~/.claude/settings.json`,
@@ -83,14 +166,15 @@ Claude's settings and skill directories. User hooks apply across repositories;
 sessions without an enabled succession chain receive no instructions from them.
 Writing-only operations do not install, check or remove these hooks.
 
-The installer records entries it adds in `.agent-workflow-successor-hooks.json`
-beside each settings file. Keep these receipts so `unlink` can remove only owned
-entries. Pre-existing matching hooks are reused and remain after uninstall.
-Rerunning `link` repairs missing owned entries; after a move it updates owned
-hooks when the former skill target is missing. Working installations from
-another checkout, changed definitions, malformed settings and overlapping locks
-are reported and preserved. If hook removal fails, skill links remain for
-reconciliation. Empty settings files may remain after removal.
+The installer records entries it adds in
+`.peer-skills-and-workflows-successor-hooks.json` beside each settings file.
+Keep these receipts so `unlink` can remove only owned entries. Pre-existing
+matching hooks are reused and remain after uninstall. Rerunning `link` repairs
+missing owned entries; after a move it updates owned hooks when the former skill
+target is missing. Working installations from another checkout, changed
+definitions, malformed settings and overlapping locks are reported and
+preserved. If hook removal fails, skill links remain for reconciliation. Empty
+settings files may remain after removal.
 
 Settings updates are atomic and check the before-state; installer locks do not
 serialize outside editors. `check` verifies definitions, not runtime trust or
@@ -99,6 +183,34 @@ verify live delivery. Project-local hook copies may run alongside user hooks;
 review obsolete copies before enabling both.
 The [successor mechanics](../skills/successor/references/mechanics.md#hook-reminders)
 owns hook verification and recovery. The installer never changes trust records.
+
+## State locations
+
+Both modes keep state outside the installed package:
+
+| State | Location |
+| --- | --- |
+| Binding, configuration and run records of a checkout | `<checkout>/.peer-skills-and-workflows/` |
+| Machine-local scratch and external records, macOS | `~/Library/Application Support/PeerSkillsAndWorkflows/` |
+| Same, Windows | `%LOCALAPPDATA%\PeerSkillsAndWorkflows\` |
+| Same, Linux and others | `$XDG_STATE_HOME/peer-skills-and-workflows/`, else `~/.local/state/peer-skills-and-workflows/` |
+| Linked hooks' ownership receipt | `.peer-skills-and-workflows-successor-hooks.json` beside each engine's settings |
+
+The binding keeps the checkout directory out of Git through the local exclude
+file; see [Binding](../workflow/BINDING.md) and [Records](../workflow/RECORDS.md).
+
+## Vendored dependencies
+
+`tools/vendor/package-lock.json` pins the runtime dependencies and records
+their npm source and integrity; `tools/vendor/manifest.json` records the hash
+of each input and installed file. `node tools/verify.mjs` checks the payload
+offline. After changing the vendor lockfile, regenerate the payload with npm and
+registry access, or a populated npm cache passed with `--cache`:
+
+```sh
+node tools/generate-vendor.mjs            # replace node_modules and manifest.json
+node tools/generate-vendor.mjs --check    # verify, and compare a fresh regeneration
+```
 
 ## Git commit hook
 

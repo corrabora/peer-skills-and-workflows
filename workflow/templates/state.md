@@ -2,7 +2,7 @@
 
 - Run: `<run id>`; runtime `<id>`; PC `<terminal handle>`.
 - Workflow source: `<absolute path>` at `<revision or content note>`, as loaded.
-- Target: `<repository path>`; local binding `<checkout>/.agent-workflow/binding.md`, sources checked `<when, result>`; current snapshot [control/binding/<NNN>](<run-root-relative path>); plan `<path>`; phase `<n>`.
+- Target: `<repository path>`; local binding `<checkout>/.peer-skills-and-workflows/binding.md`, sources checked `<when, result>`; current snapshot [control/binding/<NNN>](<run-root-relative path>); plan `<path>`; phase `<n>`.
 - Run root: `<absolute path>`; scratch root `<absolute path, outside the checkout>`.
 - Stage: <preparing | reviewing | adjudicating | at operator gate | correcting | landing>.
 - Cycle `<NNN>`; candidate base `<commit or empty tree>`, tree `<tree>`; round `<r>`; wave `<NNN>-round-<r>`.

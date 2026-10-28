@@ -48,7 +48,7 @@ editing rights. Durable glossary and decision work follows
 ## Where records live
 
 Records live in the PC's own checkout, in its local workflow directory: each
-run has its own root, `<checkout>/.agent-workflow/runs/<Orca run id>/`, beside
+run has its own root, `<checkout>/.peer-skills-and-workflows/runs/<Orca run id>/`, beside
 the local binding ([BINDING.md](BINDING.md)) and the checkout's local
 configuration ([ORCA.md](ORCA.md#configuration)). The
 operator can watch progress there and clean up by removing a run's directory.
@@ -59,7 +59,7 @@ creates nothing.
 
 Before writing any record, the PC establishes local storage through the
 binding skill ([BINDING.md](BINDING.md#local-storage)): nothing under
-`.agent-workflow/` tracked and the directory ignored, through an existing rule
+`.peer-skills-and-workflows/` tracked and the directory ignored, through an existing rule
 or the narrow rule it adds to Git's local exclude file, verified with Git.
 When that reports a conflict, the PC writes nothing and asks the operator; it
 never untracks files or edits a repository's shared ignore rules.
@@ -181,14 +181,14 @@ shared `evidence/` names the binding snapshot the wave used.
 ## Scratch
 
 Transient work never happens inside the developer's checkout, including its
-ignored `.agent-workflow/` tree: editors and their plugins watch that tree
+ignored `.peer-skills-and-workflows/` tree: editors and their plugins watch that tree
 whether Git ignores it or not. Each run has a machine-local companion scratch
 root, which `tools/resolve.mjs --run` reports as `scratchRoot`:
 `<machine base>/scratch/repositories/<repository key>/runs/<run id>/`. The
 machine base is the per-user application-data location of the host
-(`~/Library/Application Support/AgentWorkflow` on macOS,
-`%LOCALAPPDATA%\AgentWorkflow` on Windows, `$XDG_STATE_HOME/agent-workflow` or
-`~/.local/state/agent-workflow` elsewhere), found through Node's host, home,
+(`~/Library/Application Support/PeerSkillsAndWorkflows` on macOS,
+`%LOCALAPPDATA%\PeerSkillsAndWorkflows` on Windows, `$XDG_STATE_HOME/peer-skills-and-workflows` or
+`~/.local/state/peer-skills-and-workflows` elsewhere), found through Node's host, home,
 environment and path facilities. The repository key is the checkout's folder
 name and a digest of its canonical path. `scratch/` is a namespace of its own:
 it never holds run records, earlier record locations or links forwarding to

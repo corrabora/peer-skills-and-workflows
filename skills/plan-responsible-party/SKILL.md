@@ -72,7 +72,7 @@ preamble for all lifecycle communication.
   assessments; follow ORCA's paired completion and settlement order.
 - Implement, stage and run the binding's verification in your worktree; run
   everything else in your scratch, with temporary output pointed there, never
-  in the checkout or its `.agent-workflow/`. Before `worker_done`, retain the
+  in the checkout or its `.peer-skills-and-workflows/`. Before `worker_done`, retain the
   evidence your report relies on in your attempt directory, as
   `workflow/RECORDS.md` requires.
 - Stage or commit only the owned, intended paths; leave unrelated work alone.

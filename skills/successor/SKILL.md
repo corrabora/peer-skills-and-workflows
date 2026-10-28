@@ -45,7 +45,7 @@ titles and exit meanings. Use its `--help`; report a missing dependency or
 failed observation, preserving records instead of starting over.
 
 Use an existing coordinator's Run records when it owns a Run. For ordinary
-work, use the checkout's already established ignored `.agent-workflow/`
+work, use the checkout's already established ignored `.peer-skills-and-workflows/`
 directory, or application storage when that local storage is absent. Honor an
 explicit external-storage choice. This requires no full repository binding.
 Keep one authoritative root and pass its absolute path to every successor;

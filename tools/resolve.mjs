@@ -9,7 +9,7 @@
 //     [--assign <role-or-seat>=<profile>]...
 //
 // Layers, lowest precedence first: this package's defaults.yaml, the
-// checkout's .agent-workflow/config.yaml, .agent-workflow/plans/<plan>.yaml,
+// checkout's .peer-skills-and-workflows/config.yaml, .peer-skills-and-workflows/plans/<plan>.yaml,
 // that plan file's phases.<id> section, then --profile/--assign overrides.
 
 import fs from 'node:fs';

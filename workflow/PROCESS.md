@@ -50,7 +50,7 @@ changes repository configuration.
 
 Before writing any record, the PC establishes the operator's local binding
 in its own checkout with the `bind-agent-workflow` skill: local storage under
-the ignored `.agent-workflow/` directory, then the binding file and its
+the ignored `.peer-skills-and-workflows/` directory, then the binding file and its
 recorded sources ([BINDING.md](BINDING.md)). Each task then receives a fixed
 binding snapshot published under the run records
 ([BINDING.md](BINDING.md#snapshots)). Tracked guidance and quality obligations
@@ -233,7 +233,7 @@ worktrees and starting the next phase are separate operator decisions.
 Run state lives in Orca; resume a plan by binding its existing Run, not by
 creating another, and check the binding's sources before dependent work
 ([BINDING.md](BINDING.md#refresh)). Run records live under the ignored
-`.agent-workflow/runs/` directory of the PC's own checkout, beside the local
+`.peer-skills-and-workflows/runs/` directory of the PC's own checkout, beside the local
 binding, and transient work in machine-local scratch outside it
 ([RECORDS.md](RECORDS.md)). They preserve continuity across fresh
 contexts but are never authority: maintained documents state decisions and

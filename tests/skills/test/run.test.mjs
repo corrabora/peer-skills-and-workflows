@@ -75,7 +75,7 @@ function plan(overrides = {}) {
 test('a run directory inside this checkout, or inside the source repository, is refused', () => {
   assert.throws(() => resolveRunDir(path.join(packageRoot, 'tests', 'skills', 'runs', 'x')), /inside the checkout/);
   assert.throws(() => resolveRunDir(packageRoot), /inside the checkout/);
-  assert.throws(() => plan({ runDir: path.join(packageRoot, '.agent-workflow', 'runs', 'x') }), /inside the checkout/);
+  assert.throws(() => plan({ runDir: path.join(packageRoot, '.peer-skills-and-workflows', 'runs', 'x') }), /inside the checkout/);
   assert.throws(() => resolveRunDir(''), /run directory is required/);
 
   const repo = path.join(scratch, 'repo');

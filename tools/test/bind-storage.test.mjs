@@ -31,7 +31,7 @@ test('exclude establishes local storage once, verifies it and leaves the tree, i
   assert.equal(first.json.pattern, EXCLUDE_RULE);
   const written = fs.readFileSync(exclude, 'utf8');
   assert.ok(written.startsWith('# mine\n*.scratch\n'), 'existing entries are preserved');
-  assert.equal((written.match(/^\/\.agent-workflow\/$/gm) ?? []).length, 1);
+  assert.equal((written.match(/^\/\.peer-skills-and-workflows\/$/gm) ?? []).length, 1);
   const coverage = ignoreCoverage(dir);
   assert.equal(coverage.directoryPresent, true, 'exclude created the empty local directory so Git could evaluate the directory rule');
   assert.equal(coverage.ignored, true);
@@ -40,9 +40,9 @@ test('exclude establishes local storage once, verifies it and leaves the tree, i
   assert.equal(coverage.partial, false);
   assert.ok(coverage.children.every((child) => child.ignored && child.pattern === EXCLUDE_RULE), JSON.stringify(coverage.children));
   assert.deepEqual(treeState(dir), before, 'the tracked tree and index are unchanged');
-  assert.equal(git(dir, 'status', '--porcelain', '--ignored=matching', '-z'), '!! .agent-workflow/\0', 'only the ignored local directory itself appeared');
-  write(dir, { '.agent-workflow/binding-sources.json': '{}', '.agent-workflow/runs/run_x/report.md': 'r\n' });
-  assert.deepEqual(git(dir, 'status', '--porcelain', '--ignored=matching', '-z').split('\0').filter(Boolean), ['!! .agent-workflow/'], 'every local record is excluded with the directory');
+  assert.equal(git(dir, 'status', '--porcelain', '--ignored=matching', '-z'), '!! .peer-skills-and-workflows/\0', 'only the ignored local directory itself appeared');
+  write(dir, { '.peer-skills-and-workflows/binding-sources.json': '{}', '.peer-skills-and-workflows/runs/run_x/report.md': 'r\n' });
+  assert.deepEqual(git(dir, 'status', '--porcelain', '--ignored=matching', '-z').split('\0').filter(Boolean), ['!! .peer-skills-and-workflows/'], 'every local record is excluded with the directory');
   assert.equal(git(dir, 'ls-files', '-o', '--exclude-standard'), '', 'no local record is visible to ordinary staging');
 
   const second = run('exclude', '--repo', dir);
@@ -54,30 +54,30 @@ test('exclude establishes local storage once, verifies it and leaves the tree, i
 });
 
 test('an existing shared ignore rule is reused and the exclude file is left alone', () => {
-  const dir = repository('shared-rule', { '.gitignore': '/.agent-workflow/\n' });
+  const dir = repository('shared-rule', { '.gitignore': '/.peer-skills-and-workflows/\n' });
   const before = excludeContent(dir);
   const result = establishLocalStorage(dir);
   assert.equal(result.status, 'ignored');
   assert.equal(result.match.source, '.gitignore');
   assert.equal(result.changed, false);
   assert.equal(excludeContent(dir), before);
-  const bare = repository('shared-rule-bare', { '.gitignore': '.agent-workflow\n' });
+  const bare = repository('shared-rule-bare', { '.gitignore': '.peer-skills-and-workflows\n' });
   assert.equal(establishLocalStorage(bare).status, 'ignored', 'a rule without slashes still excludes the directory itself');
   assert.equal(excludeContent(bare), excludeContent(dir));
 });
 
 test('tracked local content blocks setup without untracking or writing anything', () => {
-  const dir = repository('tracked', { '.agent-workflow/old.md': 'kept\n', 'README.md': '# P\n' });
+  const dir = repository('tracked', { '.peer-skills-and-workflows/old.md': 'kept\n', 'README.md': '# P\n' });
   const before = treeState(dir);
   const exclude = excludeContent(dir);
   const result = run('exclude', '--repo', dir);
   assert.equal(result.status, 1);
   assert.equal(result.json.status, 'tracked');
-  assert.deepEqual(result.json.tracked, ['.agent-workflow/old.md']);
+  assert.deepEqual(result.json.tracked, ['.peer-skills-and-workflows/old.md']);
   assert.equal(excludeContent(dir), exclude, 'no exclude rule is written');
   assert.deepEqual(treeState(dir), before);
-  assert.equal(fs.readFileSync(path.join(dir, '.agent-workflow', 'old.md'), 'utf8'), 'kept\n');
-  assert.deepEqual(fs.readdirSync(path.join(dir, '.agent-workflow')), ['old.md'], 'nothing else is created there');
+  assert.equal(fs.readFileSync(path.join(dir, '.peer-skills-and-workflows', 'old.md'), 'utf8'), 'kept\n');
+  assert.deepEqual(fs.readdirSync(path.join(dir, '.peer-skills-and-workflows')), ['old.md'], 'nothing else is created there');
 });
 
 test('an exclude file that cannot be written is reported with its code, not thrown', (t) => {
@@ -116,11 +116,11 @@ test('a linked worktree resolves its common Git directory and shares the exclude
   assert.equal(seen.ignored, false);
   assert.ok(seen.children.every((child) => child.ignored && child.pattern === EXCLUDE_RULE), 'its probes already hit the shared local rule');
   assert.equal(establishLocalStorage(main).status, 'ignored', 'the main worktree reuses the same local rule once its directory exists');
-  assert.equal((fs.readFileSync(path.join(main, '.git', 'info', 'exclude'), 'utf8').match(/agent-workflow/g) ?? []).length, 2, 'comment and rule, once');
+  assert.equal((fs.readFileSync(path.join(main, '.git', 'info', 'exclude'), 'utf8').match(/peer-skills-and-workflows/g) ?? []).length, 2, 'comment and rule, once');
 });
 
 test('rules that match only children are not coverage: the directory rule is added and verified', () => {
-  for (const [name, rule] of [['ext-rule', '*.md\n'], ['file-rule', '/.agent-workflow/binding.md\n'], ['contents-rule', '/.agent-workflow/*\n']]) {
+  for (const [name, rule] of [['ext-rule', '*.md\n'], ['file-rule', '/.peer-skills-and-workflows/binding.md\n'], ['contents-rule', '/.peer-skills-and-workflows/*\n']]) {
     const dir = repository(name, { 'README.md': '# P\n', '.gitignore': rule });
     const before = treeState(dir);
     const seen = ignoreCoverage(dir);
@@ -141,18 +141,18 @@ test('rules that match only children are not coverage: the directory rule is add
 });
 
 test('a higher-precedence negation defeats the local rule: unverified once, truthful partial effects, no duplicate on retry', () => {
-  const dir = repository('negation', { 'README.md': '# P\n', '.gitignore': '!/.agent-workflow/\n*.md\n' });
+  const dir = repository('negation', { 'README.md': '# P\n', '.gitignore': '!/.peer-skills-and-workflows/\n*.md\n' });
   const before = treeState(dir);
   const first = run('exclude', '--repo', dir);
   assert.equal(first.status, 1);
   assert.equal(first.json.status, 'unverified');
   assert.equal(first.json.changed, true, 'the first attempt did write the rule');
   assert.equal(first.json.rulePresent, true);
-  assert.deepEqual(first.json.overriddenBy, { source: '.gitignore', line: 1, pattern: '!/.agent-workflow/' });
+  assert.deepEqual(first.json.overriddenBy, { source: '.gitignore', line: 1, pattern: '!/.peer-skills-and-workflows/' });
   assert.equal(first.json.partial, true, 'the Markdown records alone would be ignored by *.md');
-  assert.deepEqual(first.json.children.map((c) => [c.path, c.ignored, c.pattern]), [['.agent-workflow/binding.md', true, '*.md'], ['.agent-workflow/binding-sources.json', false, undefined], ['.agent-workflow/runs/run/report.md', true, '*.md']]);
+  assert.deepEqual(first.json.children.map((c) => [c.path, c.ignored, c.pattern]), [['.peer-skills-and-workflows/binding.md', true, '*.md'], ['.peer-skills-and-workflows/binding-sources.json', false, undefined], ['.peer-skills-and-workflows/runs/run/report.md', true, '*.md']]);
   const written = excludeContent(dir);
-  assert.equal((written.match(/^\/\.agent-workflow\/$/gm) ?? []).length, 1);
+  assert.equal((written.match(/^\/\.peer-skills-and-workflows\/$/gm) ?? []).length, 1);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const retry = run('exclude', '--repo', dir);
     assert.equal(retry.status, 1);
@@ -163,14 +163,14 @@ test('a higher-precedence negation defeats the local rule: unverified once, trut
     assert.equal(excludeContent(dir), written, 'the exclude file is byte-identical after a retry');
   }
   assert.deepEqual(treeState(dir), before);
-  assert.deepEqual(visibleLocal(dir), ['.agent-workflow/binding-sources.json'], 'Git really would list the record no rule covers');
+  assert.deepEqual(visibleLocal(dir), ['.peer-skills-and-workflows/binding-sources.json'], 'Git really would list the record no rule covers');
 });
 
 test('inspect only reports local storage: a removed rule is seen and nothing is written', () => {
   const dir = repository('check-mode', { 'README.md': '# P\n' });
   assert.equal(establishLocalStorage(dir).status, 'added');
-  write(dir, { '.agent-workflow/binding.md': 'b\n' });
-  run('sources', '--repo', dir, '--out', path.join(dir, '.agent-workflow', 'binding-sources.json'), 'README.md');
+  write(dir, { '.peer-skills-and-workflows/binding.md': 'b\n' });
+  run('sources', '--repo', dir, '--out', path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json'), 'README.md');
   fs.writeFileSync(excludeFile(dir), '# rule removed by hand\n');
   const inspected = run('inspect', '--repo', dir);
   assert.equal(inspected.status, 0);
@@ -180,24 +180,24 @@ test('inspect only reports local storage: a removed rule is seen and nothing is 
   assert.equal(inspected.json.binding.present, true);
   assert.equal(inspected.json.binding.comparison.current, true, `recorded sources are current even though storage is not established; comparison: ${JSON.stringify(inspected.json.binding.comparison)}`);
   assert.equal(fs.readFileSync(excludeFile(dir), 'utf8'), '# rule removed by hand\n', 'inspect wrote no rule');
-  assert.deepEqual(git(dir, 'status', '--porcelain', '-z').split('\0').filter(Boolean), ['?? .agent-workflow/'], 'Git really lists the records now');
+  assert.deepEqual(git(dir, 'status', '--porcelain', '-z').split('\0').filter(Boolean), ['?? .peer-skills-and-workflows/'], 'Git really lists the records now');
   assert.equal(run('exclude', '--repo', dir).json.status, 'added', 'adopt or refresh re-establishes it');
 });
 
-test('a file, link or other entry at .agent-workflow is an occupied conflict, decided before any probe or write; a directory or nothing is not', () => {
+test('a file, link or other entry at .peer-skills-and-workflows is an occupied conflict, decided before any probe or write; a directory or nothing is not', () => {
   const file = repository('occupied-file', { 'README.md': '# P\n' });
-  fs.writeFileSync(path.join(file, '.agent-workflow'), 'not a directory\n');
+  fs.writeFileSync(path.join(file, '.peer-skills-and-workflows'), 'not a directory\n');
   const fileBefore = { tree: treeState(file), exclude: excludeContent(file) };
   const excluded = run('exclude', '--repo', file);
   assert.equal(excluded.status, 1);
   assert.equal(excluded.stderr, '', 'reported in JSON, not thrown');
   assert.equal(excluded.json.status, 'occupied');
   assert.equal(excluded.json.changed, false);
-  assert.deepEqual([excluded.json.occupied.path, excluded.json.occupied.kind], [path.join(file, '.agent-workflow'), 'file']);
+  assert.deepEqual([excluded.json.occupied.path, excluded.json.occupied.kind], [path.join(file, '.peer-skills-and-workflows'), 'file']);
   assert.match(excluded.json.occupied.resolution, /move or remove it yourself/);
   assert.equal(excludeContent(file), fileBefore.exclude, 'no rule is appended for an occupied path');
   assert.deepEqual(treeState(file), fileBefore.tree);
-  assert.equal(fs.readFileSync(path.join(file, '.agent-workflow'), 'utf8'), 'not a directory\n', 'the occupant is untouched');
+  assert.equal(fs.readFileSync(path.join(file, '.peer-skills-and-workflows'), 'utf8'), 'not a directory\n', 'the occupant is untouched');
   const inspected = run('inspect', '--repo', file);
   assert.equal(inspected.status, 0, inspected.stderr);
   assert.equal(inspected.json.localStorage.directoryPresent, false);
@@ -210,7 +210,7 @@ test('a file, link or other entry at .agent-workflow is an occupied conflict, de
   const outside = path.join(scratch, 'occupied-elsewhere');
   fs.mkdirSync(outside);
   const linked = repository('occupied-dirlink', { 'README.md': '# P\n' });
-  fs.symlinkSync(outside, path.join(linked, '.agent-workflow'), 'dir');
+  fs.symlinkSync(outside, path.join(linked, '.peer-skills-and-workflows'), 'dir');
   const linkBefore = { tree: treeState(linked), exclude: excludeContent(linked) };
   const viaLink = run('exclude', '--repo', linked);
   assert.equal(viaLink.status, 1);
@@ -218,17 +218,17 @@ test('a file, link or other entry at .agent-workflow is an occupied conflict, de
   assert.deepEqual([viaLink.json.status, viaLink.json.occupied.kind, viaLink.json.occupied.target], ['occupied', 'link', outside]);
   assert.equal(excludeContent(linked), linkBefore.exclude);
   assert.deepEqual(treeState(linked), linkBefore.tree);
-  assert.equal(fs.readlinkSync(path.join(linked, '.agent-workflow')), outside, 'the link is neither removed nor retargeted');
+  assert.equal(fs.readlinkSync(path.join(linked, '.peer-skills-and-workflows')), outside, 'the link is neither removed nor retargeted');
   assert.deepEqual(fs.readdirSync(outside), [], 'nothing was written through the link');
   const linkInspected = run('inspect', '--repo', linked);
   assert.equal(linkInspected.status, 0, linkInspected.stderr);
   assert.deepEqual([linkInspected.json.localStorage.occupied.kind, linkInspected.json.localStorage.occupied.target], ['link', outside]);
   const fileLink = repository('occupied-filelink', { 'README.md': '# P\n' });
-  fs.symlinkSync('README.md', path.join(fileLink, '.agent-workflow'));
+  fs.symlinkSync('README.md', path.join(fileLink, '.peer-skills-and-workflows'));
   assert.deepEqual([establishLocalStorage(fileLink).status, ignoreCoverage(fileLink).occupied.kind], ['occupied', 'link']);
 
   const plain = repository('occupied-neighbor-dir', { 'README.md': '# P\n' });
-  fs.mkdirSync(path.join(plain, '.agent-workflow'));
+  fs.mkdirSync(path.join(plain, '.peer-skills-and-workflows'));
   assert.equal(establishLocalStorage(plain).status, 'added', 'a plain directory is local storage');
   assert.equal(ignoreCoverage(plain).occupied, undefined);
   const absent = repository('occupied-neighbor-absent', { 'README.md': '# P\n' });
@@ -243,7 +243,7 @@ test('inspect refuses an occupied link before any binding child read and retains
   fs.symlinkSync('occupied-failing-source', bad);
   const manifest = sourceManifest(dir, ['README.md', bad]);
   write(outside, { 'binding.md': 'surviving binding', 'binding-sources.json': JSON.stringify(manifest) });
-  const local = path.join(dir, '.agent-workflow');
+  const local = path.join(dir, '.peer-skills-and-workflows');
   fs.symlinkSync(outside, local, 'dir');
   const trace = path.join(scratch, 'occupied-reads.jsonl');
   const observer = path.join(scratch, 'occupied-observer.mjs');
@@ -273,7 +273,7 @@ test('inspect refuses an occupied link before any binding child read and retains
   assert.equal(absent.json.binding.present, false);
   assert.equal(absent.json.binding.sourcesPresent, false);
   establishLocalStorage(dir);
-  write(dir, { '.agent-workflow/binding.md': 'binding', '.agent-workflow/binding-sources.json': JSON.stringify(sourceManifest(dir, ['README.md'], { workflowSource: packageRoot })) });
+  write(dir, { '.peer-skills-and-workflows/binding.md': 'binding', '.peer-skills-and-workflows/binding-sources.json': JSON.stringify(sourceManifest(dir, ['README.md'], { workflowSource: packageRoot })) });
   const plain = run('inspect', '--repo', dir);
   assert.equal(plain.status, 0, plain.stderr);
   assert.equal(plain.json.binding.present, true);
@@ -283,7 +283,7 @@ test('inspect refuses an occupied link before any binding child read and retains
 for (const occupant of ['directory', 'file', 'link', 'other', 'unreadable', 'mkdir-denied']) {
   test(`mkdir collision rechecks ${occupant} before local storage use`, (t) => {
     const dir = repository(`mkdir-collision-${occupant}`, { 'README.md': 'readable' });
-    const local = path.join(dir, '.agent-workflow');
+    const local = path.join(dir, '.peer-skills-and-workflows');
     const exclude = excludeFile(dir);
     const before = fs.readFileSync(exclude, 'utf8');
     const mkdir = fs.mkdirSync;
@@ -342,7 +342,7 @@ for (const negated of [false, true]) {
         // now appends the rule before this call reads the exclude file.
         competed = true;
         fs.appendFileSync(exclude, `\n${EXCLUDE_RULE}\n`);
-        if (negated) write(dir, { '.gitignore': '!.agent-workflow/\n' });
+        if (negated) write(dir, { '.gitignore': '!.peer-skills-and-workflows/\n' });
       }
       return read(file, ...args);
     });
@@ -352,7 +352,7 @@ for (const negated of [false, true]) {
     assert.equal(result.changed, false, 'only the competitor appended');
     assert.equal(result.status, negated ? 'unverified' : 'ignored');
     if (negated) {
-      assert.equal(result.overriddenBy.pattern, '!.agent-workflow/');
+      assert.equal(result.overriddenBy.pattern, '!.peer-skills-and-workflows/');
       assert.equal(result.overriddenBy.source, '.gitignore');
     } else {
       assert.equal(result.match.pattern, EXCLUDE_RULE);
@@ -369,8 +369,8 @@ for (const negated of [false, true]) {
 test('binding children distinguish absent, file and dangling/live links without following or writing', () => {
   const dir = repository('binding-child-states', { 'README.md': 'readable' });
   establishLocalStorage(dir);
-  const binding = path.join(dir, '.agent-workflow/binding.md');
-  const manifestPath = path.join(dir, '.agent-workflow/binding-sources.json');
+  const binding = path.join(dir, '.peer-skills-and-workflows/binding.md');
+  const manifestPath = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   const baseline = sourceManifest(dir, ['README.md'], { workflowSource: packageRoot });
   fs.writeFileSync(manifestPath, JSON.stringify(baseline));
   assert.deepEqual(run('inspect', '--repo', dir).json.binding.state, { kind: 'absent', present: false });
@@ -411,7 +411,7 @@ test('inaccessible binding children report unavailable with null presence and EA
   if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
   const dir = repository('binding-child-inaccessible', { 'README.md': 'readable' });
   establishLocalStorage(dir);
-  const local = path.join(dir, '.agent-workflow');
+  const local = path.join(dir, '.peer-skills-and-workflows');
   write(local, { 'binding.md': 'preserved choices', 'binding-sources.json': JSON.stringify(sourceManifest(dir, ['README.md'], { workflowSource: packageRoot })) });
   const before = fs.readdirSync(local).map((name) => [name, fs.readFileSync(path.join(local, name)), fs.statSync(path.join(local, name)).mtimeMs]);
   fs.chmodSync(local, 0);
@@ -430,8 +430,8 @@ test('inaccessible binding children report unavailable with null presence and EA
 
 test('inspect distinguishes absent, readable and denied local exclude without discarding shared coverage', (t) => {
   if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
-  const dir = repository('exclude-read-state', { 'README.md': 'readable', '.gitignore': '/.agent-workflow/\n' });
-  fs.mkdirSync(path.join(dir, '.agent-workflow'));
+  const dir = repository('exclude-read-state', { 'README.md': 'readable', '.gitignore': '/.peer-skills-and-workflows/\n' });
+  fs.mkdirSync(path.join(dir, '.peer-skills-and-workflows'));
   const file = excludeFile(dir);
   fs.writeFileSync(file, `${EXCLUDE_RULE}\n`);
   const readable = run('inspect', '--repo', dir);
@@ -471,7 +471,7 @@ test('inspect distinguishes absent, readable and denied local exclude without di
 });
 
 test('unknown local rule alone does not fail complete discovery', () => {
-  const dir = repository('unknown-rule-complete-discovery', { 'README.md': 'readable', '.gitignore': '/.agent-workflow/\n' });
+  const dir = repository('unknown-rule-complete-discovery', { 'README.md': 'readable', '.gitignore': '/.peer-skills-and-workflows/\n' });
   establishLocalStorage(dir);
   const exclude = excludeFile(dir);
   const observer = path.join(scratch, 'unknown-rule-only.mjs');

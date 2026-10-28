@@ -1,0 +1,5 @@
+{
+  "name": "peer",
+  "description": "Peer skills and orchestrated workflows for Claude and Codex",
+  "hooks": "./hooks/claude.json"
+}

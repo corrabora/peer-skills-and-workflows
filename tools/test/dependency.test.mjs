@@ -1,11 +1,9 @@
-// The tools resolve their npm dependency beside their own source, installed by
-// `npm ci` in the workflow source checkout, never from the shell's directory,
-// and name that command when it is missing.
+// Runtime dependencies come from the shipped vendor tree, including in link
+// mode. Missing payloads never fall back to root or ambient node_modules.
 
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { after, test } from 'node:test';
@@ -32,20 +30,14 @@ test('the tools find their dependency from another working directory', () => {
   assert.equal(JSON.parse(resolve.stdout).workflowSource, fs.realpathSync.native(packageRoot));
 });
 
-test('a missing dependency is reported with the command that installs it', (t) => {
-  // A copy of the tools without node_modules, run from this checkout, which has them.
+test('missing YAML is reported without falling back to a root dependency', () => {
   const copy = path.join(scratch, 'uninstalled');
   for (const entry of ['tools', 'skills', 'defaults.yaml']) {
     fs.cpSync(path.join(packageRoot, entry), path.join(copy, entry), { recursive: true });
   }
-  try {
-    createRequire(path.join(copy, 'tools', 'lib', 'yaml.mjs')).resolve('yaml');
-    t.skip('a yaml package above the temporary directory is visible to the copy');
-    return;
-  } catch (error) {
-    if (error.code !== 'MODULE_NOT_FOUND') throw error;
-  }
-  const message = `the 'yaml' package the workflow tools need is not installed in ${copy}; run 'npm ci' in that directory\n`;
+  fs.rmSync(path.join(copy, 'tools/vendor/node_modules/yaml'), { recursive: true });
+  fakePackage(copy, 'node_modules/yaml', "throw new Error('root fallback must not run');\n");
+  const message = missing(copy, 'yaml');
   const validate = run(path.join(copy, 'tools', 'validate.mjs'), [], packageRoot);
   assert.equal(validate.status, 1);
   assert.equal(validate.stdout, '');
@@ -56,34 +48,49 @@ test('a missing dependency is reported with the command that installs it', (t) =
   assert.equal(resolve.stderr, `resolve: ${message}`);
 });
 
-test('binding reports a missing direct Ajv dependency and preserves installed-package load failures', (t) => {
+test('binding reports missing Ajv without falling back to a root dependency', () => {
   const copy = path.join(scratch, 'uninstalled-bind');
   fs.cpSync(path.join(packageRoot, 'tools'), path.join(copy, 'tools'), { recursive: true });
-  try {
-    createRequire(path.join(copy, 'tools/lib/bind.mjs')).resolve('ajv');
-    t.skip('an ajv package above the temporary directory is visible to the copy');
-    return;
-  } catch (error) {
-    if (error.code !== 'MODULE_NOT_FOUND') throw error;
-  }
+  fs.rmSync(path.join(copy, 'tools/vendor/node_modules/ajv'), { recursive: true });
+  fakePackage(copy, 'node_modules/ajv', "throw new Error('root fallback must not run');\n");
   for (const command of ['inspect', 'exclude', 'sources']) {
     const args = [command, '--repo', packageRoot, ...(command === 'sources' ? ['README.md'] : [])];
     const result = run(path.join(copy, 'tools/bind.mjs'), args, packageRoot);
     assert.equal(result.status, 1);
     assert.equal(result.stdout, '');
-    assert.equal(result.stderr, `bind: the 'ajv' package the workflow tools need is not installed in ${copy}; run 'npm ci' in that directory\n`);
+    assert.equal(result.stderr, `bind: ${missing(copy, 'ajv')}`);
   }
-  const installed = path.join(copy, 'node_modules/ajv');
-  fs.mkdirSync(installed, { recursive: true });
-  fs.writeFileSync(path.join(installed, 'package.json'), JSON.stringify({ main: 'missing-entry.js' }));
-  const invalidMain = run(path.join(copy, 'tools/bind.mjs'), ['inspect', '--repo', packageRoot], packageRoot);
-  assert.equal(invalidMain.status, 1);
-  assert.match(invalidMain.stderr, /missing-entry.js/);
-  assert.doesNotMatch(invalidMain.stderr, /run 'npm ci'/);
-  fs.writeFileSync(path.join(installed, 'package.json'), JSON.stringify({ main: 'index.js' }));
-  fs.writeFileSync(path.join(installed, 'index.js'), "require('absent-ajv-transitive-control');\n");
-  const broken = run(path.join(copy, 'tools/bind.mjs'), ['inspect', '--repo', packageRoot], packageRoot);
-  assert.equal(broken.status, 1);
-  assert.match(broken.stderr, /Cannot find module 'absent-ajv-transitive-control'/);
-  assert.doesNotMatch(broken.stderr, /run 'npm ci'/);
 });
+
+function missing(copy, name) {
+  return `the '${name}' runtime dependency is missing from ${path.join(copy, 'tools/vendor')}; reinstall the package or regenerate its vendored dependencies from the source checkout\n`;
+}
+
+function fakePackage(copy, relative, code, main = 'index.js') {
+  const directory = path.join(copy, relative);
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(path.join(directory, 'package.json'), JSON.stringify({ main }));
+  if (main === 'index.js') fs.writeFileSync(path.join(directory, 'index.js'), code);
+}
+
+for (const name of ['yaml', 'ajv']) {
+  test(`${name} preserves broken entry-point and transitive dependency errors`, () => {
+    const copy = path.join(scratch, `broken-${name}`);
+    fs.cpSync(path.join(packageRoot, 'tools'), path.join(copy, 'tools'), { recursive: true });
+    fs.cpSync(path.join(packageRoot, 'skills'), path.join(copy, 'skills'), { recursive: true });
+    const relative = `tools/vendor/node_modules/${name}`;
+    fs.rmSync(path.join(copy, relative), { recursive: true });
+    const script = path.join(copy, name === 'yaml' ? 'tools/validate.mjs' : 'tools/bind.mjs');
+    const args = name === 'yaml' ? [] : ['inspect', '--repo', packageRoot];
+    fakePackage(copy, relative, '', 'missing-entry.js');
+    const invalidMain = run(script, args, packageRoot);
+    assert.equal(invalidMain.status, 1);
+    assert.match(invalidMain.stderr, /missing-entry.js/);
+    assert.doesNotMatch(invalidMain.stderr, /runtime dependency is missing/);
+    fakePackage(copy, relative, `require('absent-${name}-transitive-control');\n`);
+    const broken = run(script, args, packageRoot);
+    assert.equal(broken.status, 1);
+    assert.match(broken.stderr, new RegExp(`Cannot find module 'absent-${name}-transitive-control'`));
+    assert.doesNotMatch(broken.stderr, /runtime dependency is missing/);
+  });
+}

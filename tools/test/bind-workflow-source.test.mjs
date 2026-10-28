@@ -158,7 +158,7 @@ test('each required record reference changes workflow identity and freshness in 
 test('Git administrative file and directory entries never affect all-files or workflow-source content identities', () => {
   const dir = repository('admin-content', { 'README.md': '# P\n' });
   establishLocalStorage(dir);
-  const personal = path.join(dir, '.agent-workflow', 'personal');
+  const personal = path.join(dir, '.peer-skills-and-workflows', 'personal');
   const outside = path.join(scratch, 'admin-outside');
   for (const root of [personal, outside]) {
     write(root, { 'policy.md': 'policy', '.git/config': 'admin', 'nested/.git': 'gitdir: elsewhere\n', 'nested/guide.md': 'guide' });
@@ -221,7 +221,6 @@ for (const form of ['git', 'copied']) {
       fs.cpSync(path.join(packageRoot, 'tools'), path.join(source, 'tools'), { recursive: true });
       // Copied tools need their runtime dependencies, as in an npm-prepared
       // distribution. Copy them so the fixture never links back to the source.
-      fs.cpSync(path.join(packageRoot, 'node_modules'), path.join(source, 'node_modules'), { recursive: true });
       write(source, { 'workflow/private/member.md': 'before', 'README.md': 'source', '.gitignore': '*.junk\nnode_modules/\n' });
       if (form === 'git') {
         git(source, 'init', '-q', '-b', 'main');
@@ -232,7 +231,7 @@ for (const form of ['git', 'copied']) {
         const result = spawnSync(process.execPath, [path.join(source, 'tools', 'bind.mjs'), ...args], { encoding: 'utf8', env: GIT_ENV });
         return { ...result, json: JSON.parse(result.stdout) };
       };
-      const manifestPath = path.join(dir, '.agent-workflow', 'binding-sources.json');
+      const manifestPath = path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json');
       const baseline = call('sources', '--repo', dir, '--out', manifestPath, 'README.md');
       assert.equal(baseline.status, 0, baseline.stderr);
       const denied = path.join(source, 'workflow', 'private', ...(deniedKind === 'file' ? ['member.md'] : []));

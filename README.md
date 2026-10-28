@@ -1,8 +1,8 @@
 # Peer skills and workflows
 
 This repository contains shared agent skills for Claude Code and Codex, with
-Node.js tools and Orca workflows. Skills are installed as links to this checkout,
-so edits here reach both engines.
+Node.js tools and Orca workflows. Install them as the `peer` plugin from Git,
+or link this checkout's skills so edits here reach both engines.
 
 ## Writing skills
 
@@ -71,9 +71,9 @@ enabled explicitly; discussing context limits does not enable it. Handoffs
 retain task-scoped original messages in chain records that persist after the
 task ends; treat those records as potentially sensitive.
 
-The workflow installer adds its support hooks for both engines. Review new or
-changed Codex definitions in `/hooks` and verify live delivery; installation
-checks establish definitions, not trust or delivery. See
+The plugin and the linked workflow set both provide its support hooks for both
+engines. Review new or changed Codex definitions in `/hooks` and verify live
+delivery; installation checks establish definitions, not trust or delivery. See
 [installation](docs/installation.md) and the
 [mechanics reference](skills/successor/references/mechanics.md).
 
@@ -95,32 +95,39 @@ execution releases; [Review](workflow/REVIEW.md) defines the rotation.
 
 ## Install
 
-Requires Node.js 22 or later and npm on macOS, Windows or Linux. Binding tools
-also require Git 2.31 or later. Peer skills, succession and supervised workers
-use Orca's installed `orchestration` skill and its version-matched runtime guide.
+Requires Node.js 22 or later. Binding tools also require Git 2.31 or later.
+Peer skills, succession and supervised workers use Orca's installed
+`orchestration` skill and its version-matched runtime guide.
 
-Run from this checkout:
+Install the `peer` plugin from this repository's marketplace:
 
 ```sh
-npm ci
+claude plugin marketplace add https://github.com/corrabora/peer-skills-and-workflows.git
+claude plugin install peer@peer
+codex plugin marketplace add https://github.com/corrabora/peer-skills-and-workflows.git
+codex plugin add peer@peer
+```
+
+Packaged skills are `/peer:<skill>` in Claude Code and `$peer:<skill>` in Codex.
+For development or writing-only use, link this checkout instead:
+
+```sh
 node tools/install.mjs link             # install both sets and required support hooks
 node tools/install.mjs check            # check references, links and hook definitions
 ```
 
-Use `link writing` or `check writing` for writing alone. The `workflow` set
-includes its writing dependencies. Rerun `link [<set>]` after updates to add new
-skills. `unlink [<set>]` removes this checkout's selected links and owned hooks;
-`unlink workflow` leaves writing installed. The installer preserves foreign
-links and unrelated settings. [Installation details](docs/installation.md)
-cover destinations, access, hooks and recovery.
+Use one mode per engine: a linked `workflow` set and the plugin together run
+each successor event twice.
+[Installation](docs/installation.md) covers updates, removal, hook review,
+link sets, state locations and the tested compatibility limits.
 
 ### Codex environment
 
-Add the top-level `developer_instructions` setting printed by `link` to your
+In either mode, add this top-level `developer_instructions` setting to your
 user `~/.codex/config.toml` or a trusted project's `.codex/config.toml`.
 Preserve any existing instructions and refresh the paragraph when
 [its maintained source](docs/guidance/codex-session-instructions.txt) changes.
-The installer prints this setting without editing Codex configuration.
+`link` prints the setting; neither mode edits Codex configuration.
 
 ```toml
 developer_instructions = "When an unresolved reader, purpose or scope, or a contradiction between the request and its governing source, requires one clarification question, asking it is not a skill-caused pause or block; do not cite a skill solely because you are asking it. Put the question in the reply. A claim one source makes about another stays attributed in the draft when that preserves the requested meaning; it alone creates no choice for the user. Keep existing reporting for actual missing dependencies, unavailable tools and permission or approval blocks."
@@ -130,8 +137,9 @@ developer_instructions = "When an unresolved reader, purpose or scope, or a cont
 
 [defaults.yaml](defaults.yaml) assigns named worker profiles (agent, model,
 effort) to plan roles and review seats. Local overrides live in
-`.agent-workflow/config.yaml` and `.agent-workflow/plans/<plan>.yaml`, with
-optional phase sections; operator overrides take precedence.
+`.peer-skills-and-workflows/config.yaml` and
+`.peer-skills-and-workflows/plans/<plan>.yaml`, with optional phase sections;
+operator overrides take precedence.
 
 ```sh
 node tools/resolve.mjs --repo <checkout> --run <orca-run-id> [--plan <name>] [--phase <id>]
@@ -148,9 +156,9 @@ accepted constructs and diagnostic rules.
 
 Invoke `bind-agent-workflow` for the target checkout. It discovers repository
 guidance, quality selection and verification requirements, then records a local
-source map in the ignored `.agent-workflow/` directory. Adoption changes no
-tracked files. Check mode reports currentness and readiness without changing
-project files or workflow records.
+source map in the ignored `.peer-skills-and-workflows/` directory. Adoption
+changes no tracked files. Check mode reports currentness and readiness without
+changing project files or workflow records.
 
 The coordinator establishes or refreshes this binding before dependent plan
 work. Missing quality profiles require operator initialization. See the
@@ -181,11 +189,12 @@ node tools/generate-writing-references.mjs
 node tools/verify.mjs                   # complete local gate
 node tools/validate.mjs                 # skill metadata
 node tools/generate-writing-references.mjs --check
+node tools/generate-vendor.mjs --check  # needs npm and registry access or --cache
 node --test                             # offline tool and harness tests
 ```
 
-The complete gate checks metadata, generated writing references, package links
-and all offline tests. It does not require personal skill installation.
+The complete gate checks metadata, generated writing references, the vendored
+dependencies, the plugin package, package links and all offline tests. It does not require personal skill installation.
 `install.mjs check [<set>]` additionally checks personal links and hook definitions.
 The [behavioral suites](tests/skills/README.md) document paid model runs started
 separately; offline checks do not establish model behavior.

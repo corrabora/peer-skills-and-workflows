@@ -1,7 +1,7 @@
 # Local binding
 
 The operator binds this workflow to a repository locally, in the ignored
-`.agent-workflow/` directory of their own checkout. Adoption changes nothing
+`.peer-skills-and-workflows/` directory of their own checkout. Adoption changes nothing
 tracked and asks nothing of other contributors: the repository's own guidance
 and its quality-profiles, which it owns and shares, govern the work, and the
 binding maps them for dispatch. This page is the one owner of the binding's
@@ -16,7 +16,7 @@ skills refer here. The `bind-agent-workflow` skill performs the procedure
 | Source | Owns | Authority |
 | --- | --- | --- |
 | Target repository, tracked | Root and scoped agent instructions, planning, contribution, verification and delivery guidance; the quality-profiles selection in `.quality/`, inherited profiles and repository extensions such as local rubrics | Project obligations: binding on every task here, read from the candidate under review |
-| Operator's checkout, `.agent-workflow/` | `binding.md` and `binding-sources.json`; `config.yaml` and `plans/<plan>.yaml` worker configuration; run records under `runs/`; a local plan where project guidance allows one | The operator's organization of their own use: never a project requirement, never authority over tracked guidance |
+| Operator's checkout, `.peer-skills-and-workflows/` | `binding.md` and `binding-sources.json`; `config.yaml` and `plans/<plan>.yaml` worker configuration; run records under `runs/`; a local plan where project guidance allows one | The operator's organization of their own use: never a project requirement, never authority over tracked guidance |
 | Workflow package | Role behavior, review and adjudication contracts, this binding procedure, defaults and tools | Procedure and defaults where project guidance is silent |
 | Current task and operator instructions | Objective, plan and phase, candidate, scope, decisions and execution release, in the run's [operator-guidance ledger](RECORDS.md#operator-guidance) | Run-specific authority; a reusable binding never releases future work |
 
@@ -37,7 +37,7 @@ adoption.
 
 ## The binding file
 
-`<checkout>/.agent-workflow/binding.md`, from
+`<checkout>/.peer-skills-and-workflows/binding.md`, from
 [templates/binding.md](templates/binding.md), is a compact source map and a
 record of resolved choices, not a second project handbook. It holds only what
 dispatch needs:
@@ -109,7 +109,7 @@ current target text and target type (`digestScope: git-visible`). Directory
 and dangling links retain that identity without directory-link traversal;
 a link to a regular file also includes its followed content. A directory
 Git ignores and tracks nothing beneath, such as personal additions kept under
-`.agent-workflow/`, by the names and contents of its regular files
+`.peer-skills-and-workflows/`, by the names and contents of its regular files
 (`state: ignored`, `digestScope: all-files`, links inside it not followed),
 so edits there are not hidden by the ignore rule. An alias that cannot be
 resolved, a link loop for example, is that entry's `unreadable` result with
@@ -258,8 +258,11 @@ locations and stand without the binding or any run record.
 
 The shared Git adapter sets `LC_ALL=C` for each spawned Git process so callers
 can classify its diagnostic messages consistently, including the non-repository
-case for copied workflow sources. It changes neither the caller's environment
-nor persistent Git configuration; unrelated Git failures still fail loudly.
+case for copied workflow sources. It also sets `GIT_OPTIONAL_LOCKS=0`, so
+status reads never refresh an index: an installed plugin's `.git` bytes are
+part of the content Codex hook trust covers. It changes neither the caller's
+environment nor persistent Git configuration; unrelated Git failures still fail
+loudly.
 
 Each Git call captures at most 16 MiB of output through the shared Git adapter.
 If a call exceeds that bound, the command fails with an `ENOBUFS` diagnostic
@@ -356,7 +359,7 @@ adoption needs no questionnaire:
   ([RECORDS.md](RECORDS.md#scratch)).
 - **Landing:** one phase commit of the accepted tree through the repository's
   normal hooks, at the operator's direction ([PROCESS.md](PROCESS.md#landing)).
-- **Local files:** `.agent-workflow/` as [Local storage](#local-storage)
+- **Local files:** `.peer-skills-and-workflows/` as [Local storage](#local-storage)
   describes; records under `runs/` ([RECORDS.md](RECORDS.md#where-records-live)).
 
 A default never overrides project guidance that speaks to the same question,
@@ -431,23 +434,23 @@ guess an association. Legitimate in-checkout locations remain supported.
 
 ## Local storage
 
-Local workflow files live only under `<checkout>/.agent-workflow/`. Before
+Local workflow files live only under `<checkout>/.peer-skills-and-workflows/`. Before
 any binding or record is written, `node tools/bind.mjs exclude --repo <checkout>`
-establishes that storage: it refuses when anything under `.agent-workflow/`
+establishes that storage: it refuses when anything under `.peer-skills-and-workflows/`
 is tracked; inspects what holds the path before any probe or write and
 refuses when a file, link or other entry occupies it, since only a plain
 directory is local storage; creates the empty local directory when it does
 not exist yet, so that Git can evaluate a directory rule; reuses an ignore rule
 that already
 excludes the directory itself, as Git reports for the directory; and
-otherwise appends the narrow rule `/.agent-workflow/` once to Git's local
+otherwise appends the narrow rule `/.peer-skills-and-workflows/` once to Git's local
 exclude file (`info/exclude` of the repository's common Git directory, found
 through Git so a linked worktree and a `.git` file resolve correctly),
 preserving every existing entry, then verifies with Git that the directory is
 excluded. Only the directory's own exclusion counts, because everything
 beneath an excluded directory is excluded and nothing in it can be
 re-included: a rule that matches some children, such as `*.md`, a
-file-specific rule or a contents-only `/.agent-workflow/*`, is not coverage,
+file-specific rule or a contents-only `/.peer-skills-and-workflows/*`, is not coverage,
 since other records would stay visible to ordinary staging, and a negation
 that matches the directory is the opposite of coverage. The result names the
 covering rule with its source, or on failure the negation that overrides the
@@ -694,21 +697,21 @@ or refresh as the next action.
    reference with the resolved workflow source's canonical path so the link
    to this page resolves from the local file and from every snapshot copy,
    and record the sources
-   with `node tools/bind.mjs sources --repo <checkout> --out <checkout>/.agent-workflow/binding-sources.json <path>...`,
+   with `node tools/bind.mjs sources --repo <checkout> --out <checkout>/.peer-skills-and-workflows/binding-sources.json <path>...`,
    without overwriting unrelated local files or replacing operator choices.
    The skill names the manifest path explicitly: the tool writes nothing
-   without `--out`. The checkout's local `.agent-workflow/binding.md` is reserved
+   without `--out`. The checkout's local `.peer-skills-and-workflows/binding.md` is reserved
    for operator choices: a destination resolving to it is refused with a reason
    directing factual manifest output to `binding-sources.json`. Requested paths
-   beneath the checkout's named `.agent-workflow/`, after lexical normalization,
+   beneath the checkout's named `.peer-skills-and-workflows/`, after lexical normalization,
    also refuse before mkdir/write when that storage path is a link or other
    non-directory entry; `refused.occupied` reports its path, kind and resolution.
    This includes both binding children and any spelling of the checkout: the
-   ancestors above the named `.agent-workflow` are resolved, never that entry,
+   ancestors above the named `.peer-skills-and-workflows` are resolved, never that entry,
    so an alias of the checkout or of its parents is recognized without following
    the occupant. A name counts as the storage entry or a binding child when
    the filesystem treats it as that entry, not only when it is spelled so: on
-   a case-insensitive volume `.AGENT-WORKFLOW` and `Binding.md` are those
+   a case-insensitive volume `.PEER-SKILLS-AND-WORKFLOWS` and `Binding.md` are those
    entries, also when the entry itself is stored under such a spelling. When
    either name exists, `lstat` identity decides, and two names reaching one
    inode are one entry only when they share a stored name: a hard link is

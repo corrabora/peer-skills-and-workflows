@@ -14,12 +14,12 @@ import path from 'node:path';
  * With `allowMissing`, exit status 1 with empty stdout and stderr returns null
  * instead; every other failure still throws. `onStderr` receives stderr only
  * when it is not empty and Git exited 0, never when the call throws or returns
- * null. Git runs with `LC_ALL=C` under a per-call capture limit; both are
- * owned by workflow/BINDING.md, Git capture capacity.
+ * null. Git runs with `LC_ALL=C` and `GIT_OPTIONAL_LOCKS=0` under a per-call
+ * capture limit; all three are owned by workflow/BINDING.md, Git capture capacity.
  */
 export function git(args, { cwd = process.cwd(), input, allowMissing = false, onStderr, bytes = false } = {}) {
   // This adapter owns stable messages for callers that classify Git diagnostics.
-  const result = spawnSync('git', args, { cwd, input, env: { ...process.env, LC_ALL: 'C' }, encoding: bytes ? 'buffer' : 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  const result = spawnSync('git', args, { cwd, input, env: { ...process.env, LC_ALL: 'C', GIT_OPTIONAL_LOCKS: '0' }, encoding: bytes ? 'buffer' : 'utf8', maxBuffer: 16 * 1024 * 1024 });
   if (result.error) throw new Error(`cannot run Git: ${result.error.message}`);
   const stderr = bytes ? result.stderr.toString('utf8') : result.stderr;
   if (allowMissing && result.status === 1 && !result.stdout.length && !stderr) return null;

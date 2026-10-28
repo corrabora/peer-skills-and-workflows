@@ -1,12 +1,12 @@
 ---
 name: bind-agent-workflow
-description: Establish, refresh or check the operator's local binding of the agent workflow to one repository checkout, inside its ignored .agent-workflow directory, by inspecting the repository's guidance, quality-profiles and verification tooling, securing local storage through Git's local exclude file, recording source identities and reporting readiness; a check reports whether the binding is still current and ready while leaving project files and workflow records unchanged. Use when asked to bind, adopt or refresh the agent workflow for a repository, to check whether an existing binding is current, ready or still established, or as the plan coordinator when initializing or resuming a run, in Claude or Codex. Not for reviewing, implementing or landing work.
+description: Establish, refresh or check the operator's local binding of the agent workflow to one repository checkout, inside its ignored .peer-skills-and-workflows directory, by inspecting the repository's guidance, quality-profiles and verification tooling, securing local storage through Git's local exclude file, recording source identities and reporting readiness; a check reports whether the binding is still current and ready while leaving project files and workflow records unchanged. Use when asked to bind, adopt or refresh the agent workflow for a repository, to check whether an existing binding is current, ready or still established, or as the plan coordinator when initializing or resuming a run, in Claude or Codex. Not for reviewing, implementing or landing work.
 ---
 
 # Bind agent workflow
 
 You bind this workflow to one checkout for the operator who uses it. The
-result is a local source map, `<checkout>/.agent-workflow/binding.md` with
+result is a local source map, `<checkout>/.peer-skills-and-workflows/binding.md` with
 `binding-sources.json`, and a report of what it is ready for. You change
 nothing the repository tracks and ask nothing of other contributors.
 
@@ -37,7 +37,7 @@ returning to this task; this grants no run-record writing authority.
 
 1. **Inspect.** Run `node <workflow source>/tools/bind.mjs inspect --repo <checkout>`
    and read its JSON: checkout identity; `localStorage` (tracked local paths,
-   whether Git excludes the `.agent-workflow/` directory itself, the covering
+   whether Git excludes the `.peer-skills-and-workflows/` directory itself, the covering
    rule or the negation and partial effects, and whether the local rule is
    present, or unknown with `ruleError` naming the path and read cause); the
    existing binding with `binding.manifest` (usable, or its path and reason)
@@ -106,7 +106,7 @@ returning to this task; this grants no run-record writing authority.
 2. **Establish local storage** (adopt and refresh) with
    `node <workflow source>/tools/bind.mjs exclude --repo <checkout>`.
    Continue on `ignored` or `added`. On `tracked`, `occupied`, `unwritable`
-   or `unverified`, write nothing under `.agent-workflow/` and report the
+   or `unverified`, write nothing under `.peer-skills-and-workflows/` and report the
    conflict as the result (step 5), with the `overriddenBy` negation and the
    `children` a narrower rule would hide exactly as reported; do not untrack
    files, edit `.gitignore` or touch tracked content. Sequential repeat writes
@@ -116,7 +116,7 @@ returning to this task; this grants no run-record writing authority.
    uncertainty, not proof that no conflict exists. Preserve unrelated rules
    and real conflicts; do not blindly repair permissions or delete entries. An
    `occupied` result means a file, link or other entry holds the
-   `.agent-workflow` path: report its path, kind and the resolution the
+   `.peer-skills-and-workflows` path: report its path, kind and the resolution the
    tool states, and never remove, unlink, overwrite or retarget it yourself;
    linked local storage is not supported. For `tracked`, offer separately
    authorized relocation or untracking, or forgoing adoption. For a confirmed
@@ -164,7 +164,7 @@ returning to this task; this grants no run-record writing authority.
    the link to `workflow/BINDING.md` resolves from the local file and from
    every snapshot copy the coordinator publishes; never leave the placeholder
    or a path relative to the package. Then record the sources it cites with
-   `node <workflow source>/tools/bind.mjs sources --repo <checkout> --out <checkout>/.agent-workflow/binding-sources.json <path>...`,
+   `node <workflow source>/tools/bind.mjs sources --repo <checkout> --out <checkout>/.peer-skills-and-workflows/binding-sources.json <path>...`,
    listing the guidance, quality and verification paths the binding relies on
    and any personal source, each by the path you name it by. Record the
    sources the same way when step 1 reported the manifest unusable: that

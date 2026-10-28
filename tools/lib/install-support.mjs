@@ -8,7 +8,7 @@ import { hookConfig } from './successor.mjs';
 import { isOwnedLink } from './install.mjs';
 import { supportHookScopes } from './paths.mjs';
 
-const RECEIPT = '.agent-workflow-successor-hooks.json';
+const RECEIPT = '.peer-skills-and-workflows-successor-hooks.json';
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 const encode = (v) => `${JSON.stringify(v, null, 2)}\n`;
 const selected = (sets) => sets === undefined || sets.includes('workflow');

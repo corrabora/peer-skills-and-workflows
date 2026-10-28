@@ -1,6 +1,6 @@
 // Deterministic facts for binding the workflow to one checkout: Git identity
 // of the checkout and of the workflow source, local storage under the ignored
-// `.agent-workflow/` directory, candidate guidance sources, the installed
+// `.peer-skills-and-workflows/` directory, candidate guidance sources, the installed
 // quality-profile selection and content identities that detect changed or
 // missing sources, uncommitted edits included. Judgment about what the facts
 // mean stays with the bind-agent-workflow skill (workflow/BINDING.md).
@@ -20,22 +20,24 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 import { git, gitPaths } from './git.mjs';
-import { canonical, canonicalLocation, isWithin, pathFor } from './paths.mjs';
+import { canonical, canonicalLocation, isWithin, LOCAL_DIRECTORY, pathFor } from './paths.mjs';
 
 // Resolve only the direct dependency under this guard. Errors while loading
 // an installed package (including missing transitive dependencies) propagate.
 const require = createRequire(import.meta.url);
+const SOURCE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+// An explicit package directory prevents Node from falling back to ancestor dependencies.
+const AJV_PACKAGE = path.join(SOURCE_ROOT, 'tools', 'vendor', 'node_modules', 'ajv');
 let ajvPath;
 try {
-  ajvPath = require.resolve('ajv');
+  ajvPath = require.resolve(AJV_PACKAGE);
 } catch (error) {
-  if (error.code !== 'MODULE_NOT_FOUND' || !error.message.startsWith("Cannot find module 'ajv'\n")) throw error;
-  const source = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-  throw Object.assign(new Error(`the 'ajv' package the workflow tools need is not installed in ${source}; run 'npm ci' in that directory`), { name: 'MissingDependencyError' });
+  if (error.code !== 'MODULE_NOT_FOUND' || !error.message.startsWith(`Cannot find module '${AJV_PACKAGE}'`)) throw error;
+  throw Object.assign(new Error(`the 'ajv' runtime dependency is missing from ${path.join(SOURCE_ROOT, 'tools', 'vendor')}; reinstall the package or regenerate its vendored dependencies from the source checkout`), { name: 'MissingDependencyError' });
 }
 const Ajv = require(ajvPath);
 
-export const LOCAL_DIRECTORY = '.agent-workflow';
+export { LOCAL_DIRECTORY };
 export const EXCLUDE_RULE = `/${LOCAL_DIRECTORY}/`;
 export const BINDING_FILE = 'binding.md';
 export const SOURCES_FILE = 'binding-sources.json';
@@ -57,6 +59,8 @@ export const MANIFEST_VERSION = 1;
  */
 const SOURCE_PARTS = [
   'workflow', 'skills', 'tools', 'defaults.yaml', 'README.md', 'package.json',
+  'hooks', '.codex-plugin/plugin.json', '.claude-plugin/plugin.json',
+  '.agents/plugins/marketplace.json', '.claude-plugin/marketplace.json',
   'docs/writing-guidance.md', 'docs/guidance/adr-format.md',
   'docs/guidance/glossary-format.md', 'docs/guidance/record-format-adoption.md',
 ];
@@ -258,9 +262,9 @@ function occupiedConflict(checkout, state) {
 /**
  * Whether Git excludes the local directory itself, decided with Git on the
  * directory: `ignored` is true only for a positive rule matching
- * `.agent-workflow` as a directory, which excludes everything beneath it (a
+ * `.peer-skills-and-workflows` as a directory, which excludes everything beneath it (a
  * negation inside an excluded directory cannot re-include anything). A rule
- * that matches only some children, such as `*.md`, `/.agent-workflow/*` or a
+ * that matches only some children, such as `*.md`, `/.peer-skills-and-workflows/*` or a
  * file-specific rule, and a negation matching the directory are not coverage;
  * `match` names a covering rule, `negatedBy` a negation of the directory and
  * `children` the representative probes with the rule each one hits, so partial
@@ -309,8 +313,8 @@ export function hasExcludeRule(text) {
 }
 
 /**
- * Establish local storage: nothing under `.agent-workflow/` tracked, and the
- * directory itself excluded by Git, adding `/.agent-workflow/` to the local
+ * Establish local storage: nothing under `.peer-skills-and-workflows/` tracked, and the
+ * directory itself excluded by Git, adding `/.peer-skills-and-workflows/` to the local
  * exclude file only when no rule covers the directory and the exact rule is
  * not already there. Creates the empty local directory when absent, so Git can
  * evaluate the directory rule; preserves every existing exclude entry and
@@ -370,7 +374,7 @@ export function establishLocalStorage(checkout) {
     };
   }
   const separator = existing.length && !existing.endsWith('\n') ? '\n' : '';
-  const addition = `${separator}# Local agent-workflow binding and run records (workflow/BINDING.md); never tracked.\n${EXCLUDE_RULE}\n`;
+  const addition = `${separator}# Local peer-skills-and-workflows binding and run records (workflow/BINDING.md); never tracked.\n${EXCLUDE_RULE}\n`;
   // One append; existing entries are never rewritten. An interruption during
   // it can leave a partial line, which a retry does not diagnose or delete
   // (workflow/BINDING.md, Local storage).
@@ -1006,12 +1010,12 @@ function sameEntryName(dir, name, reserved) {
 
 /**
  * The requested path as a path beneath the checkout's named local storage, or
- * null when it names none: `<checkout>/.agent-workflow/<rest>` when a
- * component designates the checkout's `.agent-workflow` entry under any
+ * null when it names none: `<checkout>/.peer-skills-and-workflows/<rest>` when a
+ * component designates the checkout's `.peer-skills-and-workflows` entry under any
  * spelling the filesystem treats as that entry (sameEntryName) and its parent
  * resolves to the checkout, however the checkout is spelled (an alias of it or
  * of an ancestor included). Only components whose name folds to
- * `.agent-workflow` are considered, so other paths are not resolved here.
+ * `.peer-skills-and-workflows` are considered, so other paths are not resolved here.
  * Components are tried from the root down, and only the ancestors above the
  * storage entry are resolved, never the entry itself, so an occupant is
  * inspected rather than followed. Resolution failures throw.
@@ -1033,7 +1037,7 @@ function namedLocalPath(checkout, out) {
 
 /**
  * The binding child of local storage that `file` designates, as its canonical
- * path, or null: `file` must lie directly in `<checkout>/.agent-workflow`, and
+ * path, or null: `file` must lie directly in `<checkout>/.peer-skills-and-workflows`, and
  * its name must be `binding.md` or `binding-sources.json` under any spelling
  * the filesystem treats as that entry, present or absent (sameEntryName).
  * Call it only for a plain or absent storage directory, never through an

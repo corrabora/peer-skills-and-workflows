@@ -17,7 +17,7 @@ import {
 test('the sources command writes a manifest and compares it on the next run; inspect reports the comparison', () => {
   const dir = repository('manifest', { 'README.md': '# P\n', 'docs/g.md': 'g\n' });
   establishLocalStorage(dir);
-  const out = path.join(dir, '.agent-workflow', 'binding-sources.json');
+  const out = path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json');
   const first = run('sources', '--repo', dir, '--out', out, 'README.md', 'docs');
   assert.equal(first.status, 0, first.stderr);
   assert.equal(first.json.written, out);
@@ -29,7 +29,7 @@ test('the sources command writes a manifest and compares it on the next run; ins
   assert.equal(second.status, 0, second.stderr);
   assert.deepEqual(second.json.comparison.changed, ['docs']);
   assert.equal(second.json.comparison.current, false);
-  assert.equal(fs.existsSync(path.join(dir, '.agent-workflow', 'binding.md')), false, 'sources writes only the manifest');
+  assert.equal(fs.existsSync(path.join(dir, '.peer-skills-and-workflows', 'binding.md')), false, 'sources writes only the manifest');
 
   const inspected = run('inspect', '--repo', dir);
   assert.equal(inspected.json.binding.sourcesPresent, true);
@@ -44,7 +44,7 @@ test('the sources command writes a manifest and compares it on the next run; ins
 test('additions invalidate an explicit comparison; inspect states its recorded-source scope', () => {
   const dir = repository('additions', { 'README.md': '# P\n', 'docs/g.md': 'g\n' });
   establishLocalStorage(dir);
-  const out = path.join(dir, '.agent-workflow', 'binding-sources.json');
+  const out = path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json');
   assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md').status, 0);
   write(dir, { 'docs/SECURITY.md': '# S\n' });
   const wider = run('sources', '--repo', dir, '--compare', out, 'README.md', 'docs');
@@ -63,7 +63,7 @@ test('additions invalidate an explicit comparison; inspect states its recorded-s
 test('manifests carry a format and version; unusable ones are reported with path and reason, never thrown, and rebuilt safely', () => {
   const dir = repository('manifests', { 'README.md': '# P\n' });
   establishLocalStorage(dir);
-  const local = path.join(dir, '.agent-workflow');
+  const local = path.join(dir, '.peer-skills-and-workflows');
   const manifestPath = path.join(local, 'binding-sources.json');
   const binding = '# Local binding\n\n## Operator choices\n\n- "Always keep documentation findings in set D." (operator, today)\n';
   fs.writeFileSync(path.join(local, 'binding.md'), binding);
@@ -125,7 +125,7 @@ test('persisted manifests are decoded strictly at both comparison entry points: 
   const sources = ['README.md', replacement, supplementary];
   const dir = repository('manifest-decoding', { 'README.md': '# P\n', [replacement]: 'r\n', [supplementary]: 'g\n' });
   establishLocalStorage(dir);
-  const file = path.join(dir, '.agent-workflow', 'binding-sources.json');
+  const file = path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json');
   assert.equal(run('sources', '--repo', dir, '--out', file, ...sources).status, 0);
   const valid = fs.readFileSync(file);
   assert.equal(valid[0], 0x7b, 'the generated record is one JSON object');
@@ -185,7 +185,7 @@ test('persisted manifests are decoded strictly at both comparison entry points: 
 test('deeply nested additive values do not exhaust the strict decoder at either comparison entry point: valid ones stay current, a deep unpaired surrogate keeps its fixed cause', () => {
   const dir = repository('manifest-deep-additive', { 'README.md': '# P\n' });
   establishLocalStorage(dir);
-  const file = path.join(dir, '.agent-workflow', 'binding-sources.json');
+  const file = path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json');
   assert.equal(run('sources', '--repo', dir, '--out', file, 'README.md').status, 0);
   const valid = fs.readFileSync(file, 'utf8').trimEnd();
   assert.ok(valid.endsWith('}'), 'the generated record is one JSON object');
@@ -237,7 +237,7 @@ test('a link loop among recorded sources is that entry\'s unreadable result; rea
   assert.deepEqual([external.scope, external.kind, external.error], ['external', 'unreadable', 'ELOOP'], 'an external path whose ancestors loop');
 
   establishLocalStorage(dir);
-  const out = path.join(dir, '.agent-workflow', 'binding-sources.json');
+  const out = path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json');
   const recorded = run('sources', '--repo', dir, '--out', out, 'README.md', 'loop.md', 'docs');
   assert.equal(recorded.status, 1, recorded.stderr);
   assert.deepEqual(recorded.json.sources.map((s) => [s.path, s.kind]), [['README.md', 'file'], ['loop.md', 'unreadable'], ['docs', 'directory']]);
@@ -257,7 +257,7 @@ test('duplicate lookup keys make a manifest unusable in either order; distinct a
   const dir = repository('duplicates', { 'README.md': '# P\n', 'docs/a.md': 'a\n' });
   fs.symlinkSync('docs', path.join(dir, 'guides'), 'dir');
   establishLocalStorage(dir);
-  const manifestPath = path.join(dir, '.agent-workflow', 'binding-sources.json');
+  const manifestPath = path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json');
   const current = sourceManifest(dir, ['README.md', 'docs', 'guides'], { workflowSource: packageRoot });
   const stale = { ...current.sources[0], blob: 'stale' };
   for (const [order, label] of [[[stale, current.sources[0]], 'stale first'], [[current.sources[0], stale], 'stale last']]) {
@@ -285,7 +285,7 @@ test('duplicate lookup keys make a manifest unusable in either order; distinct a
 test('repository facts are guarded at both manifest locations without modifying additive input', () => {
   const dir = repository('repository-facts-schema', { 'README.md': 'readable', ...qualityFixture });
   establishLocalStorage(dir);
-  const file = path.join(dir, '.agent-workflow/binding-sources.json');
+  const file = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   const base = sourceManifest(dir, ['README.md'], { workflowSource: packageRoot });
   const malformed = [null, 'bad', 1, {}, [null], [[]], [1], ['bad'], [{}], [{ path: 'child' }], [{ kind: 'nested' }], [{ path: 1, kind: 'nested' }], [{ path: 'child', kind: null }]];
   for (const location of ['source', 'workflow']) {
@@ -371,7 +371,7 @@ test('repository comparison ignores additive fields and key order at both locati
 test('persisted readers refuse missing or unevaluable workflow identity while generic source-only comparison remains valid', () => {
   const dir = repository('persisted-workflow-identity', { 'README.md': 'readable' });
   establishLocalStorage(dir);
-  const file = path.join(dir, '.agent-workflow/binding-sources.json');
+  const file = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   const generic = sourceManifest(dir, ['README.md']);
   assert.equal(manifestProblem(generic), null);
   assert.equal(compareManifests(generic, sourceManifest(dir, ['README.md'])).current, true);
@@ -404,7 +404,7 @@ test('copied and relocated checkout diagnostics stay separate from content curre
   const original = repository('checkout-original', { 'README.md': 'same bytes' });
   const other = repository('checkout-other', { 'README.md': 'same bytes' });
   establishLocalStorage(other);
-  const file = path.join(other, '.agent-workflow/binding-sources.json');
+  const file = path.join(other, '.peer-skills-and-workflows/binding-sources.json');
   const baseline = sourceManifest(original, ['README.md'], { workflowSource: packageRoot });
   const alias = path.join(scratch, 'checkout-alias');
   fs.symlinkSync(other, alias, 'dir');
@@ -448,7 +448,7 @@ test('combined compare and out keeps transient comparison only in stdout', () =>
 
 test('a comparison naming occupied local storage is unusable before any read; external, ordinary and linked-file comparisons keep their policy', () => {
   const dir = repository('compare-occupied', { 'README.md': 'readable' });
-  const local = path.join(dir, '.agent-workflow');
+  const local = path.join(dir, '.peer-skills-and-workflows');
   const outside = path.join(scratch, 'compare-occupied-target');
   const external = path.join(outside, 'binding-sources.json');
   assert.equal(run('sources', '--repo', dir, '--out', external, 'README.md').status, 0);
@@ -469,8 +469,8 @@ test('a comparison naming occupied local storage is unusable before any read; ex
   fs.symlinkSync(outside, local, 'dir');
   const alias = path.join(scratch, 'compare-occupied-alias');
   fs.symlinkSync(dir, alias, 'dir');
-  const spellings = [path.join(local, 'binding-sources.json'), path.join(alias, '.agent-workflow/binding-sources.json'),
-    ...(scratchFoldsCase ? [path.join(dir, '.AGENT-WORKFLOW/binding-sources.json'), path.join(alias, '.Agent-Workflow/binding-sources.json')] : [])];
+  const spellings = [path.join(local, 'binding-sources.json'), path.join(alias, '.peer-skills-and-workflows/binding-sources.json'),
+    ...(scratchFoldsCase ? [path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/binding-sources.json'), path.join(alias, '.Peer-Skills-And-Workflows/binding-sources.json')] : [])];
   for (const file of spellings) {
     const result = compare(file);
     assert.equal(result.status, 0, `an unusable comparison alone keeps the exit policy: ${result.stderr}`);
@@ -487,7 +487,7 @@ test('a comparison naming occupied local storage is unusable before any read; ex
   fs.unlinkSync(local);
   fs.mkdirSync(local);
   fs.copyFileSync(external, path.join(local, 'binding-sources.json'));
-  const ordinary = compare(path.join(alias, '.agent-workflow/binding-sources.json'));
+  const ordinary = compare(path.join(alias, '.peer-skills-and-workflows/binding-sources.json'));
   assert.equal(ordinary.json.comparison.usable, true, 'ordinary storage is read');
   assert.equal(ordinary.json.comparison.current, true, `comparison: ${JSON.stringify(ordinary.json.comparison)}`);
   fs.unlinkSync(path.join(local, 'binding-sources.json'));

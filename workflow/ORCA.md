@@ -15,7 +15,7 @@ paired RPs and adjudication.
 - Resolve the run root and scratch root once, from the PC's own canonical
   checkout, with
   `node <workflow source>/tools/resolve.mjs --repo <checkout> --run <run id>`:
-  the run root `<checkout>/.agent-workflow/runs/<run id>/` exists only in that
+  the run root `<checkout>/.peer-skills-and-workflows/runs/<run id>/` exists only in that
   checkout ([RECORDS.md](RECORDS.md#where-records-live)), and the scratch root
   lies outside it ([RECORDS.md](RECORDS.md#scratch)). Pass the absolute run
   root, each worker's attempt directory and its scratch directory, laid out as
@@ -55,8 +55,8 @@ the seats are `R1`–`R4`.
 Layers, lowest precedence first:
 
 1. **Shared defaults:** [defaults.yaml](../defaults.yaml) in the workflow source.
-2. **Repository:** `<checkout>/.agent-workflow/config.yaml`.
-3. **Plan:** `<checkout>/.agent-workflow/plans/<plan>.yaml`.
+2. **Repository:** `<checkout>/.peer-skills-and-workflows/config.yaml`.
+3. **Plan:** `<checkout>/.peer-skills-and-workflows/plans/<plan>.yaml`.
 4. **Phase:** the `phases: <id>:` section of that plan file.
 5. **Operator:** an explicit instruction for the run or for one worker,
    recorded in the [operator-guidance ledger](RECORDS.md#operator-guidance).
@@ -79,7 +79,7 @@ each role's and seat's profile, agent, model and effort with the layers that
 assigned it (`assignedBy`) and defined the profile (`profileFrom`); and the
 merged profiles with their source layer.
 
-`.agent-workflow/` is the checkout's ignored local workflow directory: the
+`.peer-skills-and-workflows/` is the checkout's ignored local workflow directory: the
 local binding ([BINDING.md](BINDING.md)), configuration and plans at its top,
 run records under `runs/` ([RECORDS.md](RECORDS.md#where-records-live)). It
 does not travel with a clone and does not appear in other worktrees, so the PC

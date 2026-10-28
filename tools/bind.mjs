@@ -5,7 +5,7 @@
 //
 //   node tools/bind.mjs inspect --repo <checkout>
 //       Git identity of the checkout and of this workflow source, local
-//       storage state (whether Git excludes the `.agent-workflow/` directory
+//       storage state (whether Git excludes the `.peer-skills-and-workflows/` directory
 //       itself, with partial effects), the existing local binding and its
 //       recorded manifest (usable or not, with path and reason) compared with
 //       the current state of the sources it records, the installed
@@ -22,10 +22,10 @@
 //       restoring access or obtaining a separately authorized rename to UTF-8,
 //       and a recheck establishes complete discovery.
 //   node tools/bind.mjs exclude --repo <checkout>
-//       Establish local storage: refuse tracked `.agent-workflow/` content and
+//       Establish local storage: refuse tracked `.peer-skills-and-workflows/` content and
 //       a path occupied by a file, link or other non-directory entry (decided
 //       before any probe or write), reuse a rule that excludes the directory
-//       itself, else append `/.agent-workflow/` to Git's local exclude file
+//       itself, else append `/.peer-skills-and-workflows/` to Git's local exclude file
 //       once and verify with Git. Sequential repeats write nothing; concurrent
 //       outcomes follow BINDING.md Local storage. Exits
 //       1 when storage could not be established; the JSON names the conflict
@@ -40,7 +40,7 @@
 //       as `missing` whether or not it still exists, so list every recorded
 //       path, or use `inspect`, for the whole recorded set. Nothing is written
 //       without `--out`; the skill passes
-//       `--out <checkout>/.agent-workflow/binding-sources.json` for the
+//       `--out <checkout>/.peer-skills-and-workflows/binding-sources.json` for the
 //       binding. `--out` may name any other destination such as a scratch
 //       export, except local binding.md, checkout/owning-child Git administration,
 //       requested paths beneath occupied named local storage (through any
