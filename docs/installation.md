@@ -28,6 +28,8 @@ also selects it automatically. For Codex, add the
 [session instructions](../README.md#codex-environment) yourself, then review the
 plugin's three successor hooks in `/hooks`; installation never records hook
 trust. Without an enabled succession chain, the hooks return nothing.
+If Codex reports changed plugin contents, start a new session and review the
+hooks again.
 
 To try the plugin beside a linked installation, set an absolute, disposable
 `CODEX_HOME` or `CLAUDE_CONFIG_DIR` for those commands and sessions, and sign in
@@ -74,8 +76,9 @@ installation automatically.
 
 Plugin installation, update, disable and removal were exercised on macOS with
 Codex CLI 0.165.0-alpha.1.2 and Claude Code 2.1.309, through each client's Git
-marketplace commands against a local repository. Unverified: hosted Git
-transport and authentication, Windows and Linux, the Codex and Claude desktop
+marketplace commands against a local repository. Installation was also verified
+from the public GitHub repository over anonymous HTTPS. Unverified:
+private-repository authentication, Windows and Linux, the Codex and Claude desktop
 apps, other client versions, Claude model sessions in a profile with the
 marketplace installation enabled (sessions loaded the installed copy with
 `--plugin-dir`), and Codex trust through the `/hooks` screen (tested through

@@ -66,8 +66,8 @@ not successful installation of this package.
 
 The tested targets are Codex CLI `0.165.0-alpha.1.2` and Claude Code `2.1.309`
 on macOS 26.7.1, with Node.js 24.18.0. Codex desktop, other client versions,
-and native Windows/Linux execution remain unverified, as do hosted Git
-transport and Claude model sessions through a marketplace-enabled profile.
+and native Windows/Linux execution remain unverified, as do private Git
+authentication and Claude model sessions through a marketplace-enabled profile.
 Platform path mappings have deterministic tests; those tests do not establish
 native host execution.
 
