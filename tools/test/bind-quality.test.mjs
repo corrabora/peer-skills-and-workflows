@@ -172,9 +172,9 @@ for (const mode of ['inherited-leaf', 'profiles-ancestor', 'required-leaf', 'in-
 for (const recorded of [false, true]) {
   test(`inherited profile lookup denial retains partial inspection: recorded sources ${recorded}`, (t) => {
     if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
-    const dir = repository(`profile-denial-${recorded}`, { ...qualityFixture, '.gitignore': '/.agent-workflow/\n' });
+    const dir = repository(`profile-denial-${recorded}`, { ...qualityFixture, '.gitignore': '/.peer-skills-and-workflows/\n' });
     establishLocalStorage(dir);
-    const out = path.join(dir, '.agent-workflow/binding-sources.json');
+    const out = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
     if (recorded) assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md', '.quality').status, 0);
     const normal = run('inspect', '--repo', dir);
     assert.equal(normal.status, 0, normal.stderr);
@@ -213,7 +213,7 @@ for (const recorded of [false, true]) {
   test(`a denied manifest at a non-fallback folder leaves its ID unresolved, not uninstalled: recorded sources ${recorded}`, (t) => {
     if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
     const dir = repository(`manifest-denial-${recorded}`, {
-      'README.md': '# P\n', '.gitignore': '/.agent-workflow/\n',
+      'README.md': '# P\n', '.gitignore': '/.peer-skills-and-workflows/\n',
       '.quality/config.json': JSON.stringify({ profiles: [{ profileId: 'profile:acme/root', path: 'profiles/root-installed' }] }),
       '.quality/profiles/root-installed/_manifest/profile.json': JSON.stringify({
         profileId: 'profile:acme/root', inherits: [{ profileId: 'profile:acme/core' }, { profileId: 'profile:acme/extra' }], requires: [{ profileId: 'profile:acme/absent' }],
@@ -222,7 +222,7 @@ for (const recorded of [false, true]) {
       '.quality/profiles/extra-installed/_manifest/profile.json': JSON.stringify({ profileId: 'profile:acme/extra', version: '2.0.0' }),
     });
     establishLocalStorage(dir);
-    const out = path.join(dir, '.agent-workflow/binding-sources.json');
+    const out = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
     if (recorded) assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md', '.quality').status, 0);
     const byId = (json, id) => json.quality.profiles.find((p) => p.profileId === id);
     const readable = run('inspect', '--repo', dir);

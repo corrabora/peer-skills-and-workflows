@@ -31,13 +31,13 @@ Storage selection is deterministic:
   under `control/successor/`; counts reuse `control/coordinator-counts.json`.
   Preserve the Run's existing policy by supplying its resolved thresholds.
 - An ordinary task: default `--storage auto` uses
-  `.agent-workflow/successions/<chain-id>/` when `.agent-workflow/` already
+  `.peer-skills-and-workflows/successions/<chain-id>/` when `.peer-skills-and-workflows/` already
   exists, is a plain directory and is wholly untracked and ignored. A conflict
   is reported; nothing is untracked or silently redirected.
 - When local storage is absent, or with `--storage external`, records live at
   `<machine base>/successions/<chain-id>/`. `machineBase` in
   `tools/lib/paths.mjs` owns the platform mapping. On macOS this is under
-  `~/Library/Application Support/AgentWorkflow`. It is retained state beside
+  `~/Library/Application Support/PeerSkillsAndWorkflows`. It is retained state beside
   `scratch/`, never inside scratch.
 
 The helper also writes a small session-to-root pointer under

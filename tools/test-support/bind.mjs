@@ -113,11 +113,11 @@ export function excludeContent(dir) {
 }
 
 /** Local records written to probe what Git lists after setup. */
-export const LOCAL_RECORDS = { '.agent-workflow/binding.md': 'b\n', '.agent-workflow/binding-sources.json': '{}', '.agent-workflow/runs/run_x/report.md': 'r\n' };
+export const LOCAL_RECORDS = { '.peer-skills-and-workflows/binding.md': 'b\n', '.peer-skills-and-workflows/binding-sources.json': '{}', '.peer-skills-and-workflows/runs/run_x/report.md': 'r\n' };
 
 export function visibleLocal(dir) {
   write(dir, LOCAL_RECORDS);
-  return git(dir, 'ls-files', '-o', '--exclude-standard', '-z', '--', '.agent-workflow').split('\0').filter(Boolean);
+  return git(dir, 'ls-files', '-o', '--exclude-standard', '-z', '--', '.peer-skills-and-workflows').split('\0').filter(Boolean);
 }
 
 /**

@@ -231,7 +231,7 @@ test('links including writing print the documented Codex setting and preserve ex
       assert.ok(linked.stdout.includes(instructionPath));
       assert.equal(fs.readFileSync(config, 'utf8'), existing, 'configuration remains unchanged');
       assert.deepEqual(fs.readdirSync(path.dirname(config)).sort(), set === 'writing'
-        ? ['config.toml'] : ['.agent-workflow-successor-hooks.json', 'config.toml', 'hooks.json']);
+        ? ['config.toml'] : ['.peer-skills-and-workflows-successor-hooks.json', 'config.toml', 'hooks.json']);
     }
     for (const command of ['check', 'unlink']) {
       const result = run(home, command, ...selection);

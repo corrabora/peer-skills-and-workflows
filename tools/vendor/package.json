@@ -1,0 +1,10 @@
+{
+  "name": "peer-skills-and-workflows-runtime",
+  "private": true,
+  "license": "MIT",
+  "description": "Pinned runtime dependencies of the workflow tools, vendored in node_modules.",
+  "dependencies": {
+    "ajv": "8.20.0",
+    "yaml": "2.9.1"
+  }
+}

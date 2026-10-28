@@ -69,8 +69,8 @@ test('a repository without commits and a fresh clone are inspected without local
     '.quality/config.json': JSON.stringify({ profiles: [{ profileId: 'profile:acme/solo', path: 'profiles/acme-solo' }] }),
     '.quality/profiles/acme-solo/_manifest/profile.json': JSON.stringify({ profileId: 'profile:acme/solo', version: '1.0.0' }),
   });
-  fs.mkdirSync(path.join(origin, '.agent-workflow'));
-  fs.writeFileSync(path.join(origin, '.agent-workflow', 'binding.md'), 'local only\n');
+  fs.mkdirSync(path.join(origin, '.peer-skills-and-workflows'));
+  fs.writeFileSync(path.join(origin, '.peer-skills-and-workflows', 'binding.md'), 'local only\n');
   establishLocalStorage(origin);
   const clone = path.join(scratch, 'clone');
   git(scratch, 'clone', '-q', origin, clone);
@@ -83,7 +83,7 @@ test('a repository without commits and a fresh clone are inspected without local
   assert.equal(inspected.json.localStorage.ignored, false, 'nor does the local exclude rule');
   assert.equal(inspected.json.localStorage.directoryPresent, false);
   assert.equal(inspected.json.localStorage.rulePresent, false);
-  assert.equal(fs.existsSync(path.join(clone, '.agent-workflow')), false, 'inspect creates nothing');
+  assert.equal(fs.existsSync(path.join(clone, '.peer-skills-and-workflows')), false, 'inspect creates nothing');
   assert.equal(inspected.json.quality.present, true);
   assert.deepEqual(inspected.json.quality.profiles, [{
     profileId: 'profile:acme/solo', path: '.quality/profiles/acme-solo', selectedBy: 'config', present: true, version: '1.0.0', inherits: [], requires: [],
@@ -109,9 +109,9 @@ test('usage and checkout errors', () => {
 
 test('discovery denial fails a file-only CHECK with surviving facts and restores filtered candidates', (t) => {
   if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
-  const dir = repository('discovery-denial', { 'README.md': 'readable', '.gitignore': '/.agent-workflow/\n' });
+  const dir = repository('discovery-denial', { 'README.md': 'readable', '.gitignore': '/.peer-skills-and-workflows/\n' });
   establishLocalStorage(dir);
-  const out = path.join(dir, '.agent-workflow/binding-sources.json');
+  const out = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md').status, 0);
   write(dir, { 'docs/private-notes.md': 'ignored private notes', 'docs/new-guidance.md': 'visible guidance' });
   const exclude = excludeFile(dir);
@@ -143,9 +143,9 @@ test('discovery denial fails a file-only CHECK with surviving facts and restores
 
 test('a denied directory names its own path in discovery errors and an unknown warning has no path', (t) => {
   if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
-  const dir = repository('discovery-directory-denial', { 'README.md': 'readable', 'docs/private/notes.md': 'notes', '.gitignore': '/.agent-workflow/\n' });
+  const dir = repository('discovery-directory-denial', { 'README.md': 'readable', 'docs/private/notes.md': 'notes', '.gitignore': '/.peer-skills-and-workflows/\n' });
   establishLocalStorage(dir);
-  const out = path.join(dir, '.agent-workflow/binding-sources.json');
+  const out = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md').status, 0);
   write(dir, { 'docs/private/new-guidance.md': 'untracked guidance' });
   const readable = run('inspect', '--repo', dir);

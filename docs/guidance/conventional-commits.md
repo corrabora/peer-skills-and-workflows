@@ -130,8 +130,7 @@ Run all checks without attempting a commit with
 `node tools/commit-verify.mjs <message-file>`. Checks run from the workflow
 checkout root. Tests exercise the working checkout and its installed
 dependencies; they do not materialize the staged index. Keep a partially staged
-change coherent independently of unstaged work. Run `npm ci` first when the
-checkout's dependencies need installation.
+change coherent independently of unstaged work.
 
 Enable automatic checking once per clone, from this package's checkout:
 

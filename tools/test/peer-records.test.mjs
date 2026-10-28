@@ -15,10 +15,10 @@ function options(workspace, extra = {}) {
   return { workspace, run: 'run_1', task: 'peer_1', host: { platform: process.platform, env: { LOCALAPPDATA: path.join(scratch, 'AppData') }, home: path.join(scratch, 'home') }, ...extra };
 }
 function bound(name) {
-  const dir = repository(name, { 'README.md': '# Example\n', '.gitignore': '/.agent-workflow/\n' });
-  write(dir, { '.agent-workflow/binding.md': '# Fixture binding\nREADME.md governs this fixture.\n' });
+  const dir = repository(name, { 'README.md': '# Example\n', '.gitignore': '/.peer-skills-and-workflows/\n' });
+  write(dir, { '.peer-skills-and-workflows/binding.md': '# Fixture binding\nREADME.md governs this fixture.\n' });
   const manifest = sourceManifest(dir, ['README.md'], { workflowSource: packageRoot });
-  write(dir, { '.agent-workflow/binding-sources.json': JSON.stringify(manifest) });
+  write(dir, { '.peer-skills-and-workflows/binding-sources.json': JSON.stringify(manifest) });
   return dir;
 }
 function cli(workspace, ...args) {
@@ -53,7 +53,7 @@ test('platform mappings reuse shared roots and separate workspace/run/task ident
     const w = host.platform === 'win32' ? 'C:\\work\\repo' : '/work/repo';
     const locations = peerLocations(host, w, 'run_1', 'peer_1');
     assert.equal(locations.externalRecords, p.join(machineBase(host), 'records/repositories', repositoryKey(w, host.platform), 'runs/run_1/peers/peer_1'));
-    assert.equal(locations.localRecords, p.join(w, '.agent-workflow/runs/run_1/peers/peer_1'));
+    assert.equal(locations.localRecords, p.join(w, '.peer-skills-and-workflows/runs/run_1/peers/peer_1'));
     assert.notEqual(locations.scratch, locations.externalRecords);
     assert.notEqual(locations.externalRecords, peerLocations(host, w, 'run_1', 'peer_2').externalRecords);
     assert.notEqual(locations.externalRecords, peerLocations(host, w, 'run_2', 'peer_1').externalRecords);
@@ -80,7 +80,7 @@ test('current mechanical facts offer a candidate but do not claim a binding CHEC
   const dir = bound('current'); const before = tree(dir);
   const result = resolvePeerRecords(options(dir));
   assert.equal(result.storage, 'external'); assert.equal(result.binding.eligibleForCheck, true);
-  assert.equal(result.localCandidate, path.join(dir, '.agent-workflow/runs/run_1/peers/peer_1'));
+  assert.equal(result.localCandidate, path.join(dir, '.peer-skills-and-workflows/runs/run_1/peers/peer_1'));
   assert.equal(result.bindingCheckRequired, true); assert.match(result.scope, /also requires current binding CHECK evidence/);
   assert.equal(resolvePeerRecords(options(dir, { storage: 'local' })).recordsRoot, result.localCandidate);
   assert.deepEqual(tree(dir), before, 'resolution creates neither records nor scratch and leaves binding unchanged');
@@ -100,15 +100,15 @@ test('new discovered guidance is exposed for CHECK even while recorded sources m
 });
 
 test('copied, malformed, partial and unprotected bindings never select local', () => {
-  const original = bound('copy-origin'); const copy = repository('copy-destination', { 'README.md': '# Example\n', '.gitignore': '/.agent-workflow/\n' });
-  fs.cpSync(path.join(original, '.agent-workflow'), path.join(copy, '.agent-workflow'), { recursive: true });
+  const original = bound('copy-origin'); const copy = repository('copy-destination', { 'README.md': '# Example\n', '.gitignore': '/.peer-skills-and-workflows/\n' });
+  fs.cpSync(path.join(original, '.peer-skills-and-workflows'), path.join(copy, '.peer-skills-and-workflows'), { recursive: true });
   assert.equal(resolvePeerRecords(options(copy)).binding.facts.exactCheckout, false);
   for (const type of ['malformed', 'partial', 'unprotected', 'tracked']) {
     const dir = bound(type);
-    if (type === 'malformed') write(dir, { '.agent-workflow/binding-sources.json': '{oops' });
-    if (type === 'partial') fs.unlinkSync(path.join(dir, '.agent-workflow/binding.md'));
+    if (type === 'malformed') write(dir, { '.peer-skills-and-workflows/binding-sources.json': '{oops' });
+    if (type === 'partial') fs.unlinkSync(path.join(dir, '.peer-skills-and-workflows/binding.md'));
     if (type === 'unprotected') write(dir, { '.gitignore': '' });
-    if (type === 'tracked') git(dir, 'add', '-f', '.agent-workflow/binding.md');
+    if (type === 'tracked') git(dir, 'add', '-f', '.peer-skills-and-workflows/binding.md');
     const result = resolvePeerRecords(options(dir));
     assert.equal(result.localCandidate, null, type);
     assert.throws(() => resolvePeerRecords(options(dir, { storage: 'local' })), /require current mechanical/, type);
@@ -118,7 +118,7 @@ test('copied, malformed, partial and unprotected bindings never select local', (
 test('occupied or linked local roots are refused without touching occupants; explicit external remains independent', t => {
   for (const kind of ['file', 'link', 'run-link']) {
     const dir = kind === 'run-link' ? bound(`occupied-${kind}`) : repository(`occupied-${kind}`);
-    const occupant = path.join(dir, '.agent-workflow', ...(kind === 'run-link' ? ['runs'] : []));
+    const occupant = path.join(dir, '.peer-skills-and-workflows', ...(kind === 'run-link' ? ['runs'] : []));
     if (kind === 'file') fs.writeFileSync(occupant, 'preserve');
     else if (!link(t, scratch, occupant)) return;
     const before = tree(dir);
@@ -129,7 +129,7 @@ test('occupied or linked local roots are refused without touching occupants; exp
 });
 
 test('linked binding children are reported, never read as ordinary files', t => {
-  const dir = bound('linked-child'); const child = path.join(dir, '.agent-workflow/binding.md'); fs.unlinkSync(child);
+  const dir = bound('linked-child'); const child = path.join(dir, '.peer-skills-and-workflows/binding.md'); fs.unlinkSync(child);
   if (!link(t, path.join(scratch, 'missing-binding'), child)) return;
   const result = resolvePeerRecords(options(dir));
   assert.equal(result.localCandidate, null); assert.equal(result.binding.inspection.binding.state.kind, 'link');
@@ -183,8 +183,8 @@ test('a minimal installed-link package works unbound without ajv; bound missing 
   const dir = repository('minimal-target');
   const run = (...args) => spawnSync(process.execPath, [tool, '--workspace', dir, '--run', 'r', '--task', 't', ...args], { env: { ...GIT_ENV, NODE_PATH: '' }, encoding: 'utf8' });
   assert.equal(run().status, 0);
-  write(dir, { '.agent-workflow/binding.md': '# Binding\n' });
+  write(dir, { '.peer-skills-and-workflows/binding.md': '# Binding\n' });
   const missing = run(); assert.equal(missing.status, 1);
-  assert.match(JSON.parse(missing.stderr).error, /ajv.*not installed/);
+  assert.match(JSON.parse(missing.stderr).error, /'ajv' runtime dependency is missing/);
   assert.equal(run('--storage', 'external').status, 0);
 });

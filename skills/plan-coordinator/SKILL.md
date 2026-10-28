@@ -34,10 +34,10 @@ are prerequisites of the ledger, not work done on the instruction.
 - The local binding, before any record is written. Read
   `skills/bind-agent-workflow/SKILL.md` in the workflow source and follow it
   for your own checkout: it establishes local storage (nothing under
-  `.agent-workflow/` tracked, the directory ignored through an existing rule
+  `.peer-skills-and-workflows/` tracked, the directory ignored through an existing rule
   or Git's local exclude file), inspects the repository's guidance, quality
   selection and extensions, writes or refreshes
-  `<checkout>/.agent-workflow/binding.md` with `binding-sources.json`, and
+  `<checkout>/.peer-skills-and-workflows/binding.md` with `binding-sources.json`, and
   reports readiness. On a new run do the broad discovery; on resume, and
   before each dependent wave, do its source check, compare the discovered
   guidance sources with the sources the binding cites and rediscover what

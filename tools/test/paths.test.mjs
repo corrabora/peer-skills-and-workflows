@@ -12,11 +12,11 @@ import {
 } from '../lib/paths.mjs';
 
 test('run roots sit in the checkout\'s local workflow directory, per host path rules', () => {
-  assert.equal(localDirectory('/work/repo', 'linux'), '/work/repo/.agent-workflow');
-  assert.equal(runRoot('/work/repo', 'run_021a27881b97', 'linux'), '/work/repo/.agent-workflow/runs/run_021a27881b97');
-  assert.equal(runRoot('/Users/Ada Lovelace/src/repo', 'run_1', 'darwin'), '/Users/Ada Lovelace/src/repo/.agent-workflow/runs/run_1');
-  assert.equal(localDirectory('C:\\Users\\Zoë Q\\src\\repo', 'win32'), 'C:\\Users\\Zoë Q\\src\\repo\\.agent-workflow');
-  assert.equal(runRoot('C:\\src\\repo', 'run_1', 'win32'), 'C:\\src\\repo\\.agent-workflow\\runs\\run_1');
+  assert.equal(localDirectory('/work/repo', 'linux'), '/work/repo/.peer-skills-and-workflows');
+  assert.equal(runRoot('/work/repo', 'run_021a27881b97', 'linux'), '/work/repo/.peer-skills-and-workflows/runs/run_021a27881b97');
+  assert.equal(runRoot('/Users/Ada Lovelace/src/repo', 'run_1', 'darwin'), '/Users/Ada Lovelace/src/repo/.peer-skills-and-workflows/runs/run_1');
+  assert.equal(localDirectory('C:\\Users\\Zoë Q\\src\\repo', 'win32'), 'C:\\Users\\Zoë Q\\src\\repo\\.peer-skills-and-workflows');
+  assert.equal(runRoot('C:\\src\\repo', 'run_1', 'win32'), 'C:\\src\\repo\\.peer-skills-and-workflows\\runs\\run_1');
 });
 
 test('run roots keep same-named checkouts and distinct runs apart', () => {
@@ -51,13 +51,13 @@ test('simulated skill scopes per engine, honouring an absolute CLAUDE_CONFIG_DIR
 });
 
 test('simulated machine-local bases per host, refusing a missing or relative root', () => {
-  assert.equal(machineBase({ platform: 'darwin', env: {}, home: '/Users/a' }), '/Users/a/Library/Application Support/AgentWorkflow');
+  assert.equal(machineBase({ platform: 'darwin', env: {}, home: '/Users/a' }), '/Users/a/Library/Application Support/PeerSkillsAndWorkflows');
   assert.equal(machineBase({ platform: 'win32', env: { LOCALAPPDATA: 'C:\\Users\\a\\AppData\\Local' }, home: 'C:\\Users\\a' }),
-    'C:\\Users\\a\\AppData\\Local\\AgentWorkflow');
-  assert.equal(machineBase({ platform: 'linux', env: {}, home: '/home/a' }), '/home/a/.local/state/agent-workflow');
-  assert.equal(machineBase({ platform: 'linux', env: { XDG_STATE_HOME: '/state' }, home: '/home/a' }), '/state/agent-workflow');
+    'C:\\Users\\a\\AppData\\Local\\PeerSkillsAndWorkflows');
+  assert.equal(machineBase({ platform: 'linux', env: {}, home: '/home/a' }), '/home/a/.local/state/peer-skills-and-workflows');
+  assert.equal(machineBase({ platform: 'linux', env: { XDG_STATE_HOME: '/state' }, home: '/home/a' }), '/state/peer-skills-and-workflows');
   assert.equal(machineBase({ platform: 'linux', env: { XDG_STATE_HOME: 'state' }, home: '/home/a' }),
-    '/home/a/.local/state/agent-workflow', 'a relative XDG_STATE_HOME is ignored');
+    '/home/a/.local/state/peer-skills-and-workflows', 'a relative XDG_STATE_HOME is ignored');
   for (const env of [{}, { LOCALAPPDATA: 'AppData\\Local' }]) {
     assert.throws(() => machineBase({ platform: 'win32', env, home: 'C:\\Users\\a' }), /LOCALAPPDATA/);
   }
@@ -69,12 +69,12 @@ test('scratch roots sit in their own namespace, keyed by checkout and run', () =
   const key = repositoryKey('/work/one/repo', 'linux');
   assert.equal(key, 'repo-85ffe18bd00acaa6', 'keys stay stable, so a run keeps finding its scratch');
   assert.equal(scratchRoot(linux, '/work/one/repo', 'run_1'),
-    `/home/a/.local/state/agent-workflow/scratch/repositories/${key}/runs/run_1`);
+    `/home/a/.local/state/peer-skills-and-workflows/scratch/repositories/${key}/runs/run_1`);
   assert.notEqual(key, repositoryKey('/work/two/repo', 'linux'), 'same-named checkouts stay apart');
   assert.notEqual(scratchRoot(linux, '/work/one/repo', 'run_1'), scratchRoot(linux, '/work/one/repo', 'run_2'));
   assert.match(repositoryKey('C:\\src\\my repo', 'win32'), /^my-repo-[0-9a-f]{16}$/);
   assert.equal(scratchRoot({ platform: 'win32', env: { LOCALAPPDATA: 'C:\\L' }, home: 'C:\\Users\\a' }, 'C:\\src\\repo', 'run_1'),
-    `C:\\L\\AgentWorkflow\\scratch\\repositories\\${repositoryKey('C:\\src\\repo', 'win32')}\\runs\\run_1`);
+    `C:\\L\\PeerSkillsAndWorkflows\\scratch\\repositories\\${repositoryKey('C:\\src\\repo', 'win32')}\\runs\\run_1`);
   for (const bad of ['../x', 'a/b', '..', '']) {
     assert.throws(() => scratchRoot(linux, '/work/one/repo', bad), /run id/, bad);
   }

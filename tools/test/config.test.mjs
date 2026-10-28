@@ -40,7 +40,7 @@ test('shared defaults assign every role and seat to a complete profile', () => {
 
 test('precedence: shared < repository < plan < phase < operator', () => {
   const repo = checkout('layered', {
-    '.agent-workflow/config.yaml': [
+    '.peer-skills-and-workflows/config.yaml': [
       'profiles:',
       '  repo-profile:',
       '    agent: claude',
@@ -53,7 +53,7 @@ test('precedence: shared < repository < plan < phase < operator', () => {
       '  R1: repo-profile',
       '  R2: repo-profile',
     ].join('\n'),
-    '.agent-workflow/plans/plan-a.yaml': [
+    '.peer-skills-and-workflows/plans/plan-a.yaml': [
       'profiles:',
       '  repo-profile:          # replaces the repository definition whole',
       '    agent: codex',
@@ -93,13 +93,13 @@ test('the run root lies in the canonical checkout\'s ignored local directory and
   const first = resolve(['--repo', one, '--run', 'run_1']);
   assert.equal(first.status, 0, first.stderr);
   assert.equal(first.json.checkout, one);
-  assert.equal(first.json.localDirectory, path.join(one, '.agent-workflow'));
-  assert.equal(first.json.runRoot, path.join(one, '.agent-workflow', 'runs', 'run_1'));
-  assert.equal(resolve(['--repo', two, '--run', 'run_1']).json.runRoot, path.join(two, '.agent-workflow', 'runs', 'run_1'));
-  assert.equal(resolve(['--repo', one, '--run', 'run_2']).json.runRoot, path.join(one, '.agent-workflow', 'runs', 'run_2'));
+  assert.equal(first.json.localDirectory, path.join(one, '.peer-skills-and-workflows'));
+  assert.equal(first.json.runRoot, path.join(one, '.peer-skills-and-workflows', 'runs', 'run_1'));
+  assert.equal(resolve(['--repo', two, '--run', 'run_1']).json.runRoot, path.join(two, '.peer-skills-and-workflows', 'runs', 'run_1'));
+  assert.equal(resolve(['--repo', one, '--run', 'run_2']).json.runRoot, path.join(one, '.peer-skills-and-workflows', 'runs', 'run_2'));
   assert.equal(resolve(['--repo', one]).json.runRoot, undefined);
   assert.equal(resolve(['--repo', one, '--run', 'run_1'], two).stdout, first.stdout, 'the shell directory does not matter');
-  assert.ok(!fs.existsSync(path.join(one, '.agent-workflow')), 'resolution creates nothing');
+  assert.ok(!fs.existsSync(path.join(one, '.peer-skills-and-workflows')), 'resolution creates nothing');
 });
 
 /** An environment whose per-user locations all start at `home`. */
@@ -157,7 +157,7 @@ test('invalid configuration fails with status 1 instead of being ignored', () =>
     'malformed plain start': 'profiles:\n  p:\n    agent: claude\n    model: - m\n    effort: high\n',
   };
   for (const [name, text] of Object.entries(cases)) {
-    const repo = checkout(`bad-${name.replace(/\s+/g, '-')}`, { '.agent-workflow/config.yaml': text });
+    const repo = checkout(`bad-${name.replace(/\s+/g, '-')}`, { '.peer-skills-and-workflows/config.yaml': text });
     const result = resolve(['--repo', repo]);
     assert.equal(result.status, 1, `${name}: ${result.stdout}`);
     assert.match(result.stderr, /^resolve: /, name);
@@ -180,8 +180,8 @@ test('an empty --run or --plan is refused, not taken as omitted', () => {
   assert.deepEqual(omitted.json.layers.map(({ layer }) => layer), ['shared', 'repository']);
   const valid = resolve(['--repo', repo, '--run', 'run_1', '--plan', 'p1']);
   assert.equal(valid.status, 0, valid.stderr);
-  assert.equal(valid.json.runRoot, path.join(repo, '.agent-workflow', 'runs', 'run_1'));
-  assert.deepEqual(valid.json.layers.at(-1), { layer: 'plan', path: path.join(repo, '.agent-workflow', 'plans', 'p1.yaml'), present: false });
+  assert.equal(valid.json.runRoot, path.join(repo, '.peer-skills-and-workflows', 'runs', 'run_1'));
+  assert.deepEqual(valid.json.layers.at(-1), { layer: 'plan', path: path.join(repo, '.peer-skills-and-workflows', 'plans', 'p1.yaml'), present: false });
   assert.equal(resolve(['--repo', repo, '--run=a..b']).status, 1);
   assert.deepEqual(fs.readdirSync(repo), ['.git'], 'nothing is created');
 });
@@ -206,7 +206,7 @@ test('operator layer parsing', () => {
 
 test('inherited object names are not profiles, roles or phases unless defined', () => {
   for (const name of ['constructor', 'toString']) {
-    const repo = checkout(`inherited-${name}`, { '.agent-workflow/config.yaml': `roles:\n  responsible-party: ${name}\n` });
+    const repo = checkout(`inherited-${name}`, { '.peer-skills-and-workflows/config.yaml': `roles:\n  responsible-party: ${name}\n` });
     const fromFile = resolve(['--repo', repo]);
     assert.equal(fromFile.status, 1, fromFile.stdout);
     assert.match(fromFile.stderr, new RegExp(`names undefined profile '${name}'`));
@@ -218,7 +218,7 @@ test('inherited object names are not profiles, roles or phases unless defined', 
 
 test('profiles named like object properties work when defined completely', () => {
   const repo = checkout('special-names', {
-    '.agent-workflow/config.yaml': [
+    '.peer-skills-and-workflows/config.yaml': [
       'profiles:',
       '  constructor:',
       '    agent: claude',
@@ -241,7 +241,7 @@ test('__proto__ keys are ordinary keys, so they cannot hide sections or entries'
     'hidden profile field': ['profiles:\n  p:\n    agent: a\n    model: m\n    effort: e\n    __proto__:\n      x: v\n', /unknown field '__proto__'/],
   };
   for (const [name, [text, pattern]] of Object.entries(cases)) {
-    const result = resolve(['--repo', checkout(`proto-${name.replace(/\s+/g, '-')}`, { '.agent-workflow/config.yaml': text })]);
+    const result = resolve(['--repo', checkout(`proto-${name.replace(/\s+/g, '-')}`, { '.peer-skills-and-workflows/config.yaml': text })]);
     assert.equal(result.status, 1, `${name}: ${result.stdout}`);
     assert.match(result.stderr, pattern, name);
   }
@@ -251,7 +251,7 @@ test('__proto__ keys are ordinary keys, so they cannot hide sections or entries'
 });
 
 test('an absent phase stays absent, whatever its name', () => {
-  const repo = checkout('absent-phase', { '.agent-workflow/plans/p.yaml': 'phases:\n  1:\n    roles:\n      investigator: astra-high\n' });
+  const repo = checkout('absent-phase', { '.peer-skills-and-workflows/plans/p.yaml': 'phases:\n  1:\n    roles:\n      investigator: astra-high\n' });
   for (const phase of ['2', 'constructor', 'toString', '__proto__']) {
     for (const plan of ['p', 'missing-plan']) {
       const { json, status, stderr } = resolve(['--repo', repo, '--plan', plan, '--phase', phase]);
@@ -265,7 +265,7 @@ test('an absent phase stays absent, whatever its name', () => {
 });
 
 test('a supplied phase, even an empty one, needs a plan and selects exactly that key', () => {
-  const repo = checkout('empty-phase', { '.agent-workflow/plans/p.yaml': [
+  const repo = checkout('empty-phase', { '.peer-skills-and-workflows/plans/p.yaml': [
     'phases:',
     '  "":',
     '    roles:',
@@ -292,32 +292,32 @@ test('a supplied phase, even an empty one, needs a plan and selects exactly that
   const unknown = resolve(['--repo', repo, '--plan', 'p', '--phase', 'ph3']).json;
   assert.deepEqual(layer(unknown), { layer: 'phase', path: 'plans/p.yaml phases.ph3', present: false });
   assert.equal(unknown.assignments.investigator.assignedBy, 'shared');
-  const plain = checkout('plain-phases', { '.agent-workflow/plans/p.yaml': 'phases:\n  ph2:\n' });
+  const plain = checkout('plain-phases', { '.peer-skills-and-workflows/plans/p.yaml': 'phases:\n  ph2:\n' });
   const absentEmpty = resolve(['--repo', plain, '--plan', 'p', '--phase', '']).json;
   assert.equal(layer(absentEmpty).present, false, 'an empty phase key that is not defined is absent');
   const omitted = resolve(['--repo', repo, '--plan', 'p']).json;
   assert.equal(layer(omitted), undefined, 'an omitted phase is not consulted');
   assert.equal(omitted.assignments.investigator.assignedBy, 'shared');
-  assert.deepEqual(fs.readdirSync(path.join(repo, '.agent-workflow')), ['plans'], 'nothing is created');
-  assert.deepEqual(fs.readdirSync(path.join(repo, '.agent-workflow', 'plans')), ['p.yaml']);
+  assert.deepEqual(fs.readdirSync(path.join(repo, '.peer-skills-and-workflows')), ['plans'], 'nothing is created');
+  assert.deepEqual(fs.readdirSync(path.join(repo, '.peer-skills-and-workflows', 'plans')), ['p.yaml']);
 });
 
 test('unknown assignment keys name the known roles and seats', () => {
   const operator = resolve(['--repo', checkout('unknown-assign'), '--assign', 'R5=fable-high']);
   assert.equal(operator.status, 1);
   assert.match(operator.stderr, /unknown role or seat 'R5' \(roles: responsible-party, .*; seats: R1, R2, R3, R4\)/);
-  const misplaced = resolve(['--repo', checkout('misplaced-seat', { '.agent-workflow/config.yaml': 'roles:\n  R1: fable-high\n' })]);
+  const misplaced = resolve(['--repo', checkout('misplaced-seat', { '.peer-skills-and-workflows/config.yaml': 'roles:\n  R1: fable-high\n' })]);
   assert.equal(misplaced.status, 1);
   assert.match(misplaced.stderr, /'R1' belongs under review-seats/);
 });
 
 test('plain values typed differently by YAML versions are refused in configuration with their file and line', () => {
-  const repo = checkout('typed-scalar', { '.agent-workflow/config.yaml': 'profiles:\n  p:\n    agent: claude\n    model: 012\n    effort: high\n' });
+  const repo = checkout('typed-scalar', { '.peer-skills-and-workflows/config.yaml': 'profiles:\n  p:\n    agent: claude\n    model: 012\n    effort: high\n' });
   const refused = resolve(['--repo', repo]);
   assert.equal(refused.status, 1);
   assert.equal(refused.stdout, '');
   // 012 is the integer 12 in YAML 1.2 Core and the octal 10 in YAML 1.1 (yaml.org/type/int).
-  assert.equal(refused.stderr, `resolve: ${path.join(repo, '.agent-workflow', 'config.yaml')}: line 4, column 12: YAML 1.2 reads `
+  assert.equal(refused.stderr, `resolve: ${path.join(repo, '.peer-skills-and-workflows', 'config.yaml')}: line 4, column 12: YAML 1.2 reads `
     + 'the number 12 here and YAML 1.1 reads the number 10; write it so both read the same, for example by quoting a value meant as text\n');
 });
 
@@ -333,16 +333,16 @@ test('merge keys, alias expansion and refused characters in configuration are re
     ['anchor', 'profiles:\n  p: &p\u0080 {agent: claude, model: m, effort: high}\n', /line 2, column 8: U\+0080 is not a printable character, .*; remove it from the anchor name\n/],
     ['bom', 'profiles:\n  p:\n    agent: claude\n    model: m\uFEFF\n    effort: high\n', /line 4, column 13: U\+FEFF is a byte order mark, /],
   ]) {
-    const repo = checkout(`refused-${name}`, { '.agent-workflow/config.yaml': text });
+    const repo = checkout(`refused-${name}`, { '.peer-skills-and-workflows/config.yaml': text });
     const refused = resolve(['--repo', repo]);
     assert.equal(refused.status, 1, name);
     assert.equal(refused.stdout, '', name);
-    const file = path.join(repo, '.agent-workflow', 'config.yaml');
+    const file = path.join(repo, '.peer-skills-and-workflows', 'config.yaml');
     assert.ok(refused.stderr.startsWith(`resolve: ${file}: `), `${name}: ${refused.stderr}`);
     assert.match(refused.stderr.slice(`resolve: ${file}: `.length), new RegExp(`^${expected.source}`), name);
     assert.doesNotMatch(refused.stderr, /\n {4}at /, `${name}: no stack trace`);
   }
-  const quoted = checkout('quoted-del', { '.agent-workflow/config.yaml': 'profiles:\n  p: {agent: claude, model: "m\u007F", effort: high}\n' });
+  const quoted = checkout('quoted-del', { '.peer-skills-and-workflows/config.yaml': 'profiles:\n  p: {agent: claude, model: "m\u007F", effort: high}\n' });
   const accepted = resolve(['--repo', quoted]);
   assert.equal(accepted.status, 0, accepted.stderr);
   assert.equal(accepted.json.profiles.p.model, 'm\u007F', 'quoted DEL is text');
@@ -358,7 +358,7 @@ test('configuration that is not UTF-8 is refused with its file, and valid UTF-8 
     ['latin-1', [0xE9]], ['cp1252-quote', [0x93]], ['overlong', [0xC0, 0xAF]], ['surrogate', [0xED, 0xA0, 0x80]], ['truncated', [0xE2, 0x82]],
   ]) {
     const repo = checkout(`bytes-${name}`);
-    const file = path.join(repo, '.agent-workflow', 'config.yaml');
+    const file = path.join(repo, '.peer-skills-and-workflows', 'config.yaml');
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, Buffer.concat([head, Buffer.from(bytes), tail]));
     const refused = resolve(['--repo', repo]);
@@ -367,7 +367,7 @@ test('configuration that is not UTF-8 is refused with its file, and valid UTF-8 
     assert.equal(refused.stderr, `resolve: ${file}: the file is not valid UTF-8; save it as UTF-8\n`, name);
   }
   const repo = checkout('bytes-valid');
-  const file = path.join(repo, '.agent-workflow', 'config.yaml');
+  const file = path.join(repo, '.peer-skills-and-workflows', 'config.yaml');
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), head, Buffer.from('\uFFFD é', 'utf8'), tail]));
   const accepted = resolve(['--repo', repo]);
@@ -380,18 +380,18 @@ test('configuration that is not UTF-8 is refused with its file, and valid UTF-8 
 test('a difference reached through an alias is located in the configuration file, LF and CRLF', () => {
   const text = 'profiles:\n  p: &p {agent: claude, model: m, effort: on}\n  1: *p\n';
   for (const [form, source] of [['LF', text], ['CRLF', text.replace(/\n/g, '\r\n')]]) {
-    const repo = checkout(`alias-difference-${form}`, { '.agent-workflow/config.yaml': source });
+    const repo = checkout(`alias-difference-${form}`, { '.peer-skills-and-workflows/config.yaml': source });
     const refused = resolve(['--repo', repo]);
     assert.equal(refused.status, 1, form);
     assert.equal(refused.stdout, '', form);
-    assert.equal(refused.stderr, `resolve: ${path.join(repo, '.agent-workflow', 'config.yaml')}: line 2, column 43: YAML 1.2 reads `
+    assert.equal(refused.stderr, `resolve: ${path.join(repo, '.peer-skills-and-workflows', 'config.yaml')}: line 2, column 43: YAML 1.2 reads `
       + 'the text "on" here and YAML 1.1 reads the boolean true; write it so both read the same, for example by quoting a value meant as text\n', form);
   }
 });
 
 test('configuration may use flow collections, anchors and document markers', () => {
   const repo = checkout('new-syntax', {
-    '.agent-workflow/config.yaml': [
+    '.peer-skills-and-workflows/config.yaml': [
       '---',
       'profiles:',
       '  base: &base {agent: claude, model: model-b, effort: high}',
@@ -412,7 +412,7 @@ test('configuration may use flow collections, anchors and document markers', () 
 // Keys are text written as they appear, so a phase is selected by exactly the
 // text of its key.
 test('phase keys keep their written text, and keys colliding as text are refused', () => {
-  const repo = checkout('phase-keys', { '.agent-workflow/plans/p.yaml': [
+  const repo = checkout('phase-keys', { '.peer-skills-and-workflows/plans/p.yaml': [
     'phases:',
     '  1.0:',
     '    roles: {investigator: astra-high}',
@@ -425,23 +425,23 @@ test('phase keys keep their written text, and keys colliding as text are refused
     return json.assignments.investigator.assignedBy;
   };
   assert.deepEqual(['1.0', '1', '2', '02'].map(assigned), ['phase', 'shared', 'phase', 'shared']);
-  const colliding = checkout('phase-collision', { '.agent-workflow/plans/p.yaml': 'phases:\n  2: {}\n  "2": {}\n' });
+  const colliding = checkout('phase-collision', { '.peer-skills-and-workflows/plans/p.yaml': 'phases:\n  2: {}\n  "2": {}\n' });
   const refused = resolve(['--repo', colliding, '--plan', 'p', '--phase', '2']);
   assert.equal(refused.status, 1);
   assert.match(refused.stderr, /p\.yaml: line 3, column 3: Map keys must be unique \(DUPLICATE_KEY\)\n$/);
 });
 
 test('a configuration key holding a Unicode text space is shown with it written out', () => {
-  const repo = checkout('text-space-key', { '.agent-workflow/config.yaml': 'roles:\n  investigator\u00A0: astra-high\n' });
+  const repo = checkout('text-space-key', { '.peer-skills-and-workflows/config.yaml': 'roles:\n  investigator\u00A0: astra-high\n' });
   const refused = resolve(['--repo', repo]);
   assert.equal(refused.status, 1);
   assert.match(refused.stderr, /unknown roles entry 'investigator\\u00A0' \(U\+00A0 written as \\uXXXX\) \(known: /);
-  const section = resolve(['--repo', checkout('text-space-section', { '.agent-workflow/config.yaml': 'roles\u2003: {}\n' })]);
+  const section = resolve(['--repo', checkout('text-space-section', { '.peer-skills-and-workflows/config.yaml': 'roles\u2003: {}\n' })]);
   assert.match(section.stderr, /unknown section 'roles\\u2003' \(U\+2003 written as \\uXXXX\)/);
 });
 
 test('a profile name holding a Unicode text space is refused with that space shown', () => {
-  const repo = checkout('text-space-name', { '.agent-workflow/config.yaml': 'roles:\n  investigator: astra-high\u00A0\n' });
+  const repo = checkout('text-space-name', { '.peer-skills-and-workflows/config.yaml': 'roles:\n  investigator: astra-high\u00A0\n' });
   const refused = resolve(['--repo', repo]);
   assert.equal(refused.status, 1);
   assert.equal(refused.stdout, '');
@@ -450,7 +450,7 @@ test('a profile name holding a Unicode text space is refused with that space sho
   refused.stderr);
   // Profile fields are free-form text and keep the same character.
   const free = checkout('text-space-model', {
-    '.agent-workflow/config.yaml': 'profiles:\n  p:\n    agent: claude\n    model: m\u00A0\n    effort: high\nroles:\n  investigator: p\n',
+    '.peer-skills-and-workflows/config.yaml': 'profiles:\n  p:\n    agent: claude\n    model: m\u00A0\n    effort: high\nroles:\n  investigator: p\n',
   });
   const accepted = resolve(['--repo', free]);
   assert.equal(accepted.status, 0, accepted.stderr);
@@ -476,6 +476,6 @@ test('an alias of the checkout resolves to the same canonical run root', (t) => 
   const aliased = resolve(['--repo', alias, '--run', 'run_1']);
   assert.equal(aliased.status, 0, aliased.stderr);
   assert.equal(aliased.json.checkout, repo);
-  assert.equal(aliased.json.runRoot, path.join(repo, '.agent-workflow', 'runs', 'run_1'));
+  assert.equal(aliased.json.runRoot, path.join(repo, '.peer-skills-and-workflows', 'runs', 'run_1'));
   assert.equal(aliased.stdout, direct.stdout);
 });

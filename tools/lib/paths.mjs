@@ -51,11 +51,15 @@ function requireHome(home, p) {
   }
 }
 
+/** A checkout's local directory name, which the repository ignores. */
+export const LOCAL_DIRECTORY = '.peer-skills-and-workflows';
+
 /**
  * The per-user, machine-local base for workflow files kept off every checkout:
- * - macOS: ~/Library/Application Support/AgentWorkflow
- * - Windows: %LOCALAPPDATA%\AgentWorkflow
- * - Linux and others: $XDG_STATE_HOME/agent-workflow, else ~/.local/state/agent-workflow
+ * - macOS: ~/Library/Application Support/PeerSkillsAndWorkflows
+ * - Windows: %LOCALAPPDATA%\PeerSkillsAndWorkflows
+ * - Linux and others: $XDG_STATE_HOME/peer-skills-and-workflows, else
+ *   ~/.local/state/peer-skills-and-workflows
  * A missing required root is an error; the base is never guessed from a user
  * name or placed in the current directory.
  */
@@ -66,13 +70,13 @@ export function machineBase({ platform, env, home }) {
     if (!local || !p.isAbsolute(local)) {
       throw new Error('LOCALAPPDATA is not set to an absolute path; cannot locate the machine-local workflow directory');
     }
-    return p.join(local, 'AgentWorkflow');
+    return p.join(local, 'PeerSkillsAndWorkflows');
   }
   requireHome(home, p);
-  if (platform === 'darwin') return p.join(home, 'Library', 'Application Support', 'AgentWorkflow');
+  if (platform === 'darwin') return p.join(home, 'Library', 'Application Support', 'PeerSkillsAndWorkflows');
   const xdg = env.XDG_STATE_HOME;
   // The XDG specification says relative values are invalid and must be ignored.
-  return p.join(xdg && p.isAbsolute(xdg) ? xdg : p.join(home, '.local', 'state'), 'agent-workflow');
+  return p.join(xdg && p.isAbsolute(xdg) ? xdg : p.join(home, '.local', 'state'), 'peer-skills-and-workflows');
 }
 
 /**
@@ -92,7 +96,7 @@ export function repositoryKey(checkout, platform = process.platform) {
  * checkout so every alias of it names the same directory.
  */
 export function localDirectory(checkout, platform = process.platform) {
-  return pathFor(platform).join(checkout, '.agent-workflow');
+  return pathFor(platform).join(checkout, LOCAL_DIRECTORY);
 }
 
 const RUN_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;

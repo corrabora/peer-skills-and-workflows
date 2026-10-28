@@ -322,8 +322,8 @@ test('a file beneath a directory alias is classified at the location its ancesto
 test('an ignored directory recorded as a source is identified by its regular files: edits, additions and removals show; a visible neighbor is unchanged', () => {
   const dir = repository('ignored-directory', { 'README.md': '# P\n', 'docs/a.md': 'a\n' });
   establishLocalStorage(dir);
-  write(dir, { '.agent-workflow/personal/additions.md': 'personal\n', '.agent-workflow/personal/nested/more.md': 'more\n' });
-  const before = sourceManifest(dir, ['.agent-workflow/personal', 'docs', '.agent-workflow/personal/additions.md']);
+  write(dir, { '.peer-skills-and-workflows/personal/additions.md': 'personal\n', '.peer-skills-and-workflows/personal/nested/more.md': 'more\n' });
+  const before = sourceManifest(dir, ['.peer-skills-and-workflows/personal', 'docs', '.peer-skills-and-workflows/personal/additions.md']);
   const [personal, docs, file] = before.sources;
   assert.deepEqual([personal.kind, personal.state, personal.digestScope, personal.files], ['directory', 'ignored', 'all-files', 2]);
   assert.deepEqual([docs.kind, docs.state, docs.digestScope, docs.files], ['directory', undefined, 'git-visible', 1], 'a visible directory keeps the Git-visible digest');
@@ -334,21 +334,21 @@ test('an ignored directory recorded as a source is identified by its regular fil
   ].join('')).digest('hex')}`;
   assert.equal(personal.digest, expected, 'names and contents, in code-unit order');
 
-  write(dir, { '.agent-workflow/personal/additions.md': 'personal, edited\n' });
-  const edited = sourceManifest(dir, ['.agent-workflow/personal', 'docs', '.agent-workflow/personal/additions.md']);
-  assert.deepEqual(compareManifests(before, edited).changed, ['.agent-workflow/personal', '.agent-workflow/personal/additions.md'], 'an edit inside the ignored directory shows on the directory itself');
+  write(dir, { '.peer-skills-and-workflows/personal/additions.md': 'personal, edited\n' });
+  const edited = sourceManifest(dir, ['.peer-skills-and-workflows/personal', 'docs', '.peer-skills-and-workflows/personal/additions.md']);
+  assert.deepEqual(compareManifests(before, edited).changed, ['.peer-skills-and-workflows/personal', '.peer-skills-and-workflows/personal/additions.md'], 'an edit inside the ignored directory shows on the directory itself');
   assert.deepEqual(compareManifests(before, edited).unchanged, ['docs']);
-  write(dir, { '.agent-workflow/personal/extra.md': 'x\n' });
-  const added = sourceManifest(dir, ['.agent-workflow/personal', 'docs']);
+  write(dir, { '.peer-skills-and-workflows/personal/extra.md': 'x\n' });
+  const added = sourceManifest(dir, ['.peer-skills-and-workflows/personal', 'docs']);
   assert.equal(added.sources[0].files, 3);
-  assert.deepEqual(compareManifests(edited, added).changed, ['.agent-workflow/personal'], 'an added file shows');
-  fs.rmSync(path.join(dir, '.agent-workflow', 'personal', 'nested'), { recursive: true });
-  const removed = sourceManifest(dir, ['.agent-workflow/personal', 'docs']);
+  assert.deepEqual(compareManifests(edited, added).changed, ['.peer-skills-and-workflows/personal'], 'an added file shows');
+  fs.rmSync(path.join(dir, '.peer-skills-and-workflows', 'personal', 'nested'), { recursive: true });
+  const removed = sourceManifest(dir, ['.peer-skills-and-workflows/personal', 'docs']);
   assert.equal(removed.sources[0].files, 2);
-  assert.deepEqual(compareManifests(added, removed).changed, ['.agent-workflow/personal'], 'a removed file shows');
+  assert.deepEqual(compareManifests(added, removed).changed, ['.peer-skills-and-workflows/personal'], 'a removed file shows');
   assert.deepEqual(compareManifests(added, removed).unchanged, ['docs'], 'the visible neighbor is unchanged throughout');
-  fs.symlinkSync('../../README.md', path.join(dir, '.agent-workflow', 'personal', 'link.md'));
-  assert.equal(sourceManifest(dir, ['.agent-workflow/personal']).sources[0].files, 2, 'links inside are not followed');
+  fs.symlinkSync('../../README.md', path.join(dir, '.peer-skills-and-workflows', 'personal', 'link.md'));
+  assert.equal(sourceManifest(dir, ['.peer-skills-and-workflows/personal']).sources[0].files, 2, 'links inside are not followed');
   assert.equal(git(dir, 'status', '--porcelain'), '', 'nothing tracked changed');
   const inspected = run('inspect', '--repo', dir);
   assert.equal(inspected.status, 0, inspected.stderr);
@@ -359,12 +359,12 @@ for (const mode of ['direct', 'ignored-root', 'external-root', 'ignored-member',
     if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
     const dir = repository(`access-${mode}`, { 'README.md': '# P\n', 'docs/a.md': 'before\n', ...Object.fromEntries(Object.entries(qualityFixture).filter(([name]) => name.startsWith('.quality/'))) });
     establishLocalStorage(dir);
-    const root = mode.startsWith('external') ? path.join(scratch, `personal-${mode}`) : path.join(dir, '.agent-workflow', 'personal');
+    const root = mode.startsWith('external') ? path.join(scratch, `personal-${mode}`) : path.join(dir, '.peer-skills-and-workflows', 'personal');
     write(root, { 'member.md': 'before\n', 'nested/member.md': 'nested\n' });
     const source = mode === 'direct' ? 'docs/a.md' : mode === 'git-member' ? 'docs' : root;
     const directoryDenied = mode.endsWith('root') || mode.endsWith('subdirectory');
     const denied = mode === 'direct' || mode === 'git-member' ? path.join(dir, 'docs', 'a.md') : mode.endsWith('root') ? root : mode.endsWith('subdirectory') ? path.join(root, 'nested') : path.join(root, 'member.md');
-    const manifestPath = path.join(dir, '.agent-workflow', 'binding-sources.json');
+    const manifestPath = path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json');
     const baseline = run('sources', '--repo', dir, '--out', manifestPath, source, 'README.md');
     assert.equal(baseline.status, 0, baseline.stderr);
     fs.chmodSync(denied, 0);
@@ -507,7 +507,7 @@ for (const stagedDeletion of [false, true]) {
 test('recorded absence stays missing through inspect and listed checks, appearance and deletion', () => {
   const dir = repository('persistent-absence', { 'README.md': 'readable' });
   establishLocalStorage(dir);
-  const file = path.join(dir, '.agent-workflow/binding-sources.json');
+  const file = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   const recorded = run('sources', '--repo', dir, '--out', file, 'expected.md', 'README.md');
   assert.equal(recorded.status, 0, recorded.stderr);
   assert.equal(recorded.json.complete, true);
@@ -545,7 +545,7 @@ test('admitted lookup spellings compare canonically in inspect, listed checks an
   const origin = repository('lookup-child', { 'POLICY.md': 'policy' });
   git(dir, 'clone', '-q', origin, path.join(dir, 'docs/child'));
   establishLocalStorage(dir);
-  const file = path.join(dir, '.agent-workflow/binding-sources.json');
+  const file = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   const baseline = sourceManifest(dir, ['docs'], { workflowSource: packageRoot });
   for (const variant of ['./docs', 'docs/', './docs//']) {
     const recorded = structuredClone(baseline);

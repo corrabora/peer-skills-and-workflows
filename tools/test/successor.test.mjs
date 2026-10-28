@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { currentSession, hook, hookConfig, initialize, lookup, readChain, register, report, sessionPointer, titles, update } from '../lib/successor.mjs';
+import { isWithin, machineBase } from '../lib/paths.mjs';
 
 // A commit hook exports its repository and index. Keep this test worker and
 // the helper's Git subprocesses confined to the temporary fixture repositories.
@@ -34,8 +35,8 @@ function init(f, caller, extra = {}) { return initialize({ caller, workspace: f.
 function git(f, ...args) { const r = spawnSync('git', ['-C', f.workspace, ...args], { encoding: 'utf8' }); assert.equal(r.status, 0, r.stderr); return r.stdout; }
 function local(f) {
   git(f, 'init', '-q');
-  fs.mkdirSync(path.join(f.workspace, '.agent-workflow'));
-  fs.appendFileSync(path.join(f.workspace, '.git', 'info', 'exclude'), '\n/.agent-workflow/\n');
+  fs.mkdirSync(path.join(f.workspace, '.peer-skills-and-workflows'));
+  fs.appendFileSync(path.join(f.workspace, '.git', 'info', 'exclude'), '\n/.peer-skills-and-workflows/\n');
 }
 function prepare(f, s) {
   update(s.root, s.owner, 'capture', { fromLine: 1, scope: 'This synthetic root session contains only the test task.' }, f.host);
@@ -153,18 +154,19 @@ test('late activation observes existing history; reactivation does not reset pol
   assert.equal(report(s).countsReport.turns.count, 4);
   assert.equal(init(f, c, { turns: 99 }).thresholds['turn-threshold'], 3);
   assert.equal(lookup(c.engine, c.session, f.host).id, s.id);
-  assert.ok(!fs.existsSync(path.join(f.workspace, '.agent-workflow')));
-  assert.ok(!s.root.includes(`${path.sep}scratch${path.sep}`));
+  assert.ok(!fs.existsSync(path.join(f.workspace, '.peer-skills-and-workflows')));
+  const base = machineBase(f.host);
+  assert.ok(isWithin(path.join(base, 'successions'), s.root) && !isWithin(path.join(base, 'scratch'), s.root), 'external chains are retained beside scratch, not in it');
   assert.equal(report(update(s.root, c, 'observe', {}, f.host)).countsReport.turns.count, 4);
 });
 
 test('local and Run storage reuse established locations; explicit external storage leaves the checkout alone', () => {
   const f = fixture(); local(f);
   const s = init(f, session(f));
-  assert.equal(s.root, path.join(f.workspace, '.agent-workflow', 'successions', s.id));
+  assert.equal(s.root, path.join(f.workspace, '.peer-skills-and-workflows', 'successions', s.id));
   const external = init(f, session(f), { storage: 'external' });
   assert.ok(!external.root.startsWith(f.workspace));
-  const runRoot = path.join(f.workspace, '.agent-workflow', 'runs', 'run-existing'); fs.mkdirSync(runRoot, { recursive: true });
+  const runRoot = path.join(f.workspace, '.peer-skills-and-workflows', 'runs', 'run-existing'); fs.mkdirSync(runRoot, { recursive: true });
   const run = init(f, session(f), { runRoot });
   assert.equal(run.root, path.join(runRoot, 'control', 'successor'));
   assert.equal(run.counts, path.join(runRoot, 'control', 'coordinator-counts.json'));
@@ -173,13 +175,13 @@ test('local and Run storage reuse established locations; explicit external stora
 
 test('conflicting local storage and symlinks are refused before records are written', () => {
   const f = fixture(); git(f, 'init', '-q');
-  fs.mkdirSync(path.join(f.workspace, '.agent-workflow'));
+  fs.mkdirSync(path.join(f.workspace, '.peer-skills-and-workflows'));
   assert.throws(() => init(f, session(f)), /wholly untracked/);
-  fs.writeFileSync(path.join(f.workspace, '.agent-workflow', 'tracked'), 'owned by repository');
-  git(f, 'add', '.agent-workflow/tracked');
-  fs.appendFileSync(path.join(f.workspace, '.git', 'info', 'exclude'), '\n/.agent-workflow/\n');
+  fs.writeFileSync(path.join(f.workspace, '.peer-skills-and-workflows', 'tracked'), 'owned by repository');
+  git(f, 'add', '.peer-skills-and-workflows/tracked');
+  fs.appendFileSync(path.join(f.workspace, '.git', 'info', 'exclude'), '\n/.peer-skills-and-workflows/\n');
   assert.throws(() => init(f, session(f)), /wholly untracked/);
-  assert.deepEqual(fs.readdirSync(path.join(f.workspace, '.agent-workflow')), ['tracked']);
+  assert.deepEqual(fs.readdirSync(path.join(f.workspace, '.peer-skills-and-workflows')), ['tracked']);
 });
 
 test('policy changes check current history and reject invalid limits without overwriting state', () => {

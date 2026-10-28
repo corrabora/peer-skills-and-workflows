@@ -12,7 +12,7 @@ import { supportHookScopes } from '../lib/paths.mjs';
 const root = fs.realpathSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..'));
 const scratch = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'aw support é-')));
 after(() => fs.rmSync(scratch, { recursive: true, force: true }));
-const receiptName = '.agent-workflow-successor-hooks.json';
+const receiptName = '.peer-skills-and-workflows-successor-hooks.json';
 const write = (file, value) => { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); };
 const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 const settings = (home) => [path.join(home, '.codex/hooks.json'), path.join(home, '.claude/settings.json')];

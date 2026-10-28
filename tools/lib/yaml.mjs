@@ -1,6 +1,6 @@
 // Reads the YAML of workflow configuration files and SKILL.md frontmatter with
-// the maintained `yaml` package (pinned in package.json and installed by
-// `npm ci` in this source checkout), into a small plain-data model: mappings
+// the maintained `yaml` package shipped under tools/vendor, into a small
+// plain-data model: mappings
 // with text keys, sequences, null, booleans, text and finite numbers. Anything
 // else is refused with a YamlError, and nothing partly read reaches a caller.
 //
@@ -47,6 +47,8 @@ import { revealTextSpaces } from './text-spaces.mjs';
 
 const SOURCE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const require = createRequire(import.meta.url);
+// An explicit package directory prevents Node from falling back to ancestor dependencies.
+const YAML_PACKAGE = path.join(SOURCE_ROOT, 'tools', 'vendor', 'node_modules', 'yaml');
 
 const MAX_ALIAS_COUNT = 100;
 const EXCESSIVE_ALIASES = 'Excessive alias count';
@@ -73,11 +75,11 @@ export class YamlError extends Error {
   }
 }
 
-/** The `yaml` package is not installed beside these tools. */
+/** The installed runtime payload is incomplete. */
 export class MissingDependencyError extends Error {
   constructor() {
-    super(`the 'yaml' package the workflow tools need is not installed in ${SOURCE_ROOT}; `
-      + "run 'npm ci' in that directory");
+    super(`the 'yaml' runtime dependency is missing from ${path.join(SOURCE_ROOT, 'tools', 'vendor')}; `
+      + 'reinstall the package or regenerate its vendored dependencies from the source checkout');
     this.name = 'MissingDependencyError';
   }
 }
@@ -104,9 +106,9 @@ let yaml;
 function loadYaml() {
   if (yaml) return yaml;
   try {
-    yaml = require('yaml');
+    yaml = require(YAML_PACKAGE);
   } catch (error) {
-    if (error.code === 'MODULE_NOT_FOUND' && /Cannot find module 'yaml'/.test(error.message)) {
+    if (error.code === 'MODULE_NOT_FOUND' && error.message.startsWith(`Cannot find module '${YAML_PACKAGE}'`)) {
       throw new MissingDependencyError();
     }
     throw error;

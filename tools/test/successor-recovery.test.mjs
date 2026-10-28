@@ -37,8 +37,8 @@ function fixture(engine = 'codex', phase = 'yielded', coordinator = false) {
   let runRoot;
   if (coordinator) {
     assert.equal(spawnSync('git', ['init', '-q', workspace]).status, 0);
-    fs.appendFileSync(path.join(workspace, '.git', 'info', 'exclude'), '\n/.agent-workflow/\n');
-    runRoot = path.join(workspace, '.agent-workflow', 'runs', 'run-recovery');
+    fs.appendFileSync(path.join(workspace, '.git', 'info', 'exclude'), '\n/.peer-skills-and-workflows/\n');
+    runRoot = path.join(workspace, '.peer-skills-and-workflows', 'runs', 'run-recovery');
     fs.mkdirSync(runRoot, { recursive: true });
   }
   let s = initialize({ caller: f.old, workspace, task: 'Recovery', host: f.host, runRoot });
