@@ -147,7 +147,7 @@ test('uninitialized and inaccessible children fail incompletely, including direc
   const invalid = run('sources', '--repo', dir, ...paths);
   assert.equal(invalid.status, 1);
   assert.equal(invalid.json.sources[0].kind, 'unreadable');
-  assert.match(invalid.json.sources[0].error, /not a git repository/);
+  assert.match(invalid.json.sources[0].error, /^git rev-parse failed: fatal: (?:not a git repository|gitfile does not point to a valid repository)/);
   assert.equal(invalid.json.sources.at(-1).kind, 'file');
   fs.rmSync(child, { recursive: true });
   fs.symlinkSync(origin, child, 'dir');
