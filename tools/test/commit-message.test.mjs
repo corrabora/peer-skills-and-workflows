@@ -91,6 +91,7 @@ function fixture() {
   fs.writeFileSync(path.join(root, 'tools/validate.mjs'), "console.log('fixture metadata ran');\n");
   fs.writeFileSync(path.join(root, 'tools/lib/vendor.mjs'), 'export const checkVendor = () => true;\n');
   fs.writeFileSync(path.join(root, 'tools/lib/plugin-package.mjs'), 'export const checkPluginPackage = () => true;\n');
+  fs.writeFileSync(path.join(root, 'tools/lib/plugin-payload.mjs'), 'export const checkPluginPayload = () => true;\n');
   fs.mkdirSync(path.join(root, 'tools/test'));
   fs.writeFileSync(path.join(root, 'tools/test/suite.test.mjs'), "import test from 'node:test';\ntest('fixture suite ran', () => {});\n");
   git(root, ['init', '-q']);
@@ -209,6 +210,13 @@ test('metadata, generated-reference and package-reference failures stop the comm
   assert.match(drift.stderr, /body differs/);
   assert.doesNotMatch(output(drift), /verify: package references|fixture suite ran/);
   generateWritingReferences(root);
+  const payloadCheck = path.join(root, 'tools/lib/plugin-payload.mjs');
+  fs.writeFileSync(payloadCheck, "export const checkPluginPayload = () => { console.error('fixture payload stale'); return false; };\n");
+  const payload = run(root, 'git', ['commit', '--allow-empty', '-m', 'test: exercise payload gate']);
+  assert.notEqual(payload.status, 0);
+  assert.match(payload.stderr, /fixture payload stale/);
+  assert.doesNotMatch(output(payload), /verify: package references|fixture suite ran/);
+  fs.writeFileSync(payloadCheck, 'export const checkPluginPayload = () => true;\n');
   fs.writeFileSync(path.join(root, 'README.md'), '[missing reference](absent.md)\n');
   const references = run(root, 'git', ['commit', '--allow-empty', '-m', 'test: exercise reference gate']);
   assert.notEqual(references.status, 0);

@@ -12,9 +12,10 @@ const read = (relative) => {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 };
 
-test('one peer root package supplies separate native catalogs and hook declarations', () => {
-  const codex = read('.codex-plugin/plugin.json');
-  const claude = read('.claude-plugin/plugin.json');
+test('root catalogs select one generated payload with separate native manifests and hook declarations', () => {
+  const payload = 'plugins/peer';
+  const codex = read(`${payload}/.codex-plugin/plugin.json`);
+  const claude = read(`${payload}/.claude-plugin/plugin.json`);
   const codexCatalog = read('.agents/plugins/marketplace.json');
   const claudeCatalog = read('.claude-plugin/marketplace.json');
   for (const value of [codex, claude, codexCatalog, claudeCatalog]) assert.equal(value.name, 'peer');
@@ -22,17 +23,19 @@ test('one peer root package supplies separate native catalogs and hook declarati
     assert.equal(catalog.plugins.length, 1);
     assert.equal(catalog.plugins[0].name, 'peer');
   }
-  assert.deepEqual(codexCatalog.plugins[0].source, { source: 'local', path: './' });
-  assert.equal(claudeCatalog.plugins[0].source, './');
+  assert.deepEqual(codexCatalog.plugins[0].source, { source: 'local', path: `./${payload}` });
+  assert.equal(claudeCatalog.plugins[0].source, `./${payload}`);
   assert.equal(codex.skills, './skills/');
-  assert.equal(fs.existsSync(path.join(root, 'plugin.json')), false);
-  assert.equal(fs.existsSync(path.join(root, 'hooks/hooks.json')), false);
+  for (const base of ['', payload]) {
+    assert.equal(fs.existsSync(path.join(root, base, 'plugin.json')), false);
+    assert.equal(fs.existsSync(path.join(root, base, 'hooks/hooks.json')), false);
+  }
   for (const [engine, manifest, variable] of [
     ['codex', codex, 'PLUGIN_ROOT'], ['claude', claude, 'CLAUDE_PLUGIN_ROOT'],
   ]) {
     assert.equal(manifest.hooks, `./hooks/${engine}.json`);
     assert.equal(manifest.version, undefined, 'release identity comes from Git');
-    const hooks = read(manifest.hooks).hooks;
+    const hooks = read(path.posix.join(payload, manifest.hooks)).hooks;
     assert.deepEqual(Object.keys(hooks).sort(), ['SessionStart', 'Stop', 'UserPromptSubmit']);
     for (const groups of Object.values(hooks)) {
       assert.deepEqual(groups, [{ hooks: [{
@@ -56,26 +59,27 @@ test('the offline gate validates the native package and rejects drift', async (t
     fs.writeFileSync(target, JSON.stringify(value));
   };
   const mutations = {
-    name: edit('.claude-plugin/plugin.json', (v) => { v.name = 'peer2'; }),
-    escapingHooks: edit('.codex-plugin/plugin.json', (v) => { v.hooks = './../hooks/codex.json'; }),
-    catalogSource: edit('.claude-plugin/marketplace.json', (v) => { v.plugins[0].source = './plugins/peer'; }),
+    name: edit('plugins/peer/.claude-plugin/plugin.json', (v) => { v.name = 'peer2'; }),
+    escapingHooks: edit('plugins/peer/.codex-plugin/plugin.json', (v) => { v.hooks = './../hooks/codex.json'; }),
+    catalogSource: edit('.claude-plugin/marketplace.json', (v) => { v.plugins[0].source = './'; }),
     catalogField: edit('.agents/plugins/marketplace.json', (v) => { delete v.plugins[0].policy; }),
-    missingComponent: edit('.codex-plugin/plugin.json', (v) => { v.skills = './missing/'; }),
-    wrongEngine: edit('hooks/claude.json', (v) => { v.hooks.Stop[0].hooks[0].command = v.hooks.Stop[0].hooks[0].command.replace('--engine claude', '--engine codex'); }),
-    version: edit('.codex-plugin/plugin.json', (v) => { v.version = '1.0.0'; }),
-    portableManifest: (copy) => fs.writeFileSync(path.join(copy, 'plugin.json'), '{"name":"peer"}'),
-    defaultHooks: (copy) => fs.writeFileSync(path.join(copy, 'hooks/hooks.json'), '{}'),
+    missingComponent: edit('plugins/peer/.codex-plugin/plugin.json', (v) => { v.skills = './missing/'; }),
+    wrongEngine: edit('plugins/peer/hooks/claude.json', (v) => { v.hooks.Stop[0].hooks[0].command = v.hooks.Stop[0].hooks[0].command.replace('--engine claude', '--engine codex'); }),
+    version: edit('plugins/peer/.codex-plugin/plugin.json', (v) => { v.version = '1.0.0'; }),
+    portableManifest: (copy) => fs.writeFileSync(path.join(copy, 'plugins/peer/plugin.json'), '{"name":"peer"}'),
+    defaultHooks: (copy) => fs.writeFileSync(path.join(copy, 'plugins/peer/hooks/hooks.json'), '{}'),
+    payloadGit: (copy) => fs.mkdirSync(path.join(copy, 'plugins/peer/.git')),
     linkedHooks: (copy) => {
-      fs.renameSync(path.join(copy, 'hooks'), `${copy}-hooks`);
-      fs.symlinkSync(`${copy}-hooks`, path.join(copy, 'hooks'), process.platform === 'win32' ? 'junction' : 'dir');
+      fs.renameSync(path.join(copy, 'plugins/peer/hooks'), `${copy}-hooks`);
+      fs.symlinkSync(`${copy}-hooks`, path.join(copy, 'plugins/peer/hooks'), process.platform === 'win32' ? 'junction' : 'dir');
     },
-    straySkill: (copy) => { fs.mkdirSync(path.join(copy, 'skills/stray')); fs.writeFileSync(path.join(copy, 'skills/stray/SKILL.md'), '---\nname: stray\n---\n'); },
+    straySkill: (copy) => { fs.mkdirSync(path.join(copy, 'plugins/peer/skills/stray')); fs.writeFileSync(path.join(copy, 'plugins/peer/skills/stray/SKILL.md'), '---\nname: stray\n---\n'); },
   };
   for (const [name, mutate] of Object.entries(mutations)) {
     await t.test(name, () => {
       const copy = fs.mkdtempSync(path.join(os.tmpdir(), `peer-package-${name}-`));
       try {
-        for (const part of ['.claude-plugin', '.codex-plugin', '.agents', 'hooks', 'skills', 'tools']) {
+        for (const part of ['.claude-plugin', '.agents', 'plugins']) {
           fs.cpSync(path.join(root, part), path.join(copy, part), { recursive: true, filter: (source) => path.basename(source) !== 'node_modules' });
         }
         errors.length = 0;

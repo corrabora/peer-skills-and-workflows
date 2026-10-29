@@ -1,0 +1,9 @@
+{
+  "name": "peer-skills-and-workflows",
+  "private": true,
+  "license": "MIT",
+  "description": "Peer skills and orchestrated workflows for Claude and Codex, with their Node.js tools; not published.",
+  "engines": {
+    "node": ">=22"
+  }
+}

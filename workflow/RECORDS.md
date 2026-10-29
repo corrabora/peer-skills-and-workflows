@@ -167,9 +167,17 @@ retained support ([Supporting evidence](#supporting-evidence)).
   `operator-guidance.md` is both: its entries are append-only and its current
   view is living ([Operator guidance](#operator-guidance)).
 - **Instruction revision.** The PC records in `state.md` the workflow source
-  and revision it loaded, and each worker records the same in its principal
-  output: the commit, or for uncommitted source its tree or a content note.
-  Simultaneous runs on different instruction revisions can then be told apart.
+  identity it loaded, and each worker records the same in its principal output.
+  Run `node "<workflow source>/tools/bind.mjs" inspect --repo "<checkout>"`
+  and use its `workflowSource`: `path`, `digest` and `digestScope`, plus `head`
+  and `dirty` when supplied. This read-only inspection needs no existing binding.
+  A copied plugin has a content digest and no Git commit; a checkout also
+  reports its commit and instruction-scope changes. Do not run ad hoc Git
+  commands in an installed plugin to obtain a revision. If the helper or its
+  source identity is unavailable or incomplete, record the identity as
+  unverified with the reported cause; do not invent a commit or reuse an old
+  digest as current. Simultaneous runs on different instruction revisions can
+  then be told apart.
 - **Prospective.** The layout governs directories created after it is adopted.
   Records written under an earlier layout keep their paths and published
   links; nobody migrates, renames or deletes them to match.
