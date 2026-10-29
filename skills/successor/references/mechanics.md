@@ -171,13 +171,42 @@ reuse of a stale confirmation.
 
 ## Hook reminders
 
-The package's `node tools/install.mjs link workflow` installs these required
-hooks in each engine's user settings, alongside the skill, so they are available
-across repositories. `check workflow` checks their definitions; `unlink workflow`
-removes only installer-owned entries. Read the package [installation contract](../../../README.md#install)
-for settings locations, ownership and repair. Inspect the host's discovered
-hooks before adding a project copy: multiple configuration layers can run
-the same command. Installation does not establish human trust or live delivery.
+The three hooks reach an engine from one installation source. Before checking
+or adding hooks, establish the source for the engine running this session from
+the path it loaded this skill from and that engine's installation records.
+The [installation guide](../../../docs/installation.md) owns both modes,
+their settings locations and repair. Plugin manifest files do not establish
+that the plugin is installed or enabled: a development checkout contains them
+too.
+
+- **Plugin:** the engine loaded this skill as `peer:successor` from its `peer`
+  plugin installation and reports `peer@peer` installed and enabled: in Claude
+  Code, through `claude plugin list --json`; in Codex, through
+  `[plugins."peer@peer"]` in its `config.toml`. The plugin's manifest supplies
+  the hooks, so personal skill links and user hook entries are neither expected
+  nor checked; skip the linked installation checks. Do not run
+  `tools/install.mjs link` or merge a `hook-config` fragment: either adds a
+  second copy of each hook. Where the engine exposes the hooks it discovered,
+  confirm that its `SessionStart`, `UserPromptSubmit` and `Stop` successor
+  commands come from that plugin installation.
+- **Linked:** the engine loaded this skill through a link in its personal skill
+  directory that resolves to a checkout. That checkout's
+  `node tools/install.mjs link workflow` installs the hooks in each engine's
+  user settings, `check workflow` checks their definitions and
+  `unlink workflow` removes only installer-owned entries. The check inspects
+  both engines. Read the package-reference result and this engine's link and
+  hook results separately from the other engine's: it may use the plugin or
+  have no installation. Report those other-engine failures without repairing
+  that engine or treating them as failures of this session's setup. A failed
+  package-reference or current-engine check still needs resolution; a passing
+  check establishes definitions, not trust or delivery.
+- **Neither:** use the manual fragment below.
+
+If both the plugin and a linked `workflow` set supply hooks to the same engine,
+report the [overlap](../../../docs/installation.md#overlap) and change neither
+installation. If the source cannot be established, report what is missing and
+continue explicit checks. Installation does not establish human trust or live
+delivery.
 
 ```text
 node <helper> hook-config --engine <engine>
@@ -185,12 +214,14 @@ node <helper> hook-config --engine <engine>
 
 This prints a configuration fragment, changing no settings. Its three command
 hooks use `SessionStart`, `UserPromptSubmit` and `Stop`, and read JSON events
-from stdin. Merge these entries into the host's supported hook configuration,
-preserving every unrelated hook and avoiding duplicate commands. Use the
-current engine documentation and effective settings to locate that file:
+from stdin. Use it only when neither installation supplies the hooks. Inspect
+the host's discovered hooks first, since multiple configuration layers can run
+the same command. Merge the entries into the host's supported hook
+configuration, preserving every unrelated hook and avoiding duplicate commands.
+Use the current engine documentation and effective settings to locate that file:
 [Codex hooks](https://learn.chatgpt.com/docs/hooks) and
 [Claude Code hooks](https://code.claude.com/docs/en/hooks).
-The configuration is session-scoped by the pointer lookup: unregistered,
+Every source's hooks are session-scoped by the pointer lookup: unregistered,
 disabled and completed sessions return no instructions.
 
 For a linked Git worktree, verify the discovered hook's source path as well as
@@ -201,9 +232,10 @@ before choosing a destination. A main-checkout hook can affect other worktrees,
 so do not redirect installation there without authority covering that scope.
 
 Only configure hooks within the operator's setup authority. Codex requires
-the human to trust a new non-managed hook definition through `/hooks`; never
-bypass that trust. Claude may require reloading the session's settings.
-Prepare the exact fragment before requesting any required setup action.
+the human to trust each new or changed non-managed hook definition, including
+the plugin's, through `/hooks`; never bypass that trust. Claude may require
+reloading the session's settings or starting a new session after installing
+the plugin. Prepare the exact fragment before requesting a manual setup action.
 Verify a real event reaches the helper and returns the chain reminder before
 claiming delivery works. An isolated synthetic hook test establishes protocol
 behavior, not that the live host loaded the configuration.
