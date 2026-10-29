@@ -3,8 +3,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
-import { PACKAGE_SKILLS } from './install.mjs';
+import { checkReferences, PACKAGE_SKILLS, referencesIn } from './install.mjs';
 import { isWithin } from './paths.mjs';
+import { PAYLOAD_DIRECTORY } from './plugin-payload.mjs';
 
 const EVENTS = ['SessionStart', 'Stop', 'UserPromptSubmit'];
 const requireCondition = (value, message) => { if (!value) throw new Error(message); };
@@ -21,10 +22,60 @@ function absent(file) {
   catch (error) { if (error.code === 'ENOENT') return true; throw error; }
 }
 
-/** Read-only validation; return false with a path-specific diagnostic on failure. */
+/**
+ * Included documents whose own links are repository navigation for people,
+ * such as README's links to tests and quality profiles. Runtime documents may
+ * link to them, so they must exist in the payload, but their onward links are
+ * not followed or required there.
+ */
+const NAVIGATION_ENDPOINTS = ['README.md', 'docs/installation.md'];
+const SCHEME = /^[A-Za-z][A-Za-z0-9+.-]+:/;
+
+/**
+ * The payload's agent-read documents: every Markdown file under `skills/` and
+ * `workflow/`, and the payload Markdown files they reach through relative
+ * links, short of the navigation endpoints.
+ */
+function runtimeDocuments(root) {
+  const seen = new Set();
+  const queue = [];
+  const add = (file) => {
+    if (!seen.has(file)) { seen.add(file); queue.push(file); }
+  };
+  const walk = (directory) => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const full = path.join(directory, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile() && entry.name.endsWith('.md')) add(full);
+    }
+  };
+  for (const directory of ['skills', 'workflow']) walk(path.join(root, directory));
+  const endpoints = new Set(NAVIGATION_ENDPOINTS.map((relative) => path.join(root, ...relative.split('/'))));
+  while (queue.length) {
+    const file = queue.shift();
+    for (const { target } of referencesIn(fs.readFileSync(file, 'utf8')).links) {
+      const pathPart = target.replace(/[#?].*$/, '');
+      if (!pathPart || target.startsWith('<') || SCHEME.test(target)) continue;
+      let linked;
+      try { linked = path.resolve(path.dirname(file), decodeURIComponent(pathPart)); } catch { continue; } // checkReferences reports it
+      if (linked.endsWith('.md') && isWithin(root, linked) && !endpoints.has(linked) && fs.existsSync(linked)) {
+        requireCondition(fs.realpathSync(linked) === linked, `runtime reference crosses a link: ${path.relative(root, linked)}`);
+        requireCondition(fs.lstatSync(linked).isFile(), `runtime reference must be a regular file: ${path.relative(root, linked)}`);
+        add(linked);
+      }
+    }
+  }
+  return [...seen].sort();
+}
+
+/**
+ * Read-only validation of the root catalogs and the payload they select;
+ * return false with a path-specific diagnostic on failure.
+ */
 export function checkPluginPackage({ sourceRoot, out }) {
+  let scope = 'checkout';
   try {
-    const root = fs.realpathSync(sourceRoot);
+    let root = fs.realpathSync(sourceRoot);
     const component = (relative, kind = 'file') => {
       requireCondition(typeof relative === 'string' && relative.length > 0 && !path.isAbsolute(relative),
         `component path must be relative: ${relative}`);
@@ -37,6 +88,30 @@ export function checkPluginPackage({ sourceRoot, out }) {
       return real;
     };
     const read = (relative) => JSON.parse(fs.readFileSync(component(relative), 'utf8'));
+    const claudePath = '.claude-plugin/marketplace.json';
+    const claude = read(claudePath);
+    fields(claude, ['name', 'owner', 'plugins'], claudePath);
+    fields(claude.owner, ['name'], `${claudePath}: owner`);
+    requireCondition(typeof claude.owner.name === 'string' && claude.owner.name.trim() !== '', `${claudePath}: owner.name is required`);
+    const codexPath = '.agents/plugins/marketplace.json';
+    const codex = read(codexPath);
+    fields(codex, ['name', 'plugins'], codexPath);
+    for (const [catalog, relative] of [[claude, claudePath], [codex, codexPath]]) {
+      requireCondition(catalog.name === 'peer', `${relative}: marketplace name must be peer`);
+      requireCondition(Array.isArray(catalog.plugins) && catalog.plugins.length === 1, `${relative}: declare exactly one plugin`);
+      requireCondition(catalog.plugins[0].name === 'peer', `${relative}: plugin name must be peer`);
+    }
+    const source = `./${PAYLOAD_DIRECTORY}`;
+    fields(claude.plugins[0], ['name', 'source'], `${claudePath}: plugin`);
+    requireCondition(claude.plugins[0].source === source, `${claudePath}: plugin source must be ${source}`);
+    fields(codex.plugins[0], ['name', 'source', 'policy', 'category'], `${codexPath}: plugin`);
+    requireCondition(isDeepStrictEqual(codex.plugins[0].source, { source: 'local', path: source }), `${codexPath}: source must be local with path ${source}`);
+    requireCondition(isDeepStrictEqual(codex.plugins[0].policy, { installation: 'AVAILABLE', authentication: 'ON_INSTALL' }), `${codexPath}: invalid native installation/authentication policy`);
+    requireCondition(codex.plugins[0].category === 'Productivity', `${codexPath}: category must be Productivity`);
+    // The remaining components belong to the selected payload.
+    root = component(PAYLOAD_DIRECTORY, 'directory');
+    scope = PAYLOAD_DIRECTORY;
+    requireCondition(absent(path.join(root, '.git')), `${PAYLOAD_DIRECTORY}/.git must be absent; the payload carries no repository metadata`);
     for (const file of ['plugin.json', 'hooks/hooks.json']) {
       requireCondition(absent(path.join(root, file)), `${file} must be absent; use explicit engine manifests and hooks`);
     }
@@ -63,34 +138,18 @@ export function checkPluginPackage({ sourceRoot, out }) {
       }
     }
     component('tools/successor.mjs');
-    const claudePath = '.claude-plugin/marketplace.json';
-    const claude = read(claudePath);
-    fields(claude, ['name', 'owner', 'plugins'], claudePath);
-    fields(claude.owner, ['name'], `${claudePath}: owner`);
-    requireCondition(typeof claude.owner.name === 'string' && claude.owner.name.trim() !== '', `${claudePath}: owner.name is required`);
-    const codexPath = '.agents/plugins/marketplace.json';
-    const codex = read(codexPath);
-    fields(codex, ['name', 'plugins'], codexPath);
-    for (const [catalog, relative] of [[claude, claudePath], [codex, codexPath]]) {
-      requireCondition(catalog.name === 'peer', `${relative}: marketplace name must be peer`);
-      requireCondition(Array.isArray(catalog.plugins) && catalog.plugins.length === 1, `${relative}: declare exactly one plugin`);
-      requireCondition(catalog.plugins[0].name === 'peer', `${relative}: plugin name must be peer`);
-    }
-    fields(claude.plugins[0], ['name', 'source'], `${claudePath}: plugin`);
-    requireCondition(claude.plugins[0].source === './', `${claudePath}: plugin source must be ./`);
-    fields(codex.plugins[0], ['name', 'source', 'policy', 'category'], `${codexPath}: plugin`);
-    requireCondition(isDeepStrictEqual(codex.plugins[0].source, { source: 'local', path: './' }), `${codexPath}: source must be local with path ./`);
-    requireCondition(isDeepStrictEqual(codex.plugins[0].policy, { installation: 'AVAILABLE', authentication: 'ON_INSTALL' }), `${codexPath}: invalid native installation/authentication policy`);
-    requireCondition(codex.plugins[0].category === 'Productivity', `${codexPath}: category must be Productivity`);
     const skillDirectory = component('skills', 'directory');
     const skills = fs.readdirSync(skillDirectory, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() || entry.isSymbolicLink()).map((entry) => entry.name).sort();
-    requireCondition(isDeepStrictEqual(skills, [...PACKAGE_SKILLS].sort()), 'skills/: plugin membership must match the installer skill sets');
+    requireCondition(isDeepStrictEqual(skills, [...PACKAGE_SKILLS].sort()), `${PAYLOAD_DIRECTORY}/skills/: plugin membership must match the installer skill sets`);
     for (const skill of skills) component(`skills/${skill}/SKILL.md`);
-    out.info('ok      native peer catalogs, manifests, hooks and skill membership');
+    const unresolved = [];
+    checkReferences({ sourceRoot: root, files: runtimeDocuments(root), out: { info() {}, error: (line) => unresolved.push(line) } });
+    requireCondition(unresolved.length === 0, `runtime references must resolve inside the payload:\n${unresolved.join('\n')}`);
+    out.info('ok      native peer catalogs, manifests, hooks, skill membership and runtime references');
     return true;
   } catch (error) {
-    out.error(`FAIL    plugin package: ${error.message}`);
+    out.error(`FAIL    plugin package (${scope}): ${error.message}`);
     return false;
   }
 }

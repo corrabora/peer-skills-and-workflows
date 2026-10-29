@@ -2,6 +2,6 @@
   "name": "peer",
   "owner": { "name": "Peer skills and workflows" },
   "plugins": [
-    { "name": "peer", "source": "./" }
+    { "name": "peer", "source": "./plugins/peer" }
   ]
 }

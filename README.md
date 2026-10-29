@@ -183,18 +183,36 @@ Edit [shared writing guidance](docs/writing-guidance.md) and record formats in
 node tools/generate-writing-references.mjs
 ```
 
+Both marketplace catalogs install the generated `plugins/peer` directory.
+Edit the authoring files at the repository root, then regenerate and commit
+the payload with them:
+
+```sh
+node tools/generate-plugin.mjs
+```
+
+The generator copies the runtime files selected in
+[plugin-payload.mjs](tools/lib/plugin-payload.mjs), preserving their bytes and
+executable modes. It excludes Git metadata, tests and authoring-only tools,
+and refuses links in selected source paths or existing output. Do not edit
+`plugins/peer` directly. Linked development installations continue to use the
+authoring checkout.
+
 ## Verify
 
 ```sh
 node tools/verify.mjs                   # complete local gate
 node tools/validate.mjs                 # skill metadata
 node tools/generate-writing-references.mjs --check
+node tools/generate-plugin.mjs --check   # generated payload membership, bytes and modes
 node tools/generate-vendor.mjs --check  # needs npm and registry access or --cache
 node --test                             # offline tool and harness tests
 ```
 
 The complete gate checks metadata, generated writing references, the vendored
-dependencies, the plugin package, package links and all offline tests. It does not require personal skill installation.
+dependencies, native plugin declarations, generated payload parity, package
+links and all offline tests. Runtime references must also resolve inside the
+installed payload. It does not require personal skill installation.
 `install.mjs check [<set>]` additionally checks personal links and hook definitions.
 The [behavioral suites](tests/skills/README.md) document paid model runs started
 separately; offline checks do not establish model behavior.

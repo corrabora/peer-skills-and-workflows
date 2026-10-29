@@ -10,8 +10,9 @@
 //       recorded manifest (usable or not, with path and reason) compared with
 //       the current state of the sources it records, the installed
 //       quality-profile selection and candidate guidance sources. Leaves project
-//       files and workflow records unchanged; Git may update administrative
-//       caches. It creates no directory or exclude rule. The comparison
+//       files and workflow records unchanged; Git's optional locks are disabled
+//       to avoid incidental administrative writes. It creates no directory or
+//       exclude rule. The comparison
 //       covers the recorded sources; newly added guidance appears in
 //       `candidates` (discovered guidance sources), which the skill compares
 //       with the binding's cited sources. Discovery enumeration warnings and

@@ -5,6 +5,7 @@ import { checkReferences } from './lib/install.mjs';
 import { checkWritingReferences } from './lib/writing-references.mjs';
 import { checkVendor } from './lib/vendor.mjs';
 import { checkPluginPackage } from './lib/plugin-package.mjs';
+import { checkPluginPayload } from './lib/plugin-payload.mjs';
 import { runNode } from './lib/run-node.mjs';
 import { sourceRoot, terminal as out, usage } from './lib/cli.mjs';
 
@@ -21,6 +22,9 @@ if (!checkVendor({ sourceRoot, out })) process.exit(1);
 
 out.info('verify: native plugin package');
 if (!checkPluginPackage({ sourceRoot, out })) process.exit(1);
+
+out.info('verify: generated plugin payload');
+if (!checkPluginPayload({ sourceRoot, out })) process.exit(1);
 
 out.info('verify: package references');
 if (!checkReferences({ sourceRoot, out })) process.exit(1);

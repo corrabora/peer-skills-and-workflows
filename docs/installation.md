@@ -22,14 +22,24 @@ codex plugin marketplace add https://github.com/corrabora/peer-skills-and-workfl
 codex plugin add peer@peer
 ```
 
+Both catalogs select the generated `plugins/peer` payload, which contains the
+skills, workflow references and runtime tools without Git metadata. Repository
+inspection can therefore no longer change the installed plugin's Git index
+and invalidate Codex hook approval. Linked development installations still use
+the authoring checkout. Run authoring and verification commands from that
+checkout; onward links in the packaged README and this installation guide to
+tests, quality profiles and authoring documentation refer to the
+[source repository](https://github.com/corrabora/peer-skills-and-workflows).
+
 Start a new session after installing or updating. Select a packaged skill as
 `/peer:<skill>` in Claude Code or `$peer:<skill>` in Codex; a matching request
 also selects it automatically. For Codex, add the
 [session instructions](../README.md#codex-environment) yourself, then review the
 plugin's three successor hooks in `/hooks`; installation never records hook
 trust. Without an enabled succession chain, the hooks return nothing.
-If Codex reports changed plugin contents, start a new session and review the
-hooks again.
+Actual changes to the installed payload, including instruction-only updates,
+can require fresh hook review. This layout prevents approval churn from Git
+metadata; it does not disable content-bound approval.
 
 To try the plugin beside a linked installation, set an absolute, disposable
 `CODEX_HOME` or `CLAUDE_CONFIG_DIR` for those commands and sessions. On macOS,
@@ -40,15 +50,51 @@ deleting a Claude test profile, run `claude auth logout` with the same
 
 ### Update
 
+A remote push makes a new revision available; the client must refresh its
+marketplace, replace the installed copy and load that copy into a session.
+The catalogs do not pin a release tag or declare a plugin version, so releases
+need no tag. Use the explicit commands below when you need an update now.
+
+For Claude Code, third-party marketplaces have automatic updates off by
+default. When enabled for `peer`, an interactive session checks after its
+first message with a random delay of up to ten minutes. With the version
+omitted, Git commits identify updates. An already running session keeps its
+loaded copy until reload or a new launch. See Claude's
+[update behavior](https://code.claude.com/docs/en/plugins/loading#versions-and-updates).
+Codex has an automatic marketplace-upgrade task, but its timing has not been
+established by this package's tests; do not rely on a push immediately updating
+users. Its [marketplace commands](https://learn.chatgpt.com/docs/developer-commands#codex-plugin-marketplace)
+provide the explicit refresh below.
+
 | Step | Claude Code | Codex |
 | --- | --- | --- |
 | Refresh the marketplace | `claude plugin marketplace update peer` | `codex plugin marketplace upgrade peer` |
 | Refresh the installed plugin | `claude plugin update peer@peer` | done by the marketplace upgrade |
-| Show the installed revision | `version` and `installPath` in `claude plugin list --json` | `git -C "${CODEX_HOME:-$HOME/.codex}/plugins/cache/peer/peer/local" rev-parse HEAD` |
+| Identify the installed copy | `version` and `installPath` in `claude plugin list --json` | `workflowSource` from the inspection below; `local` is not a commit ID |
+
+Installed plugins contain no Git metadata. To identify the instructions actually
+loaded, use Claude's `installPath`, or
+`${CODEX_HOME:-$HOME/.codex}/plugins/cache/peer/peer/local` for Codex, as the
+installed plugin path. Run its binding helper against a target Git checkout:
+
+```sh
+node "<installed plugin>/tools/bind.mjs" inspect --repo "<target checkout>"
+```
+
+Read `workflowSource.path`, `digest` and `digestScope` from the JSON. This
+inspection creates no binding. The digest identifies the copied instruction
+content; it is not a Git commit and need not equal an authoring checkout's
+digest, which covers additional files. If inspection cannot establish an
+identity, keep it unverified. Agent revision records follow
+[Instruction revision](../workflow/RECORDS.md#layout).
 
 Claude Code names each installed copy after the commit's first 12 hex digits;
 Codex replaces its `local` copy in place. Start a new session after updating;
-hot reload is unverified.
+Codex hot reload is unverified. The migration from the old repository-root
+plugin removes its installed Git metadata and changes its content fingerprint,
+so Codex users should expect to review the three hooks once for this update.
+Further payload changes can require another review; routine marketplace Git
+activity should not.
 When an update changes the instructions, tools or plugin metadata, a bound
 checkout reports its workflow source as changed: run `bind-agent-workflow` to
 refresh the binding. Recorded paths of active succession chains are kept for
@@ -86,6 +132,16 @@ ran the three successor hooks. Unverified:
 private-repository authentication, Windows and Linux, the Codex and Claude desktop
 apps, other client versions, and Codex trust through the `/hooks` screen (tested
 through its configuration record).
+
+The generated payload was additionally checked through clean installs and
+upgrades from the repository-root layout in disposable profiles on those CLI
+versions. Both engines installed copies without Git metadata and ran the packaged helper and
+inactive-chain hook commands. Codex preserved hook identities and simulated
+approval through installed-copy and marketplace Git inspection, including a
+marketplace index lock; editing a packaged instruction invalidated approval.
+Installed payload digests matched the generated payload without claiming its
+parent repository's commit. These checks used disposable trust configuration,
+not the `/hooks` approval screen, and do not establish live-session hot reload.
 
 ## Linked checkout
 

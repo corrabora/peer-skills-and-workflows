@@ -49,8 +49,8 @@ returning to this task; this grants no run-record writing authority.
    `error: outside the checkout` and its location, and was not read: treat
    it as a missing dependency, never as the repository's installed
    selection); `candidates`, every guidance source found by name; and the
-   workflow source identity. Git queries may update administrative caches,
-   outside the CHECK promise. If `discovery.complete` is false, report a failed
+   workflow source identity. The helper disables Git's optional locks to avoid
+   incidental administrative writes during inspection. If `discovery.complete` is false, report a failed
    partial CHECK with `discovery.errors` paths, escaped names and causes, preserving
    independent facts. Do not establish coverage/readiness or read newly exposed
    candidates from that unverified discovery until the operator resolves the
