@@ -168,6 +168,8 @@ digest acknowledgment, not the truth of the agent's interpretation. `yield` and
 `retire` also check for new predecessor input after the freeze. Such input
 requires reconciliation of the existing transfer, not a new nonce or silent
 reuse of a stale confirmation.
+Use [amend a frozen transfer](#amend-a-frozen-transfer) for post-freeze input;
+`capture` and `reconcile-source` remain active-only operations.
 
 ## Hook reminders
 
@@ -297,3 +299,93 @@ before applying and verifying its `CURRENT` title. Older records without
 `lastRetirement` cannot establish this new completion check; report the gap for
 reconciliation. Neither a recorded title nor a confirmation file independently
 proves actual UI or runtime state. Preserve those observations with the handoff.
+
+## Amend a frozen transfer
+
+The live recorded predecessor may amend `prepared`, `yielded` or `confirmed`
+transfers. Read `status` and retain the same nonce and participants. Revision 0
+is the original freeze; absent revision fields in older records mean 0.
+`transfer.revision` identifies current evidence, and `acknowledgedRevision`
+identifies the successor's latest acknowledgment. A confirmed amendment stays
+confirmed and cannot reopen cancellation or successor selection.
+
+Write a new amendment JSON file outside the frozen artifacts:
+
+```json
+{
+  "version": 1,
+  "action": "amend-transfer",
+  "chain": "existing-chain-id",
+  "nonce": "existing-transfer-nonce",
+  "generation": 1,
+  "expectedRevision": 0,
+  "assessment": "Attributed assessment of the new input and its effect on continuity.",
+  "nextAction": "The next action permitted by the retained instructions.",
+  "limitationAssessments": []
+}
+```
+
+Use the predecessor's current generation and the revision from state. For each
+new source limitation, add `{limitationId, text}` to `limitationAssessments`.
+A new limitation is not in any committed index yet. Submit the amendment first;
+its rejection names each unassessed limitation's generation, source line, ID and
+reason. Inspect that original input before writing its assessment.
+The text names supporting evidence, remaining uncertainty and the permitted
+action; a critical unresolved input keeps the task waiting. The helper retains
+these as predecessor assessments bound to the nonce and new revision, without
+removing the raw limitations. Input with only a limitation, such as an image
+without text, still requires assessment. It is not discarded as an empty message.
+
+```text
+node <helper> amend-transfer --root <root> --engine <predecessor engine> --nonce <nonce> --expected-revision <current revision> --record-file <absolute amendment JSON>
+node <helper> reconfirm --root <root> --engine <designated successor engine> --nonce <nonce> --revision <current revision> --expected-acknowledged-revision <previous acknowledgment>
+```
+
+The amendment captures the complete append-only source extension. Read the
+returned source and its new entry and limitation IDs; if capture rejects a
+prefix change or malformed log, preserve the evidence and report that blocker.
+Never repair it by deleting captured instructions. New revision files are
+`handoffs/<nonce>/revisions/<n>/instructions.json` and `record.json`, backed by
+immutable source blobs. The original handoff, instruction freeze and earlier
+revision files remain unchanged.
+
+In `prepared`, proceed to yield after the amendment. In `yielded`, the successor
+reads the revised evidence and writes the initial `confirmation.md` beside the
+handoff before `accept`. In `confirmed`, the pinned successor writes
+`revisions/<n>/confirmation.md` and runs `reconfirm`. Name the current source
+digest and every new entry and limitation ID since the previous acknowledgment.
+For each, record an attributed disposition—routine delivery, instruction or
+unresolved-waiting—and the next permitted action. Inspect the underlying evidence;
+the helper checks digest/ID presence and retained byte identity, not the truth
+of the disposition or the authority of a user-channel message.
+
+An exact committed amendment retry uses the same record bytes and expected
+revision; an exact reconfirm retry uses the same revision and expected prior
+acknowledgment. These return committed state without another transition, even
+if later log input exists. Later input still requires a new amendment before
+retirement. Keep confirmation bytes unchanged after acknowledgment.
+
+Publication stages artifacts before atomically publishing state. If interrupted,
+inspect `status`, then retry the same operation. Uncommitted staging artifacts
+and an unreferenced published revision are retained; a retry moves the latter
+aside before publishing a new capture. Such artifacts grant no authority.
+Do not delete them or edit state to manufacture a commit. Changed records cannot
+reuse a committed operation. `retire` and `finish-transfer` require current-source
+integrity, current acknowledgment and unchanged retained confirmations.
+
+`status` includes `transfer.next` with the next actor and command by phase:
+predecessor/yield, successor/accept, successor/reconfirm for a pending confirmed
+revision, or predecessor/retire once acknowledged. Cancelled transfers name
+predecessor/resume-cancelled. This is phase guidance, not a source-integrity,
+liveness or Run-ownership check; each operation retains its preconditions.
+
+The regression fixtures exercise both source adapters and helper CLI with the
+reported counted mailbox wake and installed notice templates. They do not
+establish live Orca or Claude delivery behavior. The reported failure used
+`20a1ffed`; the decision review found the inspected successor files unchanged at
+`47921d6`. That comparison does not identify an introducing commit or prove
+all intervening runtime versions affected. For a live verification, use a
+separately authorized test Run with pending worker result and question deliveries,
+retain runtime versions and message IDs, exercise amendments around each transfer
+phase, and verify one successor, the same Run and one ownership commit. Report
+that evidence separately from fixture results.

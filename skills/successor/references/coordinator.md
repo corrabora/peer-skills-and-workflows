@@ -23,8 +23,9 @@ these continuity checks in the successor:
    identity using the runtime's `run-use`, without identity overrides or legacy
    takeover. Verify owner and consumer generation with `run-current` and
    `run-show`, using current help for the exact commands.
-4. Recover pending deliveries, preserving message identities. Process every
-   delivered row before acknowledgment; retain unresolved questions. A queued
+4. Recover pending deliveries, preserving message identities. Retain and process
+   every delivered row under the runtime's consuming-check contract below;
+   retain unresolved questions. A queued
    reply does not establish that a worker received it. Service transferred
    worker questions within their existing authority while completing transfer.
 5. Bind confirmation to the nonce, both sessions, Run identity and observed
@@ -36,3 +37,22 @@ confirmation. If any step fails, preserve the observed owner and pending
 deliveries, retain the handoff and keep new dispatch paused. This discipline
 preserves one active coordinator; it does not claim the runtime fences a stale
 owner's actions. Use the runtime's recovery procedure for uncertainty.
+
+Live workers can produce results and questions during the handshake, so mailbox
+wakes after source freeze are expected. A wake in the predecessor's session log
+and the underlying delivery are distinct evidence: retain both identities and
+reconcile which pending messages were actually recovered. The live predecessor
+uses `amend-transfer`; after acceptance the designated successor uses `reconfirm`,
+as described in [mechanics](mechanics.md#amend-a-frozen-transfer). Do not classify
+a notice as harmless from its wording or launch a replacement Run to drain mail.
+
+Read current `orchestration check --help` before consuming deliveries. In the
+current contract a consuming check marks the returned batch handled; it does
+not wait for a later explicit acknowledgment. Retain the complete response and
+process every row before the next check. If the response is lost, replay the
+printed request identity with `--retry-request`. After context loss, recover
+handled mail with `orchestration inbox --terminal run:<run_id> --limit <n> --full`;
+use current help for command syntax and older-runtime acknowledgment behavior.
+Preserve question IDs, Task/Dispatch assignments and unresolved replies through
+the handoff. Simulated delivery fixtures establish helper behavior only, not
+that a live runtime delivered or processed those messages.

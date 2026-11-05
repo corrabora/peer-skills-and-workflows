@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { canonicalLocation, hostContext, isWithin, LOCAL_DIRECTORY, localDirectory, machineBase } from './paths.mjs';
 import { assessSuccession, establishLog, locateLog, mergeObservation, observationFor, readCounts, readSessionLog, writeCounts } from './succession.mjs';
-import { captureSources, freezeSources, reconcileSource, verifyFrozenSources, verifyCurrentSource } from './successor-instructions.mjs';
+import { amendTransferSources, captureSources, committedAmendment, freezeSources, reconcileSource, verifyFrozenSources, verifyCurrentSource } from './successor-instructions.mjs';
 import { cancelledTitle, retainRecovery, verifyRecoveryRetry } from './successor-recovery.mjs';
 
 const FORMAT = 'agent-workflow succession chain';
@@ -60,6 +60,32 @@ export function readChain(root) {
     assert(s.status === 'transferring' && t.generation === s.generation + 1 && text(t.handoff), `${file}: transfer/lifecycle mismatch`);
     assert(t.handoff === path.join(s.root, 'handoffs', t.nonce, 'handoff.md'), `${file}: invalid handoff path`);
     assert(t.phase !== 'confirmed' || (identity(t.successor) && t.successor.session !== s.owner.session && text(t.confirmation)), `${file}: invalid confirmation`);
+    const revision = t.revision === undefined ? 0 : t.revision;
+    const amendments = t.amendments === undefined ? [] : t.amendments;
+    assert(Number.isSafeInteger(revision) && revision >= 0 && Array.isArray(amendments)
+      && amendments.length === revision, `${file}: invalid transfer revision history`);
+    for (const [i, amendment] of amendments.entries()) {
+      assert(object(amendment) && amendment.revision === i + 1, `${file}: invalid amendment revision`);
+    }
+    const acknowledged = t.acknowledgedRevision === undefined ? 0 : t.acknowledgedRevision;
+    assert(Number.isSafeInteger(acknowledged) && acknowledged >= 0 && acknowledged <= revision
+      && (t.acknowledgedRevision === undefined || t.phase === 'confirmed'), `${file}: invalid acknowledged revision`);
+    if (t.confirmations !== undefined) {
+      assert(t.phase === 'confirmed' && Array.isArray(t.confirmations) && t.confirmations.length > 0,
+        `${file}: invalid confirmation history`);
+      let prior = -1;
+      for (const [i, confirmation] of t.confirmations.entries()) {
+        assert(object(confirmation) && Number.isSafeInteger(confirmation.revision) && confirmation.revision > prior
+          && confirmation.revision <= acknowledged && /^[a-f0-9]{64}$/.test(confirmation.sha256)
+          && confirmation.file === (i === 0 ? t.confirmation
+            : path.join(path.dirname(t.handoff), 'revisions', String(confirmation.revision), 'confirmation.md')),
+        `${file}: invalid confirmation revision history`);
+        prior = confirmation.revision;
+      }
+      assert(prior === acknowledged && t.confirmations[0].file === path.join(path.dirname(t.handoff), 'confirmation.md')
+        && (!t.confirmationSha256 || t.confirmations[0].sha256 === t.confirmationSha256),
+      `${file}: confirmation history differs from acknowledgment`);
+    }
     assert(t.phase !== 'cancelled' || (t.cancellation?.action === 'cancel-transfer' && t.cancellation.nonce === t.nonce
       && s.recoveries?.some((r) => r.record?.sha256 === t.cancellation.record?.sha256)), `${file}: missing cancellation evidence`);
   } else assert(s.status !== 'transferring', `${file}: missing transfer`);
@@ -200,12 +226,29 @@ export function report(s) {
   const countsReport = assessSuccession({ ...counts, current: s.owner.session }, s.thresholds);
   // Keep staged observations in the raw evidence, not in predecessor history.
   countsReport.earlierSessions = countsReport.earlierSessions.filter((v) => v.session !== s.transfer?.successor?.session);
-  return { ...s, titles: titles(s), continuation: path.join(s.root, 'continuation.md'),
-    countsReport };
+  return { ...s, ...(s.transfer ? { transfer: { ...s.transfer, next: transferNext(s.transfer) } } : {}),
+    titles: titles(s), continuation: path.join(s.root, 'continuation.md'), countsReport };
+}
+// Phase guidance only: the named command still checks its own preconditions,
+// and new predecessor input first needs amend-transfer by the predecessor.
+function transferNext(t) {
+  if (t.phase === 'prepared') return { actor: 'predecessor', command: 'yield' };
+  if (t.phase === 'yielded') return { actor: 'successor', command: 'accept' };
+  if (t.phase === 'cancelled') return { actor: 'predecessor', command: 'resume-cancelled' };
+  return (t.acknowledgedRevision ?? 0) < (t.revision ?? 0)
+    ? { actor: 'successor', command: 'reconfirm' } : { actor: 'predecessor', command: 'retire' };
 }
 function retirementReceipt(s) {
   const r = s.lastRetirement;
   atomic(path.join(s.root, 'handoffs', r.nonce, 'retirement.json'), r);
+}
+// Every retained acknowledgment must still have its committed bytes. Legacy
+// confirmed records without history fall back to their single stored hash.
+function verifyConfirmations(t) {
+  const digest = (file) => crypto.createHash('sha256').update(regular(file)).digest('hex');
+  const history = t.confirmations ?? (t.confirmationSha256 ? [{ revision: 0, file: t.confirmation, sha256: t.confirmationSha256 }] : []);
+  for (const c of history) assert(digest(c.file) === c.sha256, `confirmation for revision ${c.revision} changed after acknowledgment; reconcile it before transfer`);
+  return history.at(-1)?.file ?? t.confirmation;
 }
 export function update(root, caller, action, options = {}, host = hostContext()) {
   return locked(root, () => {
@@ -226,7 +269,17 @@ export function update(root, caller, action, options = {}, host = hostContext())
       retirementReceipt(s);
       return s; // Repair a missing receipt; never repeat the ownership transition.
     }
-    if (!['accept', 'finish-transfer'].includes(action)) owner(s, caller);
+    if (action === 'reconfirm' && s.transfer?.phase === 'confirmed' && s.transfer.nonce === options.nonce) {
+      const history = s.transfer.confirmations ?? []; const i = history.findIndex((c) => c.revision === options.revision);
+      if (i > 0 && history[i - 1].revision === options.expectedAcknowledgedRevision) {
+        assert(matches(s.transfer.successor, caller), 'only the designated successor can reconfirm');
+        verifyFrozenSources(s); verifyConfirmations(s.transfer); return s; // Exact retry of a committed acknowledgment.
+      }
+    }
+    if (action === 'amend-transfer' && s.transfer?.nonce === options.nonce && committedAmendment(s, options)) {
+      owner(s, caller); return s; // Exact retry; never recapture or republish.
+    }
+    if (!['accept', 'reconfirm', 'finish-transfer'].includes(action)) owner(s, caller);
     if (action === 'capture') {
       assert(s.status === 'active', 'capture instructions only while active; reconcile an existing frozen transfer first');
       s.instructionSource = captureSources(s, options);
@@ -257,6 +310,10 @@ export function update(root, caller, action, options = {}, host = hostContext())
       s.status = 'transferring';
       s.transfer = { nonce, phase: 'prepared', generation: s.generation + 1, handoff: path.join(dir, 'handoff.md'),
         handoffSha256: crypto.createHash('sha256').update(content).digest('hex'), instructions, successor: null, confirmation: null };
+    } else if (action === 'amend-transfer') {
+      assert(['prepared', 'yielded', 'confirmed'].includes(s.transfer?.phase) && s.transfer.nonce === options.nonce,
+        'amend-transfer requires this prepared, yielded or confirmed transfer nonce');
+      amendTransferSources(s, options);
     } else if (action === 'cancel-transfer') {
       assert(s.transfer?.nonce === options.nonce && ['prepared', 'yielded', 'cancelled'].includes(s.transfer.phase),
         'cancel-transfer requires this prepared or yielded nonce; confirmed transfers cannot be cancelled');
@@ -285,20 +342,49 @@ export function update(root, caller, action, options = {}, host = hostContext())
       const instructions = verifyFrozenSources(s);
       const confirmationText = regular(confirmation);
       assert(confirmationText.includes(instructions.sha256), `record continuity, instruction-source digest and UI verification in ${confirmation} before accepting`);
+      for (const amendment of s.transfer.amendments ?? []) for (const id of [...amendment.newEntryIds, ...(amendment.newLimitationIds ?? [])]) {
+        assert(confirmationText.includes(id), `record the disposition of amended entry ${id} in ${confirmation} before accepting`);
+      }
       register(s, caller, host);
       s.transfer.successor = caller;
       s.transfer.confirmation = confirmation;
       s.transfer.confirmationSha256 = crypto.createHash('sha256').update(confirmationText).digest('hex');
+      s.transfer.acknowledgedRevision = s.transfer.revision ?? 0;
+      s.transfer.confirmations = [{ revision: s.transfer.acknowledgedRevision,
+        file: confirmation, sha256: s.transfer.confirmationSha256 }];
       s.transfer.phase = 'confirmed';
+    } else if (action === 'reconfirm') {
+      const t = s.transfer;
+      assert(t?.phase === 'confirmed' && t.nonce === options.nonce, 'reconfirm requires the confirmed transfer nonce');
+      assert(matches(t.successor, caller), 'only the designated successor can reconfirm');
+      assert(Number.isSafeInteger(options.revision) && options.revision === (t.revision ?? 0),
+        'reconfirm must name the current transfer revision');
+      const previous = t.acknowledgedRevision ?? 0;
+      assert(Number.isSafeInteger(options.expectedAcknowledgedRevision) && options.expectedAcknowledgedRevision === previous,
+        'expected acknowledged revision must match the previous acknowledgment');
+      assert(options.revision > previous, 'current transfer revision is already acknowledged');
+      const instructions = verifyFrozenSources(s);
+      const file = path.join(path.dirname(t.handoff), 'revisions', String(options.revision), 'confirmation.md');
+      const content = regular(file);
+      assert(content.includes(instructions.sha256), 'reconfirmation must name the current instruction-source digest');
+      for (const amendment of t.amendments.filter((v) => v.revision > previous)) for (const id of [...amendment.newEntryIds, ...(amendment.newLimitationIds ?? [])]) {
+        assert(content.includes(id), `record the disposition of amended entry ${id} before reconfirming`);
+      }
+      verifyConfirmations(t);
+      const history = t.confirmations ?? [{ revision: previous, file: t.confirmation,
+        sha256: t.confirmationSha256 ?? crypto.createHash('sha256').update(regular(t.confirmation)).digest('hex') }];
+      t.confirmations = [...history, { revision: options.revision, file,
+        sha256: crypto.createHash('sha256').update(content).digest('hex') }];
+      t.acknowledgedRevision = options.revision;
     } else if (action === 'retire' || action === 'finish-transfer') {
       assert(s.transfer?.phase === 'confirmed' && s.transfer.nonce === options.nonce, 'retire requires the successor’s matching confirmation');
       assert(options.retiredTitle === titles(s).retired, 'verify the predecessor’s exact RETIRED title in Orca, then pass it with --retired-title');
-      verifyFrozenSources(s); verifyCurrentSource(s);
+      assert((s.transfer.acknowledgedRevision ?? 0) === (s.transfer.revision ?? 0),
+        `the designated successor must reconfirm transfer revision ${s.transfer.revision} before ownership transfers; its acknowledgment covers revision ${s.transfer.acknowledgedRevision ?? 0}`);
+      const acknowledged = verifyFrozenSources(s); verifyCurrentSource(s);
+      const latest = verifyConfirmations(s.transfer);
       if (action === 'finish-transfer') {
-        const confirmationText = regular(s.transfer.confirmation);
-        assert(confirmationText.includes(s.transfer.instructions.sha256), 'confirmed instruction evidence is missing from the confirmation');
-        assert(!s.transfer.confirmationSha256 || crypto.createHash('sha256').update(confirmationText).digest('hex') === s.transfer.confirmationSha256,
-          'confirmed continuity text changed; reconcile it before recovery');
+        assert(regular(latest).includes(acknowledged.sha256), 'confirmed instruction evidence is missing from the confirmation');
       }
       const recovery = action === 'finish-transfer' ? retainRecovery(s, caller, action, options.recordFile, titles(s)) : null;
       // All fallible log observation precedes the ownership commit. The counts

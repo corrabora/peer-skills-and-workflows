@@ -194,9 +194,17 @@ part of the handoff; it is not supervision of the successor's later task.
 If transfer stalls, read [recovery](references/recovery.md) before changing its
 state. It defines cancellation by the predecessor and operator-authorized
 completion by the designated successor. Elapsed time supplies no approval.
-If new operator input arrives after the source freeze, preserve it and reconcile
-the transfer before proceeding. Do not rewrite frozen evidence or treat the
-earlier confirmation as covering a later instruction.
+If input arrives after the source freeze, the live predecessor uses
+`amend-transfer` in `prepared`, `yielded` or `confirmed`, following the
+[amendment procedure](references/mechanics.md#amend-a-frozen-transfer).
+It preserves the nonce, participants and original evidence. In `yielded`, the
+successor accepts the latest revision; in `confirmed`, the designated successor
+uses `reconfirm` before retirement. The predecessor performs only transfer repair
+after yielding. Routine mailbox wakes need no new operator decision, but unknown
+provenance is not harmless: retain the input and reconcile its authority and
+effect on the next action. Never rewrite frozen evidence or let an earlier
+confirmation cover a later instruction. Ownership uncertainty retains the
+recovery reference's operator gates.
 
 A launch receipt establishes delivery, not continuity or completed succession.
 If transfer or UI verification fails, retain the records and actual handles,
