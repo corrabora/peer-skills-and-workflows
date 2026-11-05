@@ -343,3 +343,32 @@ test('the hook operates in a linked worktree and the CLI runs through a symlink'
   fs.writeFileSync(file, 'wrong');
   assert.equal(run(root, process.execPath, [link, file]).status, 1);
 });
+
+test('the hook runs the gate without the Git environment of the commit that invoked it', () => {
+  // In a linked worktree Git exports GIT_DIR and GIT_INDEX_FILE to hooks; tests
+  // that create fixture repositories would otherwise write to the committer's
+  // repository and index.
+  const root = fixture();
+  assert.equal(install(root).status, 0);
+  git(root, ['commit', '--allow-empty', '-m', 'test: initialize fixture']);
+  const worktree = path.join(scratch, `hook environment ${ordinal}`);
+  git(root, ['worktree', 'add', '--detach', worktree, 'HEAD']);
+  for (const part of ['.githooks', 'tools', 'docs', 'skills']) {
+    fs.cpSync(path.join(root, part), path.join(worktree, part), { recursive: true });
+  }
+  const record = path.join(scratch, `hook environment ${ordinal}.json`);
+  fs.writeFileSync(
+    path.join(worktree, 'tools/lint.mjs'),
+    `import fs from 'node:fs';\nfs.writeFileSync(${JSON.stringify(record)}, JSON.stringify(Object.keys(process.env).filter((name) => name.startsWith('GIT_'))));\n`,
+  );
+  const result = run(worktree, 'git', [
+    '-c',
+    'user.name=Fixture',
+    'commit',
+    '--allow-empty',
+    '-m',
+    'test: record hook environment',
+  ]);
+  assert.equal(result.status, 0, output(result));
+  assert.deepEqual(JSON.parse(fs.readFileSync(record, 'utf8')), [], 'no Git variable reaches the gate');
+});
