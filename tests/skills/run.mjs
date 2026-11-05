@@ -40,7 +40,8 @@ import { reinspectRun } from './lib/reinspect.mjs';
 import { buildReport, loadJudgments, writeReport } from './lib/report.mjs';
 import { listSuites, loadSuite } from './lib/suite.mjs';
 
-const USAGE = 'node tests/skills/run.mjs list|run|retry|inspect|report [options]; see the header of this file or tests/skills/README.md';
+const USAGE =
+  'node tests/skills/run.mjs list|run|retry|inspect|report [options]; see the header of this file or tests/skills/README.md';
 const defaults = readJson(path.join(skillsTestRoot, 'defaults.json'));
 
 function usage(message) {
@@ -59,7 +60,10 @@ function executablesFrom(values = []) {
   const executables = {};
   for (const value of values) {
     const match = /^([a-z]+)=(.+)$/.exec(value);
-    if (!match || !Object.hasOwn(ENGINES, match[1])) usage(`--executable must be <engine>=<path> with engine one of ${Object.keys(ENGINES).join(', ')}; got '${value}'`);
+    if (!match || !Object.hasOwn(ENGINES, match[1]))
+      usage(
+        `--executable must be <engine>=<path> with engine one of ${Object.keys(ENGINES).join(', ')}; got '${value}'`,
+      );
     executables[match[1]] = match[2];
   }
   return executables;
@@ -112,8 +116,10 @@ try {
     }
     case 'run': {
       if (!args.suite) usage('--suite is required');
-      if (!args.engine || !Object.hasOwn(ENGINES, args.engine)) usage(`--engine must be one of ${Object.keys(ENGINES).join(', ')}`);
-      if ((args['source-tree'] === undefined) === (args['source-dir'] === undefined)) usage('give exactly one of --source-tree <tree-ish> or --source-dir <dir>');
+      if (!args.engine || !Object.hasOwn(ENGINES, args.engine))
+        usage(`--engine must be one of ${Object.keys(ENGINES).join(', ')}`);
+      if ((args['source-tree'] === undefined) === (args['source-dir'] === undefined))
+        usage('give exactly one of --source-tree <tree-ish> or --source-dir <dir>');
       if (args['source-dir'] !== undefined && args.repo !== undefined) usage('--repo applies only with --source-tree');
       if (!args['run-dir']) usage('--run-dir is required');
       const engineDefaults = defaults.engines[args.engine] ?? {};
@@ -126,21 +132,30 @@ try {
         verbosity: args.verbosity ?? null,
         replicates: integer(args.replicates, '--replicates', defaults.replicates),
         cases: args.case ?? null,
-        source: args['source-dir'] !== undefined ? { dir: args['source-dir'] } : { repo: args.repo, tree: args['source-tree'] },
+        source:
+          args['source-dir'] !== undefined
+            ? { dir: args['source-dir'] }
+            : { repo: args.repo, tree: args['source-tree'] },
         runDir: args['run-dir'],
         executables: executablesFrom(args.executable),
         timeoutSeconds: integer(args['timeout-seconds'], '--timeout-seconds', defaults.timeoutSeconds),
       });
       if (args['dry-run']) {
         out.info(JSON.stringify(describePlan(plan), null, 2));
-        out.info(`dry run: ${plan.cells.length} attempts planned${plan.skipped.length ? `, ${plan.skipped.length} already attempted and skipped` : ''}, nothing launched, nothing written`);
+        out.info(
+          `dry run: ${plan.cells.length} attempts planned${plan.skipped.length ? `, ${plan.skipped.length} already attempted and skipped` : ''}, nothing launched, nothing written`,
+        );
         break;
       }
       const records = executeRun(plan, { out });
       const transport = records.filter((record) => record.status === 'transport-failure');
-      out.info(`${records.length} attempts; ${records.length - transport.length} behavioral, ${transport.length} transport failures${plan.skipped.length ? `; ${plan.skipped.length} earlier attempts kept` : ''}; run at ${plan.runDir}`);
+      out.info(
+        `${records.length} attempts; ${records.length - transport.length} behavioral, ${transport.length} transport failures${plan.skipped.length ? `; ${plan.skipped.length} earlier attempts kept` : ''}; run at ${plan.runDir}`,
+      );
       if (transport.length) {
-        out.info(`retry a transport failure with: node tests/skills/run.mjs retry --run-dir "${plan.runDir}" --cell <case>/${plan.settings.engine}/<replicate>`);
+        out.info(
+          `retry a transport failure with: node tests/skills/run.mjs retry --run-dir "${plan.runDir}" --cell <case>/${plan.settings.engine}/<replicate>`,
+        );
         process.exitCode = 1;
       }
       break;
@@ -152,10 +167,15 @@ try {
       const record = retryCell({
         runDir: args['run-dir'],
         cell: args.cell[0],
-        cooldownSeconds: integer(args['cooldown-seconds'], '--cooldown-seconds', defaults.transportRetry.cooldownSeconds),
+        cooldownSeconds: integer(
+          args['cooldown-seconds'],
+          '--cooldown-seconds',
+          defaults.transportRetry.cooldownSeconds,
+        ),
         maxPerCell: defaults.transportRetry.maxPerCell,
         executables: executablesFrom(args.executable),
-        timeoutSeconds: args['timeout-seconds'] === undefined ? null : integer(args['timeout-seconds'], '--timeout-seconds'),
+        timeoutSeconds:
+          args['timeout-seconds'] === undefined ? null : integer(args['timeout-seconds'], '--timeout-seconds'),
         out,
       });
       if (record.status !== 'behavioral') process.exitCode = 1;
@@ -164,10 +184,22 @@ try {
     case 'inspect': {
       if (!args['run-dir']) usage('--run-dir is required');
       if (args.repo !== undefined && args.suite === undefined) usage('--repo applies only with --suite');
-      const { runDir, outcomes } = reinspectRun({ runDir: args['run-dir'], cells: args.cell ?? null, suite: args.suite ?? null, repo: args.repo ?? null, out });
+      const { runDir, outcomes } = reinspectRun({
+        runDir: args['run-dir'],
+        cells: args.cell ?? null,
+        suite: args.suite ?? null,
+        repo: args.repo ?? null,
+        out,
+      });
       const failed = outcomes.filter((outcome) => !outcome.ok);
-      const changed = outcomes.filter((outcome) => outcome.ok && (outcome.before.verdict !== outcome.after.verdict || outcome.before.status !== outcome.after.status));
-      out.info(`${outcomes.length} attempts reinspected, ${changed.length} verdicts changed, ${failed.length} not reinspected; run at ${runDir}`);
+      const changed = outcomes.filter(
+        (outcome) =>
+          outcome.ok &&
+          (outcome.before.verdict !== outcome.after.verdict || outcome.before.status !== outcome.after.status),
+      );
+      out.info(
+        `${outcomes.length} attempts reinspected, ${changed.length} verdicts changed, ${failed.length} not reinspected; run at ${runDir}`,
+      );
       if (failed.length) process.exitCode = 1;
       break;
     }
@@ -178,15 +210,22 @@ try {
       const report = buildReport({
         runDir: args['run-dir'],
         judgments,
-        standingEngines: args.engines === undefined ? defaults.standingEngines : args.engines.split(',').filter(Boolean),
+        standingEngines:
+          args.engines === undefined ? defaults.standingEngines : args.engines.split(',').filter(Boolean),
         replicates: integer(args.replicates, '--replicates', defaults.replicates),
         suite: args.suite ?? null,
         repo: args.repo ?? null,
       });
       const written = writeReport(report.runDir, report);
-      out.info(`${report.certified ? 'certified' : 'not certified'}: ${report.suite.name} at source ${report.source.tree ?? report.source.digest}, verbosity ${report.verbosity}${report.suite.revised ? `; graded against revised suite ${report.suite.revised.hash} (run recorded ${report.suite.hash})` : ''}`);
+      out.info(
+        `${report.certified ? 'certified' : 'not certified'}: ${report.suite.name} at source ${report.source.tree ?? report.source.digest}, verbosity ${report.verbosity}${report.suite.revised ? `; graded against revised suite ${report.suite.revised.hash} (run recorded ${report.suite.hash})` : ''}`,
+      );
       for (const caseDef of report.cases) {
-        out.info(`  ${caseDef.id}: ${Object.entries(caseDef.engines).map(([engine, summary]) => `${engine} ${summary.status} ${summary.passed}/${summary.replicates}`).join('; ')}`);
+        out.info(
+          `  ${caseDef.id}: ${Object.entries(caseDef.engines)
+            .map(([engine, summary]) => `${engine} ${summary.status} ${summary.passed}/${summary.replicates}`)
+            .join('; ')}`,
+        );
       }
       out.info(`report: ${written.markdown}`);
       break;

@@ -58,12 +58,17 @@ export const WORKSPACE_SKIP = ['.git', '.claude', '.agents'];
 /** Identity of the classification rule, recorded in every inspection so a report can say which classifier judged a cell. */
 export const CLASSIFIER = {
   version: 9,
-  rule: 'body: Read of the skill\'s SKILL.md, a Skill invocation, or a shell command whose returned output contains the skill\'s frontmatter name line and first heading; arguments decide only partial and listing; exclusion globs and pathspecs never count',
-  sourceReadRule: 'a source file is read when a Read whose path ends with its source-relative path or with a declared skill-local alias of it (skills/<skill>/references/<basename>), or any shell command, returned output showing the canonical file\'s first and last non-empty lines; partial outputs are judged together; a path named without such output is partial or listing',
-  sourceAliasRule: 'an alias of a source file is a regular file skills/<skill>/references/<basename> in the materialized source whose body, after an optional header line, equals the canonical body, or equals the canonical body after the Markdown link rewrites the generator registers for that copy (tools/lib/writing-references.mjs), the rewrites that made the match recorded; a read of an alias whose body differs otherwise is stale-alias and never counts',
-  writeRule: 'a writes.allowed or writes.required entry matches a workspace path literally, or as a pattern when it carries `*`, which matches any run of characters other than a slash within its segment',
-  editRule: 'an edit is confined to a passage when the bytes before its `after` marker line and from its `before` marker line onward equal the fixture\'s',
-  claimRule: 'a path-like token (a slash and a file extension, or a .md, .txt, .json or .csv name) in a statement of the final reply whose verb is wrote, written, saved, created, updated, added, put or placed, or that locates it with "is at" or "is in", is a claimed artifact unless a negation or a modal precedes it or the sentence is a question; a claim verb governs only the paths in its own clause (clauses end at a semicolon, at a colon once the clause names a path or a subject pronoun follows, before a connector that introduces a new subject or a modal, and before a subordinator such as before, after, once, if or when, whose clause ends at the next comma) and claims only when its clause\'s subject is the author (I, we), absent (a receipt\'s bare verb or a "written:" label) or the thing produced in the passive (is, was, has been); a clause whose subject is anyone or anything else, such as the assistant, the recipient or a step of the brief, never claims; Markdown destinations retain encoded spaces, Unicode and parentheses in directory and file names; bare and code-span paths containing whitespace remain heuristically tokenized; a claimed path fails only when no created, modified or existing file matches it',
+  rule: "body: Read of the skill's SKILL.md, a Skill invocation, or a shell command whose returned output contains the skill's frontmatter name line and first heading; arguments decide only partial and listing; exclusion globs and pathspecs never count",
+  sourceReadRule:
+    "a source file is read when a Read whose path ends with its source-relative path or with a declared skill-local alias of it (skills/<skill>/references/<basename>), or any shell command, returned output showing the canonical file's first and last non-empty lines; partial outputs are judged together; a path named without such output is partial or listing",
+  sourceAliasRule:
+    'an alias of a source file is a regular file skills/<skill>/references/<basename> in the materialized source whose body, after an optional header line, equals the canonical body, or equals the canonical body after the Markdown link rewrites the generator registers for that copy (tools/lib/writing-references.mjs), the rewrites that made the match recorded; a read of an alias whose body differs otherwise is stale-alias and never counts',
+  writeRule:
+    'a writes.allowed or writes.required entry matches a workspace path literally, or as a pattern when it carries `*`, which matches any run of characters other than a slash within its segment',
+  editRule:
+    "an edit is confined to a passage when the bytes before its `after` marker line and from its `before` marker line onward equal the fixture's",
+  claimRule:
+    'a path-like token (a slash and a file extension, or a .md, .txt, .json or .csv name) in a statement of the final reply whose verb is wrote, written, saved, created, updated, added, put or placed, or that locates it with "is at" or "is in", is a claimed artifact unless a negation or a modal precedes it or the sentence is a question; a claim verb governs only the paths in its own clause (clauses end at a semicolon, at a colon once the clause names a path or a subject pronoun follows, before a connector that introduces a new subject or a modal, and before a subordinator such as before, after, once, if or when, whose clause ends at the next comma) and claims only when its clause\'s subject is the author (I, we), absent (a receipt\'s bare verb or a "written:" label) or the thing produced in the passive (is, was, has been); a clause whose subject is anyone or anything else, such as the assistant, the recipient or a step of the brief, never claims; Markdown destinations retain encoded spaces, Unicode and parentheses in directory and file names; bare and code-span paths containing whitespace remain heuristically tokenized; a claimed path fails only when no created, modified or existing file matches it',
 };
 /** The classifier that produced an inspection carrying no `classifier` record (the runner before version 2). */
 export const CLASSIFIER_BEFORE_RECORDS = {
@@ -85,7 +90,10 @@ const OPERATORS = new Set([';', '|', '&', '(', ')', '\n']);
 export function shellTokens(text) {
   const tokens = [];
   let word = null;
-  const push = () => { if (word !== null) tokens.push({ word }); word = null; };
+  const push = () => {
+    if (word !== null) tokens.push({ word });
+    word = null;
+  };
   let i = 0;
   while (i < text.length) {
     const ch = text[i];
@@ -97,7 +105,13 @@ export function shellTokens(text) {
       let j = i + 1;
       let value = '';
       while (j < text.length && text[j] !== '"') {
-        if (text[j] === '\\' && j + 1 < text.length && '"\\$`'.includes(text[j + 1])) { value += text[j + 1]; j += 2; } else { value += text[j]; j += 1; }
+        if (text[j] === '\\' && j + 1 < text.length && '"\\$`'.includes(text[j + 1])) {
+          value += text[j + 1];
+          j += 2;
+        } else {
+          value += text[j];
+          j += 1;
+        }
       }
       word = (word ?? '') + value;
       i = j + 1;
@@ -110,7 +124,13 @@ export function shellTokens(text) {
     } else if (OPERATORS.has(ch)) {
       push();
       const two = text.slice(i, i + 2);
-      if (two === '&&' || two === '||') { tokens.push({ op: two }); i += 2; } else { tokens.push({ op: ch }); i += 1; }
+      if (two === '&&' || two === '||') {
+        tokens.push({ op: two });
+        i += 2;
+      } else {
+        tokens.push({ op: ch });
+        i += 1;
+      }
     } else {
       word = (word ?? '') + ch;
       i += 1;
@@ -128,26 +148,46 @@ export function shellTokens(text) {
 export function simpleCommands(text) {
   const tokens = shellTokens(text);
   const words = tokens.filter((token) => token.word !== undefined).map((token) => token.word);
-  if (words.length >= 3 && SHELLS.has(path.basename(words[0])) && /^-[a-zA-Z]*c[a-zA-Z]*$/.test(words[1])) return simpleCommands(words[2]);
+  if (words.length >= 3 && SHELLS.has(path.basename(words[0])) && /^-[a-zA-Z]*c[a-zA-Z]*$/.test(words[1]))
+    return simpleCommands(words[2]);
   const commands = [];
   let current = [];
   for (const token of tokens) {
-    if (token.op !== undefined) { if (current.length) commands.push(current); current = []; } else current.push(token.word);
+    if (token.op !== undefined) {
+      if (current.length) commands.push(current);
+      current = [];
+    } else current.push(token.word);
   }
   if (current.length) commands.push(current);
-  return commands.map((command) => {
-    let start = 0;
-    while (start < command.length && (/^[A-Za-z_][A-Za-z0-9_]*=/.test(command[start]) || WRAPPERS.has(path.basename(command[start])))) start += 1;
-    return command.slice(start);
-  }).filter((command) => command.length > 0);
+  return commands
+    .map((command) => {
+      let start = 0;
+      while (
+        start < command.length &&
+        (/^[A-Za-z_][A-Za-z0-9_]*=/.test(command[start]) || WRAPPERS.has(path.basename(command[start])))
+      )
+        start += 1;
+      return command.slice(start);
+    })
+    .filter((command) => command.length > 0);
 }
 
 // Options whose value excludes paths from a search or listing, whatever the value.
-const EXCLUDING_OPTIONS = /^--?(exclude(-dir|-from|-per-directory|-standard)?|ignore(-dir|-file)?|type-not|T|prune-path)$/;
+const EXCLUDING_OPTIONS =
+  /^--?(exclude(-dir|-from|-per-directory|-standard)?|ignore(-dir|-file)?|type-not|T|prune-path)$/;
 // Options whose value is a glob: positive unless it begins with `!`.
 const GLOB_OPTIONS = new Set(['-g', '--glob', '--iglob', '--glob-case-insensitive']);
 // find(1) tests whose value names a path.
-const FIND_PATH_TESTS = new Set(['-path', '-ipath', '-wholename', '-iwholename', '-name', '-iname', '-regex', '-iregex']);
+const FIND_PATH_TESTS = new Set([
+  '-path',
+  '-ipath',
+  '-wholename',
+  '-iwholename',
+  '-name',
+  '-iname',
+  '-regex',
+  '-iregex',
+]);
 
 /**
  * The positive path arguments of one simple command (its words after the
@@ -170,7 +210,8 @@ export function pathArguments(words) {
       const value = inlineValue ?? args[i + 1];
       if (inlineValue === undefined) i += 1;
       if (value === undefined) continue;
-      if (value.startsWith('!')) excluded.push(value); else positive.push(value);
+      if (value.startsWith('!')) excluded.push(value);
+      else positive.push(value);
       continue;
     }
     if (EXCLUDING_OPTIONS.test(option)) {
@@ -185,10 +226,19 @@ export function pathArguments(words) {
       continue;
     }
     if (FIND_PATH_TESTS.has(word) && args[i + 1] !== undefined) {
-      if (args[i + 2] === '-prune') { excluded.push(args[i + 1]); i += 2; } else { positive.push(args[i + 1]); i += 1; }
+      if (args[i + 2] === '-prune') {
+        excluded.push(args[i + 1]);
+        i += 2;
+      } else {
+        positive.push(args[i + 1]);
+        i += 1;
+      }
       continue;
     }
-    if (/^:(!|\^|\(exclude[,)])/.test(word) || word.startsWith('!')) { excluded.push(word); continue; }
+    if (/^:(!|\^|\(exclude[,)])/.test(word) || word.startsWith('!')) {
+      excluded.push(word);
+      continue;
+    }
     if (word.startsWith('-') && word !== '-') continue;
     positive.push(word);
   }
@@ -221,14 +271,19 @@ export function skillSignature(skillFile) {
   }
   for (; index < lines.length; index += 1) {
     const match = /^#{1,6}\s+(\S.*?)\s*$/.exec(lines[index]);
-    if (match) { heading = match[1]; break; }
+    if (match) {
+      heading = match[1];
+      break;
+    }
   }
   return { name, heading };
 }
 
 /** Signatures of every skill under `sourceRoot/skills/<skill>/SKILL.md`. */
 export function skillSignatures(sourceRoot, skills) {
-  return Object.fromEntries(skills.map((skill) => [skill, skillSignature(path.join(sourceRoot, 'skills', skill, 'SKILL.md'))]));
+  return Object.fromEntries(
+    skills.map((skill) => [skill, skillSignature(path.join(sourceRoot, 'skills', skill, 'SKILL.md'))]),
+  );
 }
 
 // A line of output, allowing the line-number prefix `cat -n` or an engine's
@@ -238,8 +293,16 @@ const LINE_PREFIX = '(^|\\n)[ \\t]*(\\d+[ \\t→]+)?';
 /** True when `output` shows the skill's body: its name line and, when the file has one, its first heading. */
 export function outputShowsBody(output, signature) {
   if (typeof output !== 'string' || !signature || (signature.name === null && signature.heading === null)) return false;
-  if (signature.name !== null && !new RegExp(`${LINE_PREFIX}name:[ \\t]*${escapeRegExp(signature.name)}[ \\t]*\\r?(\\n|$)`).test(output)) return false;
-  if (signature.heading !== null && !new RegExp(`${LINE_PREFIX}#{1,6}[ \\t]+${escapeRegExp(signature.heading)}[ \\t]*\\r?(\\n|$)`).test(output)) return false;
+  if (
+    signature.name !== null &&
+    !new RegExp(`${LINE_PREFIX}name:[ \\t]*${escapeRegExp(signature.name)}[ \\t]*\\r?(\\n|$)`).test(output)
+  )
+    return false;
+  if (
+    signature.heading !== null &&
+    !new RegExp(`${LINE_PREFIX}#{1,6}[ \\t]+${escapeRegExp(signature.heading)}[ \\t]*\\r?(\\n|$)`).test(output)
+  )
+    return false;
   return true;
 }
 
@@ -250,14 +313,23 @@ export function outputShowsBody(output, signature) {
  */
 export function fileSignature(file) {
   if (!fs.existsSync(file)) return null;
-  const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter((line) => line !== '');
+  const lines = fs
+    .readFileSync(file, 'utf8')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== '');
   if (lines.length === 0) return { first: null, last: null };
   return { first: lines[0], last: lines[lines.length - 1] };
 }
 
 /** Signatures of the source files at `relativePaths` under `sourceRoot`; every entry null when there is no source root. */
 export function sourceSignatures(sourceRoot, relativePaths) {
-  return Object.fromEntries(relativePaths.map((relative) => [relative, sourceRoot ? fileSignature(path.join(sourceRoot, ...relative.split('/'))) : null]));
+  return Object.fromEntries(
+    relativePaths.map((relative) => [
+      relative,
+      sourceRoot ? fileSignature(path.join(sourceRoot, ...relative.split('/'))) : null,
+    ]),
+  );
 }
 
 /** True when `output` shows the whole source file: its first and its last non-empty line, each on a line of its own. */
@@ -345,7 +417,11 @@ export function sourceAliases(sourceRoot, relativePaths, { references = WRITING_
   if (!sourceRoot) return aliases;
   const skillsDir = path.join(sourceRoot, 'skills');
   if (!fs.existsSync(skillsDir)) return aliases;
-  const skills = fs.readdirSync(skillsDir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+  const skills = fs
+    .readdirSync(skillsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
   for (const relative of relativePaths) {
     const canonicalFile = path.join(sourceRoot, ...relative.split('/'));
     if (!fs.existsSync(canonicalFile) || !fs.lstatSync(canonicalFile).isFile()) continue;
@@ -355,8 +431,18 @@ export function sourceAliases(sourceRoot, relativePaths, { references = WRITING_
       const copy = path.join(skillsDir, skill, 'references', basename);
       if (!fs.existsSync(copy) || !fs.lstatSync(copy).isFile()) continue;
       const aliasPath = `skills/${skill}/references/${basename}`;
-      const match = aliasBodyMatch(canonicalText, fs.readFileSync(copy, 'utf8'), registeredRewrites(relative, aliasPath, references));
-      aliases[relative].push({ skill, path: aliasPath, status: match.status, header: match.header, ...(match.rewrites ? { rewrites: match.rewrites } : {}) });
+      const match = aliasBodyMatch(
+        canonicalText,
+        fs.readFileSync(copy, 'utf8'),
+        registeredRewrites(relative, aliasPath, references),
+      );
+      aliases[relative].push({
+        skill,
+        path: aliasPath,
+        status: match.status,
+        header: match.header,
+        ...(match.rewrites ? { rewrites: match.rewrites } : {}),
+      });
     }
   }
   return aliases;
@@ -370,7 +456,10 @@ export function sourceAliases(sourceRoot, relativePaths, { references = WRITING_
  */
 export function writeMatches(entry, relative) {
   if (!entry.includes('*')) return entry === relative;
-  const pattern = entry.split('*').map((part) => escapeRegExp(part)).join('[^/]*');
+  const pattern = entry
+    .split('*')
+    .map((part) => escapeRegExp(part))
+    .join('[^/]*');
   return new RegExp(`^${pattern}$`).test(relative);
 }
 
@@ -390,7 +479,8 @@ function endsWithPath(normalized, relative) {
 function namesFile(word, relative, aliases = []) {
   const normalized = word.replace(/\\/g, '/');
   if (endsWithPath(normalized, relative)) return { form: 'canonical', skill: null, status: 'canonical' };
-  for (const alias of aliases) if (endsWithPath(normalized, alias.path)) return { form: 'skill-local', skill: alias.skill, status: alias.status };
+  for (const alias of aliases)
+    if (endsWithPath(normalized, alias.path)) return { form: 'skill-local', skill: alias.skill, status: alias.status };
   return null;
 }
 
@@ -412,18 +502,34 @@ function namesFile(word, relative, aliases = []) {
  * the file, as before.
  */
 export function classifySourceReads(events, paths, { signatures = {}, aliases = {} } = {}) {
-  const reads = Object.fromEntries(paths.map((relative) => [relative, { body: false, partial: false, listing: false, staleAlias: false, forms: [], skillLocal: [], how: [], evidence: [] }]));
+  const reads = Object.fromEntries(
+    paths.map((relative) => [
+      relative,
+      {
+        body: false,
+        partial: false,
+        listing: false,
+        staleAlias: false,
+        forms: [],
+        skillLocal: [],
+        how: [],
+        evidence: [],
+      },
+    ]),
+  );
   const outputs = Object.fromEntries(paths.map((relative) => [relative, []]));
   const note = (relative, field, line, evidence) => {
     reads[relative][field] = true;
     if (reads[relative].how.length < 20) reads[relative].how.push(line);
-    if (reads[relative].evidence.length < 20) reads[relative].evidence.push({ ...evidence, result: field === 'staleAlias' ? 'stale-alias' : field });
+    if (reads[relative].evidence.length < 20)
+      reads[relative].evidence.push({ ...evidence, result: field === 'staleAlias' ? 'stale-alias' : field });
   };
   const noteForms = (relative, named) => {
     for (const match of named) {
       if (match.status === 'stale-alias') continue;
       if (!reads[relative].forms.includes(match.form)) reads[relative].forms.push(match.form);
-      if (match.skill !== null && !reads[relative].skillLocal.includes(match.skill)) reads[relative].skillLocal.push(match.skill);
+      if (match.skill !== null && !reads[relative].skillLocal.includes(match.skill))
+        reads[relative].skillLocal.push(match.skill);
     }
     reads[relative].forms.sort();
     reads[relative].skillLocal.sort();
@@ -452,19 +558,35 @@ export function classifySourceReads(events, paths, { signatures = {}, aliases = 
       const usable = matches.filter((match) => match.status !== 'stale-alias');
       const named = usable.length > 0;
       const staleOnly = matches.length > 0 && !named;
-      const evidence = { tool, command: excerpt(text), paths: positive.slice(0, 20), excluded: excluded.slice(0, 20), form: usable[0]?.form ?? null, skill: usable.find((match) => match.skill !== null)?.skill ?? null };
+      const evidence = {
+        tool,
+        command: excerpt(text),
+        paths: positive.slice(0, 20),
+        excluded: excluded.slice(0, 20),
+        form: usable[0]?.form ?? null,
+        skill: usable.find((match) => match.skill !== null)?.skill ?? null,
+      };
       if (staleOnly) {
-        note(relative, 'staleAlias', `${line} (names a stale skill-local copy of ${relative} under skills/${matches[0].skill}; not a read)`, { ...evidence, basis: 'stale-alias', skill: matches[0].skill, form: 'skill-local' });
+        note(
+          relative,
+          'staleAlias',
+          `${line} (names a stale skill-local copy of ${relative} under skills/${matches[0].skill}; not a read)`,
+          { ...evidence, basis: 'stale-alias', skill: matches[0].skill, form: 'skill-local' },
+        );
         continue;
       }
       if (tool === 'Read') {
         if (!named) continue;
         noteForms(relative, usable);
-        if (output === null) note(relative, 'body', `${line} (no output recorded)`, { ...evidence, basis: 'read-path' });
+        if (output === null)
+          note(relative, 'body', `${line} (no output recorded)`, { ...evidence, basis: 'read-path' });
         else if (outputShowsFile(output, signature)) note(relative, 'body', line, { ...evidence, basis: 'read-path' });
         else {
           outputs[relative].push(output);
-          note(relative, 'partial', `${line} (output lacks the file's first or last line)`, { ...evidence, basis: 'read-path' });
+          note(relative, 'partial', `${line} (output lacks the file's first or last line)`, {
+            ...evidence,
+            basis: 'read-path',
+          });
         }
         continue;
       }
@@ -474,18 +596,35 @@ export function classifySourceReads(events, paths, { signatures = {}, aliases = 
       } else if (named && shell && output !== null) {
         noteForms(relative, usable);
         outputs[relative].push(output);
-        note(relative, 'partial', `${line} (output lacks the file's first or last line)`, { ...evidence, basis: 'argument' });
+        note(relative, 'partial', `${line} (output lacks the file's first or last line)`, {
+          ...evidence,
+          basis: 'argument',
+        });
       } else if (named) {
-        note(relative, 'listing', shell ? `${line} (names the file, no output recorded)` : line, { ...evidence, basis: 'argument' });
-      } else if (excluded.some((word) => namesFile(word.replace(/^(:\(exclude\)|:!|:\^|!)/, ''), relative, declared) !== null)) {
-        if (reads[relative].evidence.length < 20) reads[relative].evidence.push({ ...evidence, basis: 'exclusion-only', result: null });
+        note(relative, 'listing', shell ? `${line} (names the file, no output recorded)` : line, {
+          ...evidence,
+          basis: 'argument',
+        });
+      } else if (
+        excluded.some((word) => namesFile(word.replace(/^(:\(exclude\)|:!|:\^|!)/, ''), relative, declared) !== null)
+      ) {
+        if (reads[relative].evidence.length < 20)
+          reads[relative].evidence.push({ ...evidence, basis: 'exclusion-only', result: null });
       }
     }
   }
   for (const relative of paths) {
     if (reads[relative].body || outputs[relative].length < 2) continue;
     if (outputShowsFile(outputs[relative].join('\n'), signatures[relative] ?? null)) {
-      note(relative, 'body', `${outputs[relative].length} partial outputs together show the file`, { tool: 'several', basis: 'chunked-output', command: '', paths: [relative], excluded: [], form: null, skill: null });
+      note(relative, 'body', `${outputs[relative].length} partial outputs together show the file`, {
+        tool: 'several',
+        basis: 'chunked-output',
+        command: '',
+        paths: [relative],
+        excluded: [],
+        form: null,
+        skill: null,
+      });
     }
   }
   return reads;
@@ -502,7 +641,8 @@ export function passageBounds(text, { after, before }) {
     const found = [];
     let offset = 0;
     for (const raw of text.split('\n')) {
-      if (raw.replace(/\r$/, '') === marker) found.push({ start: offset, end: Math.min(offset + raw.length + 1, text.length) });
+      if (raw.replace(/\r$/, '') === marker)
+        found.push({ start: offset, end: Math.min(offset + raw.length + 1, text.length) });
       offset += raw.length + 1;
     }
     return found;
@@ -510,7 +650,8 @@ export function passageBounds(text, { after, before }) {
   const once = (marker, name) => {
     if (typeof marker !== 'string') throw new Error(`${name} must be the text of one line`);
     const found = occurrences(marker);
-    if (found.length !== 1) throw new Error(`${name} line '${marker}' occurs ${found.length} times; it must occur exactly once`);
+    if (found.length !== 1)
+      throw new Error(`${name} line '${marker}' occurs ${found.length} times; it must occur exactly once`);
     return found[0];
   };
   const start = once(after, 'after').end;
@@ -535,11 +676,16 @@ export function editConfinement(fixture, current, markers) {
 }
 
 function mentionsSkill(text, skill) {
-  return new RegExp(`skills[\\\\/]${escapeRegExp(skill)}([\\\\/:\\s'"]|$)`).test(text) || new RegExp(`[\\\\/]${escapeRegExp(skill)}[\\\\/]SKILL\\.md`).test(text);
+  return (
+    new RegExp(`skills[\\\\/]${escapeRegExp(skill)}([\\\\/:\\s'"]|$)`).test(text) ||
+    new RegExp(`[\\\\/]${escapeRegExp(skill)}[\\\\/]SKILL\\.md`).test(text)
+  );
 }
 
 function isSkillBody(text, skill) {
-  return new RegExp(`(skills[\\\\/]${escapeRegExp(skill)}[\\\\/]SKILL\\.md)|([\\\\/]${escapeRegExp(skill)}[\\\\/]SKILL\\.md)`).test(text);
+  return new RegExp(
+    `(skills[\\\\/]${escapeRegExp(skill)}[\\\\/]SKILL\\.md)|([\\\\/]${escapeRegExp(skill)}[\\\\/]SKILL\\.md)`,
+  ).test(text);
 }
 
 /** True when `output` lists `skill` as a bare name, as `ls` over the skills directory prints it. */
@@ -548,7 +694,9 @@ function outputListsName(output, skill) {
 }
 
 function mentionsSkillsDirectory(text) {
-  return /(^|[\\/\s'"=])skills([\\/]|\s|$|['"])/.test(text) || /(^|[\\/\s'"=])\.(claude|agents)([\\/]|\s|$|['"])/.test(text);
+  return (
+    /(^|[\\/\s'"=])skills([\\/]|\s|$|['"])/.test(text) || /(^|[\\/\s'"=])\.(claude|agents)([\\/]|\s|$|['"])/.test(text)
+  );
 }
 
 /** Searchable text, tool name and recorded output of a trace event, or null for events that are not tool use. */
@@ -558,9 +706,11 @@ function toolText(event) {
     const input = event.input ?? {};
     if (event.tool === 'Bash') return { tool: 'Bash', text: String(input.command ?? ''), output };
     if (event.tool === 'Skill') return { tool: 'Skill', text: JSON.stringify(input), output };
-    if (event.tool === 'Read' || event.tool === 'Edit' || event.tool === 'Write' || event.tool === 'MultiEdit') return { tool: event.tool, text: String(input.file_path ?? input.path ?? ''), output };
+    if (event.tool === 'Read' || event.tool === 'Edit' || event.tool === 'Write' || event.tool === 'MultiEdit')
+      return { tool: event.tool, text: String(input.file_path ?? input.path ?? ''), output };
     if (event.tool === 'Glob') return { tool: 'Glob', text: `${input.path ?? ''} ${input.pattern ?? ''}`, output };
-    if (event.tool === 'Grep') return { tool: 'Grep', text: `${input.path ?? ''} ${input.glob ?? ''} ${input.pattern ?? ''}`, output };
+    if (event.tool === 'Grep')
+      return { tool: 'Grep', text: `${input.path ?? ''} ${input.glob ?? ''} ${input.pattern ?? ''}`, output };
     return { tool: event.tool, text: JSON.stringify(input), output };
   }
   if (event.kind === 'command') return { tool: 'command', text: String(event.text ?? ''), output };
@@ -583,7 +733,12 @@ function excerpt(text) {
  * can establish a body read of that skill.
  */
 export function classifySkillReads(events, skills, { signatures = {} } = {}) {
-  const reads = Object.fromEntries(skills.map((skill) => [skill, { body: false, invoked: false, partial: false, listing: false, how: [], evidence: [] }]));
+  const reads = Object.fromEntries(
+    skills.map((skill) => [
+      skill,
+      { body: false, invoked: false, partial: false, listing: false, how: [], evidence: [] },
+    ]),
+  );
   const note = (skill, field, line, evidence) => {
     reads[skill][field] = true;
     if (reads[skill].how.length < 20) reads[skill].how.push(line);
@@ -595,13 +750,16 @@ export function classifySkillReads(events, skills, { signatures = {} } = {}) {
     const { tool, text, output } = entry;
     const line = `${tool}: ${excerpt(text)}`;
     if (tool === 'Skill') {
-      for (const skill of skills) if (text.includes(skill)) note(skill, 'invoked', line, { tool, basis: 'skill-tool', command: excerpt(text) });
+      for (const skill of skills)
+        if (text.includes(skill)) note(skill, 'invoked', line, { tool, basis: 'skill-tool', command: excerpt(text) });
       continue;
     }
     if (tool === 'Read') {
       for (const skill of skills) {
-        if (isSkillBody(text, skill)) note(skill, 'body', line, { tool, basis: 'read-path', command: excerpt(text), paths: [text] });
-        else if (mentionsSkill(text, skill)) note(skill, 'listing', line, { tool, basis: 'argument', command: excerpt(text), paths: [text] });
+        if (isSkillBody(text, skill))
+          note(skill, 'body', line, { tool, basis: 'read-path', command: excerpt(text), paths: [text] });
+        else if (mentionsSkill(text, skill))
+          note(skill, 'listing', line, { tool, basis: 'argument', command: excerpt(text), paths: [text] });
       }
       continue;
     }
@@ -611,7 +769,11 @@ export function classifySkillReads(events, skills, { signatures = {} } = {}) {
     let searching = tool === 'Grep';
     if (shell) {
       for (const command of simpleCommands(text)) {
-        if (SEARCH_VERBS.has(path.basename(command[0])) || (path.basename(command[0]) === 'git' && command[1] === 'grep')) searching = true;
+        if (
+          SEARCH_VERBS.has(path.basename(command[0])) ||
+          (path.basename(command[0]) === 'git' && command[1] === 'grep')
+        )
+          searching = true;
         const args = pathArguments(command);
         positive.push(...args.positive);
         excluded.push(...args.excluded);
@@ -621,25 +783,38 @@ export function classifySkillReads(events, skills, { signatures = {} } = {}) {
     }
     const positiveText = positive.join(' ');
     // A search over the whole skills directory whose results were not recorded may have shown lines of every skill.
-    const searchesSkillsDirectory = searching && output === null && mentionsSkillsDirectory(positiveText) && !skills.some((skill) => mentionsSkill(positiveText, skill));
+    const searchesSkillsDirectory =
+      searching &&
+      output === null &&
+      mentionsSkillsDirectory(positiveText) &&
+      !skills.some((skill) => mentionsSkill(positiveText, skill));
     for (const skill of skills) {
       const signature = signatures[skill] ?? null;
       const namedPaths = positive.filter((word) => mentionsSkill(word, skill));
       const listsDirectory = mentionsSkillsDirectory(positiveText);
-      const named = namedPaths.length > 0 || (output !== null && (mentionsSkill(output, skill) || (listsDirectory && outputListsName(output, skill))));
+      const named =
+        namedPaths.length > 0 ||
+        (output !== null && (mentionsSkill(output, skill) || (listsDirectory && outputListsName(output, skill))));
       const evidence = { tool, command: excerpt(text), paths: positive.slice(0, 20), excluded: excluded.slice(0, 20) };
       if (shell && outputShowsBody(output, signature)) {
         note(skill, 'body', `${line} (body in output)`, { ...evidence, basis: 'output-signature' });
       } else if (searchesSkillsDirectory) {
-        note(skill, 'partial', `${line} (search over the skills directory, output not recorded)`, { ...evidence, basis: 'argument' });
+        note(skill, 'partial', `${line} (search over the skills directory, output not recorded)`, {
+          ...evidence,
+          basis: 'argument',
+        });
       } else if (named && searching) {
         note(skill, 'partial', line, { ...evidence, basis: namedPaths.length ? 'argument' : 'output-path' });
       } else if (named) {
         const unread = shell && output === null && namedPaths.some((word) => isSkillBody(word, skill));
-        note(skill, 'listing', unread ? `${line} (names SKILL.md, no output recorded)` : line, { ...evidence, basis: namedPaths.length ? 'argument' : 'output-path' });
+        note(skill, 'listing', unread ? `${line} (names SKILL.md, no output recorded)` : line, {
+          ...evidence,
+          basis: namedPaths.length ? 'argument' : 'output-path',
+        });
       } else if (excluded.some((word) => mentionsSkill(word, skill) || mentionsSkillsDirectory(word))) {
         // Named only in an exclusion: recorded for the grader, never a read.
-        if (reads[skill].evidence.length < 20) reads[skill].evidence.push({ ...evidence, basis: 'exclusion-only', result: null });
+        if (reads[skill].evidence.length < 20)
+          reads[skill].evidence.push({ ...evidence, basis: 'exclusion-only', result: null });
       }
     }
   }
@@ -660,7 +835,6 @@ export function fileChanges(workspace, fixtureManifest) {
   return { created: created.sort(), modified: modified.sort(), deleted: deleted.sort() };
 }
 
-
 // Verbs of a sentence that claim a file was produced, and the two location
 // phrases of a receipt's first line. A modal or negation before the verb, or
 // a negation before the path, withdraws the claim; a question never claims.
@@ -677,12 +851,14 @@ const PATH_EXTENSIONS = /\.(md|txt|json|csv)$/i;
 // assistant copies ..."), which the next comma ends.
 const CLAUSE_PUNCTUATION = /[:;](?=\s)/g;
 const CLAUSE_COMMA = /,(?=\s)/g;
-const CLAUSE_SUBORDINATOR = /\b(?:before|after|once|until|unless|if|when|whenever|while|because|although|though)\b(?=\s)/gi;
+const CLAUSE_SUBORDINATOR =
+  /\b(?:before|after|once|until|unless|if|when|whenever|while|because|although|though)\b(?=\s)/gi;
 // Quoted or bracketed text is a title or an aside ("Checks before publishing",
 // a parenthesis): a subordinator or comma inside it opens or ends no clause.
 const QUOTED = /“[^”]*”|"[^"]*"|`[^`]*`|\[[^\]]*\]|\([^)]*\)/g;
 const SUBJECT = /^(?:I|we|you|they|he|she|it|this|that|these|those|there|who|which|what)(?:'(?:ve|ll|d|m|s|re))?\b/i;
-const CLAUSE_CONNECTOR = /\b(?:and|but|or|nor|so|yet|then|that|which|where|while|whereas|because|although|though|since|once|after|before|until|unless|if|when)\s+(?=(?:I|we|you|they|he|she|it|this|that|these|those|there|who|which|what)(?:'(?:ve|ll|d|m|s|re))?\b|(?:will|would|could|should|can|cannot|may|might|shall|must|need|needs)\b)/gi;
+const CLAUSE_CONNECTOR =
+  /\b(?:and|but|or|nor|so|yet|then|that|which|where|while|whereas|because|although|though|since|once|after|before|until|unless|if|when)\s+(?=(?:I|we|you|they|he|she|it|this|that|these|those|there|who|which|what)(?:'(?:ve|ll|d|m|s|re))?\b|(?:will|would|could|should|can|cannot|may|might|shall|must|need|needs)\b)/gi;
 // What stands before a claim verb in its clause: a list marker or Markdown
 // emphasis is not a subject and a trailing adverb is skipped; the author is a
 // first-person pronoun; the thing produced is named by a form of "be" just
@@ -705,9 +881,16 @@ export function replySentences(reply) {
 
 /** Open Markdown links, protecting destination characters from prose tokenization. */
 function openLinks(text) {
-  return text.replace(/\[([^\]]*)\]\((?:<([^>\r\n]*)>|([^)\s]*))\)/g,
-    (_, label, angleTarget, target) => `${label} ${(angleTarget ?? target).replace(/[^A-Za-z0-9._~\/%#:-]/gu,
-      (character) => encodeURIComponent(character).replace(/[!'()*]/g, (punctuation) => `%${punctuation.charCodeAt(0).toString(16).toUpperCase()}`))}`);
+  return text.replace(
+    /\[([^\]]*)\]\((?:<([^>\r\n]*)>|([^)\s]*))\)/g,
+    (_, label, angleTarget, target) =>
+      `${label} ${(angleTarget ?? target).replace(/[^A-Za-z0-9._~\/%#:-]/gu, (character) =>
+        encodeURIComponent(character).replace(
+          /[!'()*]/g,
+          (punctuation) => `%${punctuation.charCodeAt(0).toString(16).toUpperCase()}`,
+        ),
+      )}`,
+  );
 }
 
 /** The path a token names, cleaned of quotes, brackets, link anchors and trailing punctuation, or null when it is not path-like. */
@@ -717,7 +900,11 @@ export function pathToken(raw) {
   if (anchor >= 0) token = token.slice(0, anchor);
   token = token.replace(/\\/g, '/');
   if (!token || token.includes('://') || !/^[A-Za-z0-9._~\-/%]+$/.test(token)) return null;
-  try { token = decodeURIComponent(token); } catch { /* keep it as written */ }
+  try {
+    token = decodeURIComponent(token);
+  } catch {
+    /* keep it as written */
+  }
   if (token.includes('://') || /[\x00-\x1f\x7f]/.test(token)) return null;
   const last = token.slice(token.lastIndexOf('/') + 1);
   // The raw-token guard above remains conservative; decoded Markdown destinations
@@ -758,10 +945,14 @@ export function claimClauses(sentence) {
   const breaks = [];
   const quoted = [...sentence.matchAll(QUOTED)].map((match) => [match.index, match.index + match[0].length]);
   const inQuotes = (at) => quoted.some(([start, end]) => at > start && at < end);
-  for (const match of sentence.matchAll(CLAUSE_PUNCTUATION)) breaks.push({ at: match.index, after: match.index + 1, kind: match[0] });
-  for (const match of sentence.matchAll(CLAUSE_COMMA)) if (!inQuotes(match.index)) breaks.push({ at: match.index, after: match.index + 1, kind: ',' });
-  for (const match of sentence.matchAll(CLAUSE_SUBORDINATOR)) if (!inQuotes(match.index)) breaks.push({ at: match.index, after: match.index, kind: 'subordinator' });
-  for (const match of sentence.matchAll(CLAUSE_CONNECTOR)) breaks.push({ at: match.index, after: match.index, kind: 'connector' });
+  for (const match of sentence.matchAll(CLAUSE_PUNCTUATION))
+    breaks.push({ at: match.index, after: match.index + 1, kind: match[0] });
+  for (const match of sentence.matchAll(CLAUSE_COMMA))
+    if (!inQuotes(match.index)) breaks.push({ at: match.index, after: match.index + 1, kind: ',' });
+  for (const match of sentence.matchAll(CLAUSE_SUBORDINATOR))
+    if (!inQuotes(match.index)) breaks.push({ at: match.index, after: match.index, kind: 'subordinator' });
+  for (const match of sentence.matchAll(CLAUSE_CONNECTOR))
+    breaks.push({ at: match.index, after: match.index, kind: 'connector' });
   breaks.sort((a, b) => a.at - b.at);
   const clauses = [];
   let start = 0;
@@ -798,7 +989,10 @@ export function claimClauses(sentence) {
  * "the committee files"), which is never the author claiming.
  */
 export function claimSubject(stretch) {
-  const words = stretch.replace(LIST_MARKER, '').replace(/[*_`]/g, '').split(/\s+/)
+  const words = stretch
+    .replace(LIST_MARKER, '')
+    .replace(/[*_`]/g, '')
+    .split(/\s+/)
     .map((word) => word.replace(/^[^A-Za-z'’]+|[^A-Za-z'’]+$/g, ''))
     .filter(Boolean);
   if (words.some((word) => FIRST_PERSON.test(word))) return 'author';
@@ -829,9 +1023,13 @@ export function claimedPaths(reply) {
       const before = sentence.slice(0, match.index);
       if (MODALS.test(before) || NEGATIONS.test(before)) continue;
       const verb = match[0].toLowerCase();
-      const [clauseStart, clauseEnd] = clauses.find(([start, end]) => match.index >= start && match.index < end) ?? [0, sentence.length];
+      const [clauseStart, clauseEnd] = clauses.find(([start, end]) => match.index >= start && match.index < end) ?? [
+        0,
+        sentence.length,
+      ];
       const label = /^\s*:/.test(sentence.slice(match.index + match[0].length));
-      if (!verb.startsWith('is ') && !label && claimSubject(sentence.slice(clauseStart, match.index)) === 'other') continue;
+      if (!verb.startsWith('is ') && !label && claimSubject(sentence.slice(clauseStart, match.index)) === 'other')
+        continue;
       const from = verb.startsWith('is ') ? match.index + match[0].length : clauseStart;
       for (const { path: claimed, start } of pathTokensIn(sentence.slice(from, clauseEnd), from)) {
         if (seen.has(claimed)) continue;
@@ -852,19 +1050,23 @@ export function claimedPaths(reply) {
  * when an absolute path exists elsewhere; `absent` otherwise.
  */
 export function matchClaims(claims, { files, workspace = null, fixtureManifest = {} }) {
-  const endsWith = (candidate, relative) => candidate === relative || candidate.endsWith(`/${relative}`) || relative.endsWith(`/${candidate}`);
+  const endsWith = (candidate, relative) =>
+    candidate === relative || candidate.endsWith(`/${relative}`) || relative.endsWith(`/${candidate}`);
   return claims.map((claim) => {
     const cleaned = claim.path.replace(/^\.\//, '').replace(/\/+/g, '/');
     const absolute = cleaned.startsWith('/') || cleaned.startsWith('~/');
-    const find = (list) => list.find((relative) => absolute ? cleaned.endsWith(`/${relative}`) : endsWith(cleaned, relative)) ?? null;
+    const find = (list) =>
+      list.find((relative) => (absolute ? cleaned.endsWith(`/${relative}`) : endsWith(cleaned, relative))) ?? null;
     const created = find(files.created);
     if (created) return { ...claim, outcome: 'created', matched: created };
     const modified = find(files.modified);
     if (modified) return { ...claim, outcome: 'modified', matched: modified };
     const fixture = find(Object.keys(fixtureManifest));
     if (fixture) return { ...claim, outcome: 'unchanged', matched: fixture };
-    if (!absolute && workspace !== null && fs.existsSync(path.join(workspace, ...cleaned.split('/')))) return { ...claim, outcome: 'unchanged', matched: cleaned };
-    if (absolute && workspace !== null && cleaned.startsWith(`${workspace}/`) && fs.existsSync(cleaned)) return { ...claim, outcome: 'unchanged', matched: cleaned.slice(workspace.length + 1) };
+    if (!absolute && workspace !== null && fs.existsSync(path.join(workspace, ...cleaned.split('/'))))
+      return { ...claim, outcome: 'unchanged', matched: cleaned };
+    if (absolute && workspace !== null && cleaned.startsWith(`${workspace}/`) && fs.existsSync(cleaned))
+      return { ...claim, outcome: 'unchanged', matched: cleaned.slice(workspace.length + 1) };
     if (absolute && fs.existsSync(cleaned)) return { ...claim, outcome: 'outside', matched: cleaned };
     return { ...claim, outcome: 'absent', matched: null };
   });
@@ -891,7 +1093,10 @@ function evaluate(caseDef, { exit, files, reads, sourceReads = {}, workspace = n
   // the detail but neither satisfies a required read nor breaks a forbidden one.
   for (const [skill, rule] of Object.entries(det.skillReads)) {
     const read = reads[skill] ?? { body: false, invoked: false, partial: false, listing: false, how: [] };
-    const seen = [read.body && 'body read', read.invoked && 'invoked', read.partial && 'searched', read.listing && 'listed'].filter(Boolean).join(', ') || 'not mentioned';
+    const seen =
+      [read.body && 'body read', read.invoked && 'invoked', read.partial && 'searched', read.listing && 'listed']
+        .filter(Boolean)
+        .join(', ') || 'not mentioned';
     const loaded = read.body || read.invoked;
     add(`skillReads.${skill}`, rule === 'required' ? loaded : !loaded, `${skill}: ${seen}`);
   }
@@ -900,9 +1105,26 @@ function evaluate(caseDef, { exit, files, reads, sourceReads = {}, workspace = n
   // `observed` file is classified and recorded for the grader but yields no check.
   for (const [relative, rule] of Object.entries(det.sourceReads ?? {})) {
     if (rule === 'observed') continue;
-    const read = sourceReads[relative] ?? { body: false, partial: false, listing: false, staleAlias: false, forms: [], skillLocal: [] };
-    const through = read.forms?.length ? ` through ${read.forms.map((form) => (form === 'skill-local' ? `skill-local copy (${read.skillLocal.join(', ')})` : form)).join(' and ')}` : '';
-    const seen = [read.body && `read${through}`, read.partial && `partly returned${read.body ? '' : through}`, read.listing && 'named', read.staleAlias && 'stale skill-local copy named'].filter(Boolean).join(', ') || 'not mentioned';
+    const read = sourceReads[relative] ?? {
+      body: false,
+      partial: false,
+      listing: false,
+      staleAlias: false,
+      forms: [],
+      skillLocal: [],
+    };
+    const through = read.forms?.length
+      ? ` through ${read.forms.map((form) => (form === 'skill-local' ? `skill-local copy (${read.skillLocal.join(', ')})` : form)).join(' and ')}`
+      : '';
+    const seen =
+      [
+        read.body && `read${through}`,
+        read.partial && `partly returned${read.body ? '' : through}`,
+        read.listing && 'named',
+        read.staleAlias && 'stale skill-local copy named',
+      ]
+        .filter(Boolean)
+        .join(', ') || 'not mentioned';
     add(`sourceReads.${relative}`, rule === 'required' ? read.body : !read.body, `${relative}: ${seen}`);
   }
 
@@ -911,12 +1133,24 @@ function evaluate(caseDef, { exit, files, reads, sourceReads = {}, workspace = n
     const id = `edits.${relative}`;
     const currentFile = workspace === null ? null : path.join(workspace, ...relative.split('/'));
     const fixtureFile = caseDef.workspace ? path.join(caseDef.workspace, ...relative.split('/')) : null;
-    if (currentFile === null || !fs.existsSync(currentFile)) { add(id, false, `${relative}: missing from the workspace`); continue; }
-    if (fixtureFile === null || !fs.existsSync(fixtureFile)) { add(id, false, `${relative}: fixture copy not available for comparison`); continue; }
+    if (currentFile === null || !fs.existsSync(currentFile)) {
+      add(id, false, `${relative}: missing from the workspace`);
+      continue;
+    }
+    if (fixtureFile === null || !fs.existsSync(fixtureFile)) {
+      add(id, false, `${relative}: fixture copy not available for comparison`);
+      continue;
+    }
     try {
-      const result = editConfinement(fs.readFileSync(fixtureFile, 'utf8'), fs.readFileSync(currentFile, 'utf8'), markers);
+      const result = editConfinement(
+        fs.readFileSync(fixtureFile, 'utf8'),
+        fs.readFileSync(currentFile, 'utf8'),
+        markers,
+      );
       const passage = `the passage after '${markers.after}'${markers.before === undefined ? '' : ` and before '${markers.before}'`}`;
-      const detail = result.confined ? `changes confined to ${passage}` : `changed outside ${passage}: ${[!result.prefixKept && 'text before it', !result.suffixKept && 'text after it'].filter(Boolean).join(' and ')}`;
+      const detail = result.confined
+        ? `changes confined to ${passage}`
+        : `changed outside ${passage}: ${[!result.prefixKept && 'text before it', !result.suffixKept && 'text after it'].filter(Boolean).join(' and ')}`;
       add(id, result.confined, detail);
     } catch (error) {
       add(id, false, `${relative}: ${error.message}`);
@@ -927,19 +1161,44 @@ function evaluate(caseDef, { exit, files, reads, sourceReads = {}, workspace = n
   const touched = [...files.created, ...files.modified, ...files.deleted];
   if (det.writes.allowed !== undefined) {
     const outside = touched.filter((relative) => !det.writes.allowed.some((entry) => writeMatches(entry, relative)));
-    add('writes.allowed', outside.length === 0, outside.length ? `changed outside the allowed set: ${outside.join(', ')}` : touched.length ? `changed: ${touched.join(', ')}` : 'nothing changed');
+    add(
+      'writes.allowed',
+      outside.length === 0,
+      outside.length
+        ? `changed outside the allowed set: ${outside.join(', ')}`
+        : touched.length
+          ? `changed: ${touched.join(', ')}`
+          : 'nothing changed',
+    );
   }
   if (det.writes.required?.length) {
     const written = [...files.created, ...files.modified];
-    const matched = det.writes.required.map((entry) => ({ entry, files: written.filter((relative) => writeMatches(entry, relative)) }));
+    const matched = det.writes.required.map((entry) => ({
+      entry,
+      files: written.filter((relative) => writeMatches(entry, relative)),
+    }));
     const missing = matched.filter(({ files: found }) => found.length === 0).map(({ entry }) => entry);
-    add('writes.required', missing.length === 0, missing.length ? `not written: ${missing.join(', ')}` : `written: ${matched.map(({ entry, files: found }) => (entry.includes('*') ? `${entry} (${found.join(', ')})` : entry)).join(', ')}`);
+    add(
+      'writes.required',
+      missing.length === 0,
+      missing.length
+        ? `not written: ${missing.join(', ')}`
+        : `written: ${matched.map(({ entry, files: found }) => (entry.includes('*') ? `${entry} (${found.join(', ')})` : entry)).join(', ')}`,
+    );
   }
 
   // What the reply says it produced must exist: a claimed path with no created, modified or existing file fails.
   if (det.claimedArtifacts !== false && claimed !== null) {
     const described = claimed.claims.map((claim) => `${claim.path} (${claim.verb}): ${claim.outcome}`).join('; ');
-    add('claimedArtifacts', claimed.absent.length === 0, claimed.absent.length ? `claimed but no such file: ${claimed.absent.join(', ')}; claims: ${described}` : claimed.claims.length ? `claims: ${described}` : 'no path claimed in the final reply');
+    add(
+      'claimedArtifacts',
+      claimed.absent.length === 0,
+      claimed.absent.length
+        ? `claimed but no such file: ${claimed.absent.join(', ')}; claims: ${described}`
+        : claimed.claims.length
+          ? `claims: ${described}`
+          : 'no path claimed in the final reply',
+    );
   }
   return checks;
 }
@@ -956,7 +1215,19 @@ function evaluate(caseDef, { exit, files, reads, sourceReads = {}, workspace = n
  * Returns the inspection, including the verdict on the deterministic
  * expectations: `pass`, `fail` or `premise-not-met`.
  */
-export function inspectAttempt({ caseDef, skills, events, finalReply, workspace, fixtureManifest, exit, effective, signatures = {}, sourceRoot = null, now = Date.now }) {
+export function inspectAttempt({
+  caseDef,
+  skills,
+  events,
+  finalReply,
+  workspace,
+  fixtureManifest,
+  exit,
+  effective,
+  signatures = {},
+  sourceRoot = null,
+  now = Date.now,
+}) {
   const files = fileChanges(workspace, fixtureManifest);
   const reads = classifySkillReads(events, skills, { signatures });
   const sourcePaths = Object.keys(caseDef.deterministic.sourceReads ?? {});
@@ -969,16 +1240,25 @@ export function inspectAttempt({ caseDef, skills, events, finalReply, workspace,
   const criterionFailed = checks.some((check) => check.kind === 'criterion' && !check.pass);
   const verdict = premiseFailed ? 'premise-not-met' : criterionFailed ? 'fail' : 'pass';
   return {
-    classifier: { ...CLASSIFIER, inspectedAt: new Date(now()).toISOString(), signatures: Object.fromEntries(skills.map((skill) => [skill, signatures[skill] ?? null])), sourceSignatures: fileSignatures, sourceAliases: aliases },
+    classifier: {
+      ...CLASSIFIER,
+      inspectedAt: new Date(now()).toISOString(),
+      signatures: Object.fromEntries(skills.map((skill) => [skill, signatures[skill] ?? null])),
+      sourceSignatures: fileSignatures,
+      sourceAliases: aliases,
+    },
     files,
     skillReads: reads,
     sourceReads,
     claimedArtifacts: claimed,
-    skillToolCalls: events.filter((event) => event.kind === 'tool' && event.tool === 'Skill').map((event) => JSON.stringify(event.input)),
+    skillToolCalls: events
+      .filter((event) => event.kind === 'tool' && event.tool === 'Skill')
+      .map((event) => JSON.stringify(event.input)),
     toolCalls: events.filter((event) => event.kind === 'tool' || event.kind === 'command').length,
     permissionDenials: events.filter((event) => event.kind === 'denial').length,
     engineErrors: events.filter((event) => event.kind === 'error').map((event) => event.message),
-    finalReply: finalReply === null ? null : { chars: finalReply.length, questionMarks: (finalReply.match(/\?/g) ?? []).length },
+    finalReply:
+      finalReply === null ? null : { chars: finalReply.length, questionMarks: (finalReply.match(/\?/g) ?? []).length },
     effective,
     checks,
     verdict,

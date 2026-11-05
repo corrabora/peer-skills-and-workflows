@@ -31,7 +31,9 @@ for (const key of Object.keys(process.env)) {
   if (key.startsWith('GIT_')) delete process.env[key];
 }
 
-export const packageRoot = fs.realpathSync.native(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
+export const packageRoot = fs.realpathSync.native(
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'),
+);
 export const cli = path.join(packageRoot, 'tools', 'bind.mjs');
 export const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'aw bind é-')));
 after(() => fs.rmSync(scratch, { recursive: true, force: true }));
@@ -40,13 +42,21 @@ after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 export const scratchFoldsCase = (() => {
   const probe = path.join(scratch, 'case-probe');
   fs.mkdirSync(probe);
-  try { return fs.existsSync(path.join(scratch, 'CASE-PROBE')); } finally { fs.rmdirSync(probe); }
+  try {
+    return fs.existsSync(path.join(scratch, 'CASE-PROBE'));
+  } finally {
+    fs.rmdirSync(probe);
+  }
 })();
 
 export const GIT_ENV = {
   ...process.env,
-  GIT_AUTHOR_NAME: 'Test', GIT_AUTHOR_EMAIL: 'test@example.com', GIT_COMMITTER_NAME: 'Test', GIT_COMMITTER_EMAIL: 'test@example.com',
-  GIT_CONFIG_GLOBAL: path.join(scratch, 'no-global-gitconfig'), GIT_CONFIG_NOSYSTEM: '1',
+  GIT_AUTHOR_NAME: 'Test',
+  GIT_AUTHOR_EMAIL: 'test@example.com',
+  GIT_COMMITTER_NAME: 'Test',
+  GIT_COMMITTER_EMAIL: 'test@example.com',
+  GIT_CONFIG_GLOBAL: path.join(scratch, 'no-global-gitconfig'),
+  GIT_CONFIG_NOSYSTEM: '1',
 };
 
 export function git(cwd, ...args) {
@@ -58,7 +68,11 @@ export function git(cwd, ...args) {
 export function run(command, ...args) {
   const result = spawnSync(process.execPath, [cli, command, ...args], { encoding: 'utf8', env: GIT_ENV });
   let json = null;
-  try { json = JSON.parse(result.stdout); } catch { /* not JSON */ }
+  try {
+    json = JSON.parse(result.stdout);
+  } catch {
+    /* not JSON */
+  }
   return { ...result, json };
 }
 
@@ -83,20 +97,29 @@ export function write(dir, files) {
 }
 
 export const qualityFixture = {
-  '.quality/config.json': JSON.stringify({ profiles: [{ profileId: 'profile:acme/defaults', path: 'profiles/acme-defaults' }] }),
-  '.quality/profiles/acme-defaults/_manifest/profile.json': JSON.stringify({
-    profileId: 'profile:acme/defaults', version: '1.0.0',
-    inherits: [{ profileId: 'profile:acme/core', versionRequirement: '=1.0.0' }],
-    requires: [{ profileId: 'profile:acme/reference', versionRequirement: '=1.0.0' }], sources: [],
+  '.quality/config.json': JSON.stringify({
+    profiles: [{ profileId: 'profile:acme/defaults', path: 'profiles/acme-defaults' }],
   }),
-  '.quality/profiles/acme-core/_manifest/profile.json': JSON.stringify({ profileId: 'profile:acme/core', version: '1.0.0', inherits: [], requires: [] }),
+  '.quality/profiles/acme-defaults/_manifest/profile.json': JSON.stringify({
+    profileId: 'profile:acme/defaults',
+    version: '1.0.0',
+    inherits: [{ profileId: 'profile:acme/core', versionRequirement: '=1.0.0' }],
+    requires: [{ profileId: 'profile:acme/reference', versionRequirement: '=1.0.0' }],
+    sources: [],
+  }),
+  '.quality/profiles/acme-core/_manifest/profile.json': JSON.stringify({
+    profileId: 'profile:acme/core',
+    version: '1.0.0',
+    inherits: [],
+    requires: [],
+  }),
   '.quality/profiles/acme-core/README.md': '# Core\n',
   'docs/qualities/README.md': '# Local rubric extension\n',
   'docs/CONTRIBUTING.md': '# Contributing\nRun `make check`.\n',
   'AGENTS.md': '# Agents\n',
   'src/deep/AGENTS.md': '# Scoped\n',
   'README.md': '# Project\n',
-  'Makefile': 'check:\n\ttrue\n',
+  Makefile: 'check:\n\ttrue\n',
 };
 
 export function treeState(dir) {
@@ -113,11 +136,17 @@ export function excludeContent(dir) {
 }
 
 /** Local records written to probe what Git lists after setup. */
-export const LOCAL_RECORDS = { '.peer-skills-and-workflows/binding.md': 'b\n', '.peer-skills-and-workflows/binding-sources.json': '{}', '.peer-skills-and-workflows/runs/run_x/report.md': 'r\n' };
+export const LOCAL_RECORDS = {
+  '.peer-skills-and-workflows/binding.md': 'b\n',
+  '.peer-skills-and-workflows/binding-sources.json': '{}',
+  '.peer-skills-and-workflows/runs/run_x/report.md': 'r\n',
+};
 
 export function visibleLocal(dir) {
   write(dir, LOCAL_RECORDS);
-  return git(dir, 'ls-files', '-o', '--exclude-standard', '-z', '--', '.peer-skills-and-workflows').split('\0').filter(Boolean);
+  return git(dir, 'ls-files', '-o', '--exclude-standard', '-z', '--', '.peer-skills-and-workflows')
+    .split('\0')
+    .filter(Boolean);
 }
 
 /**

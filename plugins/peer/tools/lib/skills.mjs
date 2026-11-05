@@ -46,9 +46,13 @@ export function validateSkill(skillDir) {
   if (!isMapping(frontmatter)) return ['Frontmatter must be a YAML mapping'];
 
   const problems = [];
-  const unexpected = Object.keys(frontmatter).filter((key) => !ALLOWED_KEYS.includes(key)).sort();
+  const unexpected = Object.keys(frontmatter)
+    .filter((key) => !ALLOWED_KEYS.includes(key))
+    .sort();
   if (unexpected.length) {
-    problems.push(`Unexpected key(s) in frontmatter: ${unexpected.map(showKey).join(', ')}. Allowed: ${ALLOWED_KEYS.join(', ')}`);
+    problems.push(
+      `Unexpected key(s) in frontmatter: ${unexpected.map(showKey).join(', ')}. Allowed: ${ALLOWED_KEYS.join(', ')}`,
+    );
   }
   problems.push(...checkName(frontmatter, path.basename(path.resolve(skillDir))));
   problems.push(...checkDescription(frontmatter));

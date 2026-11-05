@@ -46,16 +46,31 @@ const strictUtf8 = new TextDecoder('utf-8', { fatal: true });
  * throw an error whose `code` is `ENOENT` for an absent file. `resolvedFrom`
  * is recorded as given.
  */
-export function codexSessionInstruction(sourceRoot, { read = (file) => fs.readFileSync(file), resolvedFrom = 'materialized source' } = {}) {
+export function codexSessionInstruction(
+  sourceRoot,
+  { read = (file) => fs.readFileSync(file), resolvedFrom = 'materialized source' } = {},
+) {
   const file = path.join(sourceRoot, ...CODEX_SESSION_INSTRUCTION_FILE.split('/'));
   let raw;
   try {
     raw = read(file, CODEX_SESSION_INSTRUCTION_FILE);
   } catch (error) {
     if (error?.code === 'ENOENT') {
-      return { file, resolvedFrom, present: false, rawSha256: null, effectiveSha256: null, effectiveText: null, applied: false, reason: 'absent', argv: [] };
+      return {
+        file,
+        resolvedFrom,
+        present: false,
+        rawSha256: null,
+        effectiveSha256: null,
+        effectiveText: null,
+        applied: false,
+        reason: 'absent',
+        argv: [],
+      };
     }
-    throw new Error(`cannot read the Codex session instruction at ${file}: ${error?.code ? `${error.code}: ` : ''}${error?.message ?? error}`);
+    throw new Error(
+      `cannot read the Codex session instruction at ${file}: ${error?.code ? `${error.code}: ` : ''}${error?.message ?? error}`,
+    );
   }
   let decoded;
   try {
@@ -64,7 +79,10 @@ export function codexSessionInstruction(sourceRoot, { read = (file) => fs.readFi
     throw new Error(`the Codex session instruction at ${file} is not valid UTF-8`);
   }
   const effectiveText = decoded.trim();
-  if (!effectiveText) throw new Error(`the Codex session instruction at ${file} is present but empty; remove the file to run without one, or give it the documented text`);
+  if (!effectiveText)
+    throw new Error(
+      `the Codex session instruction at ${file} is present but empty; remove the file to run without one, or give it the documented text`,
+    );
   return {
     file,
     resolvedFrom,
@@ -106,7 +124,11 @@ function parseLines(traceText) {
 /** The text of a tool_result's content: a string, or the text blocks of an array joined. */
 function toolResultText(content) {
   if (typeof content === 'string') return content;
-  if (Array.isArray(content)) return content.filter((block) => block?.type === 'text' && typeof block.text === 'string').map((block) => block.text).join('\n');
+  if (Array.isArray(content))
+    return content
+      .filter((block) => block?.type === 'text' && typeof block.text === 'string')
+      .map((block) => block.text)
+      .join('\n');
   return '';
 }
 
@@ -145,20 +167,49 @@ const claude = {
   command({ model, effort, workspace, sourceRoot, verbosity }) {
     return {
       argv: [
-        'claude', '-p',
-        '--model', model,
-        '--effort', effort,
-        '--output-format', 'stream-json', '--verbose',
+        'claude',
+        '-p',
+        '--model',
+        model,
+        '--effort',
+        effort,
+        '--output-format',
+        'stream-json',
+        '--verbose',
         '--no-session-persistence',
-        '--setting-sources', 'project,local',
+        '--setting-sources',
+        'project,local',
         ...(verbosity?.argv ?? []),
-        '--permission-mode', 'acceptEdits',
-        '--permission-prompts', 'none',
-        '--add-dir', sourceRoot,
-        '--allowedTools', 'Read', 'Glob', 'Grep', 'Skill', 'Edit', 'Write',
-        'Bash(cat:*)', 'Bash(ls:*)', 'Bash(pwd:*)', 'Bash(readlink:*)', 'Bash(realpath:*)', 'Bash(sed:*)', 'Bash(mkdir:*)', 'Bash(node:*)',
-        'Bash(git status:*)', 'Bash(git show:*)', 'Bash(git diff:*)', 'Bash(git rev-parse:*)', 'Bash(git ls-tree:*)',
-        '--disallowedTools', 'Agent', 'Bash(codex:*)', 'Bash(claude:*)',
+        '--permission-mode',
+        'acceptEdits',
+        '--permission-prompts',
+        'none',
+        '--add-dir',
+        sourceRoot,
+        '--allowedTools',
+        'Read',
+        'Glob',
+        'Grep',
+        'Skill',
+        'Edit',
+        'Write',
+        'Bash(cat:*)',
+        'Bash(ls:*)',
+        'Bash(pwd:*)',
+        'Bash(readlink:*)',
+        'Bash(realpath:*)',
+        'Bash(sed:*)',
+        'Bash(mkdir:*)',
+        'Bash(node:*)',
+        'Bash(git status:*)',
+        'Bash(git show:*)',
+        'Bash(git diff:*)',
+        'Bash(git rev-parse:*)',
+        'Bash(git ls-tree:*)',
+        '--disallowedTools',
+        'Agent',
+        'Bash(codex:*)',
+        'Bash(claude:*)',
         '--strict-mcp-config',
       ],
       cwd: workspace,
@@ -173,8 +224,16 @@ const claude = {
     const events = [];
     const pending = new Map();
     for (const raw of parseLines(traceText)) {
-      if (raw.type === 'system' && raw.subtype === 'init') events.push({ kind: 'init', model: raw.model ?? null, effort: typeof raw.effort === 'string' ? raw.effort : null, outputStyle: typeof raw.output_style === 'string' ? raw.output_style : null, permissionMode: raw.permissionMode ?? null });
-      else if (raw.type === 'system' && raw.subtype === 'permission_denied') events.push({ kind: 'denial', tool: raw.tool_name ?? null });
+      if (raw.type === 'system' && raw.subtype === 'init')
+        events.push({
+          kind: 'init',
+          model: raw.model ?? null,
+          effort: typeof raw.effort === 'string' ? raw.effort : null,
+          outputStyle: typeof raw.output_style === 'string' ? raw.output_style : null,
+          permissionMode: raw.permissionMode ?? null,
+        });
+      else if (raw.type === 'system' && raw.subtype === 'permission_denied')
+        events.push({ kind: 'denial', tool: raw.tool_name ?? null });
       else if (raw.type === 'assistant') {
         for (const block of raw.message?.content ?? []) {
           if (block.type === 'tool_use') {
@@ -190,7 +249,13 @@ const claude = {
           pending.get(block.tool_use_id).output = toolResultText(block.content);
           pending.delete(block.tool_use_id);
         }
-      } else if (raw.type === 'result') events.push({ kind: 'result', text: typeof raw.result === 'string' ? raw.result : null, isError: raw.is_error === true, subtype: raw.subtype ?? null });
+      } else if (raw.type === 'result')
+        events.push({
+          kind: 'result',
+          text: typeof raw.result === 'string' ? raw.result : null,
+          isError: raw.is_error === true,
+          subtype: raw.subtype ?? null,
+        });
     }
     return events;
   },
@@ -248,16 +313,24 @@ const codex = {
   command({ model, effort, workspace, attemptDir, sessionInstruction, verbosity }) {
     return {
       argv: [
-        'codex', 'exec',
+        'codex',
+        'exec',
         ...(sessionInstruction?.argv ?? []),
-        '-m', model,
-        '-c', `model_reasoning_effort="${effort}"`,
+        '-m',
+        model,
+        '-c',
+        `model_reasoning_effort="${effort}"`,
         ...(verbosity?.argv ?? []),
-        '--ignore-user-config', '--skip-git-repo-check', '--ephemeral',
-        '--sandbox', 'workspace-write',
+        '--ignore-user-config',
+        '--skip-git-repo-check',
+        '--ephemeral',
+        '--sandbox',
+        'workspace-write',
         '--json',
-        '-C', workspace,
-        '-o', path.join(attemptDir, 'final.txt'),
+        '-C',
+        workspace,
+        '-o',
+        path.join(attemptDir, 'final.txt'),
         '-',
       ],
       cwd: workspace,
@@ -280,14 +353,22 @@ const codex = {
         if (raw.type === 'item.completed' || !seen.has(id)) {
           const index = seen.has(id) ? items.findIndex((item) => item.id === id) : -1;
           const item = { id, ...raw.item };
-          if (index >= 0) items[index] = item; else items.push(item);
+          if (index >= 0) items[index] = item;
+          else items.push(item);
           seen.add(id);
         }
       } else if (raw.type === 'turn.completed') events.push({ kind: 'turn', usage: raw.usage ?? null });
     }
     for (const item of items) {
-      if (item.type === 'command_execution') events.push({ kind: 'command', text: item.command ?? '', exitCode: item.exit_code ?? null, output: typeof item.aggregated_output === 'string' ? item.aggregated_output : null });
-      else if (item.type === 'file_change') events.push({ kind: 'file_change', paths: (item.changes ?? []).map((change) => change.path) });
+      if (item.type === 'command_execution')
+        events.push({
+          kind: 'command',
+          text: item.command ?? '',
+          exitCode: item.exit_code ?? null,
+          output: typeof item.aggregated_output === 'string' ? item.aggregated_output : null,
+        });
+      else if (item.type === 'file_change')
+        events.push({ kind: 'file_change', paths: (item.changes ?? []).map((change) => change.path) });
       else if (item.type === 'agent_message') events.push({ kind: 'message', text: item.text ?? '' });
     }
     return events;
@@ -305,14 +386,22 @@ const codex = {
   effectiveSettings() {
     // Codex's event stream does not attest the model, effort or verbosity it
     // ran with; the launch arguments are the only record.
-    return { model: null, modelAttestedBy: null, effort: null, effortAttestedBy: null, verbosity: null, verbosityAttestedBy: null };
+    return {
+      model: null,
+      modelAttestedBy: null,
+      effort: null,
+      effortAttestedBy: null,
+      verbosity: null,
+      verbosityAttestedBy: null,
+    };
   },
 };
 
 export const ENGINES = { claude, codex };
 
 export function engineFor(name) {
-  if (!Object.hasOwn(ENGINES, name)) throw new Error(`unknown engine '${name}'; the engines are ${Object.keys(ENGINES).join(', ')}`);
+  if (!Object.hasOwn(ENGINES, name))
+    throw new Error(`unknown engine '${name}'; the engines are ${Object.keys(ENGINES).join(', ')}`);
   return ENGINES[name];
 }
 
@@ -325,10 +414,14 @@ export function engineFor(name) {
 export function validateSettings(engineName, model, effort, verbosity = null) {
   const engine = engineFor(engineName);
   if (typeof model !== 'string' || !MODEL_ID.test(model) || !/[0-9]/.test(model)) {
-    throw new Error(`model '${model}' is not a full model identifier for ${engineName}; give the exact model (for example '${engineName === 'claude' ? 'claude-opus-5-5' : 'gpt-6.1-sol'}'), not an alias`);
+    throw new Error(
+      `model '${model}' is not a full model identifier for ${engineName}; give the exact model (for example '${engineName === 'claude' ? 'claude-opus-5-5' : 'gpt-6.1-sol'}'), not an alias`,
+    );
   }
   if (!engine.efforts.includes(effort)) {
-    throw new Error(`effort '${effort}' is not supported for ${engineName}; supported: ${engine.efforts.join(', ')} (${engine.effortsSource})`);
+    throw new Error(
+      `effort '${effort}' is not supported for ${engineName}; supported: ${engine.efforts.join(', ')} (${engine.effortsSource})`,
+    );
   }
   return { engine: engineName, model, effort, verbosity: validVerbosity(engineName, verbosity) };
 }
@@ -338,10 +431,14 @@ function validVerbosity(engineName, verbosity) {
   const engine = engineFor(engineName);
   if (verbosity === null || verbosity === undefined) return null;
   if (typeof verbosity !== 'string' || !verbosity || verbosity.trim() !== verbosity) {
-    throw new Error(`verbosity '${verbosity}' is not a usable value for ${engineName}: give a non-empty name without leading or trailing whitespace, or omit --verbosity for the engine default (${engine.verbositiesSource})`);
+    throw new Error(
+      `verbosity '${verbosity}' is not a usable value for ${engineName}: give a non-empty name without leading or trailing whitespace, or omit --verbosity for the engine default (${engine.verbositiesSource})`,
+    );
   }
   if (!engine.acceptsCustomVerbosity && !engine.verbosities.includes(verbosity)) {
-    throw new Error(`verbosity '${verbosity}' is not supported for ${engineName}; supported: ${engine.verbosities.join(', ')} (${engine.verbositiesSource}); omit --verbosity for the engine default`);
+    throw new Error(
+      `verbosity '${verbosity}' is not supported for ${engineName}; supported: ${engine.verbosities.join(', ')} (${engine.verbositiesSource}); omit --verbosity for the engine default`,
+    );
   }
   return verbosity;
 }
@@ -374,8 +471,14 @@ export function verbosityFor(engineName, verbosity = null) {
  */
 export function launchFor(engineName, settings, executables = {}) {
   const engine = engineFor(engineName);
-  const sessionInstruction = settings.sessionInstruction === undefined ? sessionInstructionFor(engineName, settings.sourceRoot) : settings.sessionInstruction;
-  const verbosity = settings.verbosity !== null && typeof settings.verbosity === 'object' ? settings.verbosity : verbosityFor(engineName, settings.verbosity ?? null);
+  const sessionInstruction =
+    settings.sessionInstruction === undefined
+      ? sessionInstructionFor(engineName, settings.sourceRoot)
+      : settings.sessionInstruction;
+  const verbosity =
+    settings.verbosity !== null && typeof settings.verbosity === 'object'
+      ? settings.verbosity
+      : verbosityFor(engineName, settings.verbosity ?? null);
   const launch = engine.command({ ...settings, sessionInstruction, verbosity });
   const substitute = executables[engineName];
   if (substitute !== undefined) {

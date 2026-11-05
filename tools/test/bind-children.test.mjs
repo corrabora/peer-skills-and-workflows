@@ -8,12 +8,8 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
-import {
-  compareManifests, sourceIdentity, sourceManifest,
-} from '../lib/bind.mjs';
-import {
-  scratch, GIT_ENV, git, run, repository, write, treeState,
-} from '../test-support/bind.mjs';
+import { compareManifests, sourceIdentity, sourceManifest } from '../lib/bind.mjs';
+import { scratch, GIT_ENV, git, run, repository, write, treeState } from '../test-support/bind.mjs';
 
 // Both Git child forms obey the same working-content policy through every
 // supported source shape. These fixtures use real child Git indexes/ignores.
@@ -38,10 +34,18 @@ for (const kind of ['nested', 'submodule']) {
     assert.deepEqual(compareManifests(baseline, edited).changed, selected.slice(0, 3));
     assert.equal(compareManifests(baseline, edited).workflowSourceChanged, true);
     git(child, 'add', 'POLICY.md');
-    assert.equal(compareManifests(edited, manifest()).current, true, 'staging the same working bytes changes no content identity');
+    assert.equal(
+      compareManifests(edited, manifest()).current,
+      true,
+      'staging the same working bytes changes no content identity',
+    );
     git(child, 'commit', '-q', '-m', 'child edit');
     const committed = manifest();
-    assert.equal(compareManifests(edited, committed).current, true, 'committing the same bytes changes no content identity');
+    assert.equal(
+      compareManifests(edited, committed).current,
+      true,
+      'committing the same bytes changes no content identity',
+    );
     assert.ok(compareManifests(edited, committed).repositoryChanges.length > 0);
     if (kind === 'submodule') assert.equal(committed.sources[0].repositories[0].indexPinMatchesChild, false);
     const changedDirectory = (before, after) => {
@@ -60,20 +64,35 @@ for (const kind of ['nested', 'submodule']) {
     fs.rmSync(path.join(child, 'renamed.md'));
     assert.equal(compareManifests(committed, manifest()).current, true);
     write(child, { 'ignored.tmp': 'ignored edit' });
-    assert.equal(compareManifests(committed, manifest()).current, true, 'ignored content is outside the selected membership');
+    assert.equal(
+      compareManifests(committed, manifest()).current,
+      true,
+      'ignored content is outside the selected membership',
+    );
     // An administrative ignore rule changes logical membership without being
     // hashed itself; an unrelated comment does not.
     fs.writeFileSync(path.join(git(child, 'rev-parse', '--absolute-git-dir').trim(), 'info/exclude'), 'POLICY.md\n');
-    assert.equal(compareManifests(committed, manifest()).current, true, 'tracked content remains covered despite ignores');
+    assert.equal(
+      compareManifests(committed, manifest()).current,
+      true,
+      'tracked content remains covered despite ignores',
+    );
     write(child, { 'visible.md': 'visible' });
     const visible = manifest();
     fs.appendFileSync(path.join(git(child, 'rev-parse', '--absolute-git-dir').trim(), 'info/exclude'), 'visible.md\n');
     changedDirectory(visible, manifest());
     const hidden = manifest();
-    fs.appendFileSync(path.join(git(child, 'rev-parse', '--absolute-git-dir').trim(), 'info/exclude'), '# administrative comment\n');
+    fs.appendFileSync(
+      path.join(git(child, 'rev-parse', '--absolute-git-dir').trim(), 'info/exclude'),
+      '# administrative comment\n',
+    );
     git(child, 'config', 'test.administrative', 'only');
     git(child, 'commit', '--allow-empty', '-q', '-m', 'same contents');
-    assert.equal(compareManifests(hidden, manifest()).current, true, 'administrative-only and empty commit changes preserve logical content');
+    assert.equal(
+      compareManifests(hidden, manifest()).current,
+      true,
+      'administrative-only and empty commit changes preserve logical content',
+    );
     fs.rmSync(path.join(child, 'POLICY.md'));
     const deleted = manifest();
     assert.equal(deleted.sources[2].kind, 'missing');
@@ -147,17 +166,27 @@ test('uninitialized and inaccessible children fail incompletely, including direc
   const invalid = run('sources', '--repo', dir, ...paths);
   assert.equal(invalid.status, 1);
   assert.equal(invalid.json.sources[0].kind, 'unreadable');
-  assert.match(invalid.json.sources[0].error, /^git rev-parse failed: fatal: (?:not a git repository|gitfile does not point to a valid repository)/);
+  assert.match(
+    invalid.json.sources[0].error,
+    /^git rev-parse failed: fatal: (?:not a git repository|gitfile does not point to a valid repository)/,
+  );
   assert.equal(invalid.json.sources.at(-1).kind, 'file');
   fs.rmSync(child, { recursive: true });
   fs.symlinkSync(origin, child, 'dir');
   const aliased = run('sources', '--repo', dir, ...paths);
   assert.equal(aliased.status, 1);
-  assert.equal(aliased.json.sources[2].kind, 'unsupported', 'a gitlink replaced by an alias does not authorize following inner files');
+  assert.equal(
+    aliased.json.sources[2].kind,
+    'unsupported',
+    'a gitlink replaced by an alias does not authorize following inner files',
+  );
 });
 
 test('unreadable nested directory enumeration cannot become a complete empty baseline', (t) => {
-  if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
+  if (process.platform === 'win32' || process.getuid?.() === 0) {
+    t.skip('needs POSIX permissions enforced');
+    return;
+  }
   const dir = repository('denied-nested-root', { 'README.md': 'readable', 'tools/neighbor.md': 'neighbor' });
   const child = path.join(dir, 'tools/child');
   git(dir, 'clone', '-q', dir, child);
@@ -172,12 +201,18 @@ test('unreadable nested directory enumeration cannot become a complete empty bas
     assert.equal(compareManifests(denied, manifest()).current, false);
     assert.equal(denied.sources[2].kind, 'file');
     assert.equal(run('sources', '--repo', dir, 'tools', 'README.md').status, 1);
-  } finally { fs.chmodSync(child, 0o755); }
+  } finally {
+    fs.chmodSync(child, 0o755);
+  }
   assert.equal(manifest().complete, true);
 });
 
 test('ignored child directories retain all-files policy and tracked directory aliases are not traversed', () => {
-  const dir = repository('child-policy-boundaries', { 'README.md': 'readable', '.gitignore': 'personal/\n', 'tools/linked/old.md': 'old' });
+  const dir = repository('child-policy-boundaries', {
+    'README.md': 'readable',
+    '.gitignore': 'personal/\n',
+    'tools/linked/old.md': 'old',
+  });
   const origin = repository('child-policy-origin', { 'POLICY.md': 'policy', '.gitignore': '*.tmp\n' });
   const child = path.join(dir, 'personal');
   git(dir, 'clone', '-q', origin, child);
@@ -189,8 +224,16 @@ test('ignored child directories retain all-files policy and tracked directory al
   fs.symlinkSync(origin, path.join(dir, 'tools/linked'), 'dir');
   const linked = sourceIdentity(dir, 'tools');
   write(origin, { 'old.md': 'target file beneath a directory link' });
-  assert.equal(sourceIdentity(dir, 'tools').digest, linked.digest, 'stale parent index paths do not traverse a directory-link member');
-  assert.equal(sourceIdentity(dir, 'tools/linked/POLICY.md').state, 'external', 'explicit named alias retains its established behavior');
+  assert.equal(
+    sourceIdentity(dir, 'tools').digest,
+    linked.digest,
+    'stale parent index paths do not traverse a directory-link member',
+  );
+  assert.equal(
+    sourceIdentity(dir, 'tools/linked/POLICY.md').state,
+    'external',
+    'explicit named alias retains its established behavior',
+  );
 });
 
 test('deeper mixed children and repository boundary changes use child membership without directory-link recursion', () => {
@@ -202,10 +245,16 @@ test('deeper mixed children and repository boundary changes use child membership
   const deeper = path.join(nested, 'deeper');
   const inner = path.join(deeper, 'inner');
   git(deeper, 'clone', '-q', origin, inner);
-  const manifest = () => sourceManifest(dir, ['tools', 'tools/nested/deeper', 'tools/nested/deeper/inner/POLICY.md'], { workflowSource: dir });
+  const manifest = () =>
+    sourceManifest(dir, ['tools', 'tools/nested/deeper', 'tools/nested/deeper/inner/POLICY.md'], {
+      workflowSource: dir,
+    });
   const before = manifest();
   assert.equal(before.complete, true);
-  assert.deepEqual(before.sources[0].repositories.map((entry) => entry.kind), ['nested', 'submodule', 'nested']);
+  assert.deepEqual(
+    before.sources[0].repositories.map((entry) => entry.kind),
+    ['nested', 'submodule', 'nested'],
+  );
   write(inner, { 'POLICY.md': 'deep edit' });
   const edited = manifest();
   assert.equal(compareManifests(before, edited).changed.length, 3);
@@ -231,11 +280,15 @@ test('deeper mixed children and repository boundary changes use child membership
 
 for (const kind of ['nested', 'submodule']) {
   test(`${kind} denied content is never current and readable neighbors survive`, (t) => {
-    if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
+    if (process.platform === 'win32' || process.getuid?.() === 0) {
+      t.skip('needs POSIX permissions enforced');
+      return;
+    }
     const dir = repository(`denied-child-${kind}`, { 'README.md': 'readable' });
     const origin = repository(`denied-origin-${kind}`, { 'POLICY.md': 'policy' });
     const child = path.join(dir, 'tools/child');
-    if (kind === 'submodule') git(dir, '-c', 'protocol.file.allow=always', 'submodule', 'add', '-q', origin, 'tools/child');
+    if (kind === 'submodule')
+      git(dir, '-c', 'protocol.file.allow=always', 'submodule', 'add', '-q', origin, 'tools/child');
     else git(dir, 'clone', '-q', origin, child);
     const denied = path.join(child, 'POLICY.md');
     fs.chmodSync(denied, 0);
@@ -248,18 +301,32 @@ for (const kind of ['nested', 'submodule']) {
       assert.equal(baseline.workflowSource.kind, 'unreadable');
       assert.equal(compareManifests(baseline, baseline).current, false);
       assert.equal(run('sources', '--repo', dir, 'tools', 'README.md').status, 1);
-    } finally { fs.chmodSync(denied, 0o644); }
+    } finally {
+      fs.chmodSync(denied, 0o644);
+    }
     assert.equal(sourceManifest(dir, ['tools'], { workflowSource: dir }).complete, true);
   });
 }
 
 test('named source and selected subtree ignore a large unrelated index during child lookup', () => {
-  const dir = repository('large-unrelated-index', { 'README.md': 'ordinary source', 'docs/guide.md': 'named descendant', 'tools/guide.md': 'selected subtree' });
+  const dir = repository('large-unrelated-index', {
+    'README.md': 'ordinary source',
+    'docs/guide.md': 'named descendant',
+    'tools/guide.md': 'selected subtree',
+  });
   const before = sourceManifest(dir, ['README.md', 'docs/guide.md', 'tools'], { workflowSource: dir });
   const blob = git(dir, 'rev-parse', ':README.md').trim();
-  const records = Array.from({ length: 70000 }, (_, i) => `100644 ${blob}\tdocs/unrelated/${String(i).padStart(6, '0')}-${'x'.repeat(210)}\0`).join('');
+  const records = Array.from(
+    { length: 70000 },
+    (_, i) => `100644 ${blob}\tdocs/unrelated/${String(i).padStart(6, '0')}-${'x'.repeat(210)}\0`,
+  ).join('');
   assert.ok(Buffer.byteLength(records) > 16 * 1024 * 1024, 'fixture exceeds the former captured-output bound');
-  const added = spawnSync('git', ['update-index', '-z', '--index-info'], { cwd: dir, env: GIT_ENV, input: records, encoding: 'utf8' });
+  const added = spawnSync('git', ['update-index', '-z', '--index-info'], {
+    cwd: dir,
+    env: GIT_ENV,
+    input: records,
+    encoding: 'utf8',
+  });
   assert.equal(added.status, 0, added.stderr);
   const after = sourceManifest(dir, ['README.md', 'docs/guide.md', 'tools'], { workflowSource: dir });
   assert.equal(after.complete, true);
@@ -280,11 +347,15 @@ test('scoped ancestor queries retain absent and unmerged gitlink diagnostics', (
   assert.equal(absent.sources[0].member, 'docs/child');
   assert.equal(absent.sources[2].kind, 'file');
   const input = `0 ${'0'.repeat(40)}\tdocs/child\n160000 ${pin} 1\tdocs/child\n160000 ${pin} 2\tdocs/child\n`;
-  const updated = spawnSync('git', ['update-index', '--index-info'], { cwd: dir, env: GIT_ENV, input, encoding: 'utf8' });
+  const updated = spawnSync('git', ['update-index', '--index-info'], {
+    cwd: dir,
+    env: GIT_ENV,
+    input,
+    encoding: 'utf8',
+  });
   assert.equal(updated.status, 0, updated.stderr);
   const unmerged = sourceManifest(dir, ['docs/child/POLICY.md', 'README.md']);
   assert.equal(unmerged.complete, false);
   assert.equal(unmerged.sources[0].error, 'unmerged submodule index entry');
   assert.equal(unmerged.sources[1].kind, 'file');
 });
-

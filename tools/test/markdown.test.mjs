@@ -16,5 +16,8 @@ test('only a bare marker of the same character, at least as long, closes', () =>
 });
 
 test('line numbers are those of the source', () => {
-  assert.deepEqual(linesOutsideFences('a\r\n```\r\nx\r\n```\r\nb'), [{ line: 'a', number: 1 }, { line: 'b', number: 5 }]);
+  assert.deepEqual(linesOutsideFences('a\r\n```\r\nx\r\n```\r\nb'), [
+    { line: 'a', number: 1 },
+    { line: 'b', number: 5 },
+  ]);
 });

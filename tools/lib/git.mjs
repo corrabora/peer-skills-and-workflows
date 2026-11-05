@@ -19,7 +19,13 @@ import path from 'node:path';
  */
 export function git(args, { cwd = process.cwd(), input, allowMissing = false, onStderr, bytes = false } = {}) {
   // This adapter owns stable messages for callers that classify Git diagnostics.
-  const result = spawnSync('git', args, { cwd, input, env: { ...process.env, LC_ALL: 'C', GIT_OPTIONAL_LOCKS: '0' }, encoding: bytes ? 'buffer' : 'utf8', maxBuffer: 16 * 1024 * 1024 });
+  const result = spawnSync('git', args, {
+    cwd,
+    input,
+    env: { ...process.env, LC_ALL: 'C', GIT_OPTIONAL_LOCKS: '0' },
+    encoding: bytes ? 'buffer' : 'utf8',
+    maxBuffer: 16 * 1024 * 1024,
+  });
   if (result.error) throw new Error(`cannot run Git: ${result.error.message}`);
   const stderr = bytes ? result.stderr.toString('utf8') : result.stderr;
   if (allowMissing && result.status === 1 && !result.stdout.length && !stderr) return null;
@@ -49,17 +55,29 @@ export function gitPaths(queries, options = {}) {
     throw error;
   }
   const text = output.replace(/\r?\n$/, '');
-  if (text.split(/\r?\n/)[0] === PATH_FORMAT) throw unsupportedGit(options, `git rev-parse echoed ${PATH_FORMAT} as an unknown option`);
+  if (text.split(/\r?\n/)[0] === PATH_FORMAT)
+    throw unsupportedGit(options, `git rev-parse echoed ${PATH_FORMAT} as an unknown option`);
   // One query keeps its whole line, so a path containing a line break survives.
   const lines = queries.length === 1 ? [text] : text.split(/\r?\n/);
   if (lines.length !== queries.length || !lines.every((line) => path.isAbsolute(line))) {
-    throw new Error(`git rev-parse ${PATH_FORMAT} ${queries.flat().join(' ')} returned unexpected output: ${JSON.stringify(output)}`);
+    throw new Error(
+      `git rev-parse ${PATH_FORMAT} ${queries.flat().join(' ')} returned unexpected output: ${JSON.stringify(output)}`,
+    );
   }
   return lines;
 }
 
 function unsupportedGit(options, detail) {
   let version = 'the Git on PATH';
-  try { version = git(['--version'], options).trim(); } catch { /* the capability failure is the diagnosis */ }
-  return Object.assign(new Error(`the workflow tools require Git 2.31 or later: ${version} does not support 'rev-parse ${PATH_FORMAT}' (${detail})`), { name: 'UnsupportedGitError' });
+  try {
+    version = git(['--version'], options).trim();
+  } catch {
+    /* the capability failure is the diagnosis */
+  }
+  return Object.assign(
+    new Error(
+      `the workflow tools require Git 2.31 or later: ${version} does not support 'rev-parse ${PATH_FORMAT}' (${detail})`,
+    ),
+    { name: 'UnsupportedGitError' },
+  );
 }

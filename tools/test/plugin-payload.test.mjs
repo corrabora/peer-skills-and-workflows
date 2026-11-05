@@ -18,15 +18,26 @@ after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 test('the complete gate rejects a payload that differs from its authoring sources', async (t) => {
   const payloadModule = await import('../lib/plugin-payload.mjs');
   assert.equal(typeof payloadModule.checkPluginPayload, 'function', 'the payload generator needs a read-only check');
-  assert.match(fs.readFileSync(path.join(root, 'tools/verify.mjs'), 'utf8'), /checkPluginPayload\(/, 'verify runs the payload check');
-  const cli = spawnSync(process.execPath, [path.join(root, 'tools/generate-plugin.mjs'), '--check'], { encoding: 'utf8' });
+  assert.match(
+    fs.readFileSync(path.join(root, 'tools/verify.mjs'), 'utf8'),
+    /checkPluginPayload\(/,
+    'verify runs the payload check',
+  );
+  const cli = spawnSync(process.execPath, [path.join(root, 'tools/generate-plugin.mjs'), '--check'], {
+    encoding: 'utf8',
+  });
   assert.equal(cli.status, 0, `the checked-in payload is current: ${cli.stdout}${cli.stderr}`);
 
   const source = path.join(scratch, 'source');
   for (const part of PAYLOAD_PARTS) fs.cpSync(path.join(root, part), path.join(source, part), { recursive: true });
   const payload = path.join(source, ...PAYLOAD_DIRECTORY.split('/'));
   const errors = [];
-  const out = { info() {}, error(message) { errors.push(message); } };
+  const out = {
+    info() {},
+    error(message) {
+      errors.push(message);
+    },
+  };
   const mutations = {
     changedByte: () => fs.appendFileSync(path.join(payload, 'skills/peer-review/SKILL.md'), ' '),
     staleSource: () => fs.appendFileSync(path.join(source, 'workflow/RECORDS.md'), '\n'),
@@ -38,11 +49,22 @@ test('the complete gate rejects a payload that differs from its authoring source
     await t.test(name, () => {
       generatePluginPayload(source);
       errors.length = 0;
-      assert.equal(payloadModule.checkPluginPayload({ sourceRoot: source, out }), true, `fresh payload: ${errors.join('\n')}`);
+      assert.equal(
+        payloadModule.checkPluginPayload({ sourceRoot: source, out }),
+        true,
+        `fresh payload: ${errors.join('\n')}`,
+      );
       mutate();
       errors.length = 0;
-      assert.equal(payloadModule.checkPluginPayload({ sourceRoot: source, out }), false, `${name} must fail the payload check`);
-      assert.ok(errors.some((line) => line.includes(PAYLOAD_DIRECTORY)), `${name} needs a diagnostic naming the payload: ${errors.join('\n')}`);
+      assert.equal(
+        payloadModule.checkPluginPayload({ sourceRoot: source, out }),
+        false,
+        `${name} must fail the payload check`,
+      );
+      assert.ok(
+        errors.some((line) => line.includes(PAYLOAD_DIRECTORY)),
+        `${name} needs a diagnostic naming the payload: ${errors.join('\n')}`,
+      );
     });
   }
 });
@@ -56,12 +78,29 @@ test('package validation rejects a runtime reference omitted from an otherwise c
     fs.copyFileSync(path.join(root, catalog), destination);
   }
   fs.writeFileSync(path.join(source, 'docs/runtime-required.md'), 'Required runtime guidance.\n');
-  fs.appendFileSync(path.join(source, 'skills/peer-review/SKILL.md'), '\nRead [runtime guidance](../../docs/runtime-required.md).\n');
+  fs.appendFileSync(
+    path.join(source, 'skills/peer-review/SKILL.md'),
+    '\nRead [runtime guidance](../../docs/runtime-required.md).\n',
+  );
   generatePluginPayload(source);
   const errors = [];
-  assert.equal(checkPluginPackage({ sourceRoot: source, out: { info() {}, error(message) { errors.push(message); } } }), false,
-    'a valid source link must also resolve inside the installed payload');
-  assert.ok(errors.some((line) => line.includes('runtime-required.md')), errors.join('\n'));
+  assert.equal(
+    checkPluginPackage({
+      sourceRoot: source,
+      out: {
+        info() {},
+        error(message) {
+          errors.push(message);
+        },
+      },
+    }),
+    false,
+    'a valid source link must also resolve inside the installed payload',
+  );
+  assert.ok(
+    errors.some((line) => line.includes('runtime-required.md')),
+    errors.join('\n'),
+  );
 });
 
 test('runtime reference traversal rejects an aliased target before reading it', () => {
@@ -88,7 +127,9 @@ test('runtime reference traversal rejects an aliased target before reading it', 
   try {
     assert.equal(checkPluginPackage({ sourceRoot: source, out: { info() {}, error() {} } }), false);
     assert.equal(aliasedReads, 0, 'validation must reject the alias before reading its content');
-  } finally { fs.readFileSync = readFile; }
+  } finally {
+    fs.readFileSync = readFile;
+  }
 });
 
 test('generation refuses linked source ancestors and output paths before writing', async (t) => {
@@ -109,8 +150,11 @@ test('generation refuses linked source ancestors and output paths before writing
       fs.symlinkSync(outside, linked, 'junction');
       const sentinel = path.join(outside, 'retained-sentinel');
       fs.writeFileSync(sentinel, 'do not modify\n');
-      assert.throws(() => generatePluginPayload(source), /link|symbolic|regular|alias/i,
-        `${kind}: reject the alias before replacing any output`);
+      assert.throws(
+        () => generatePluginPayload(source),
+        /link|symbolic|regular|alias/i,
+        `${kind}: reject the alias before replacing any output`,
+      );
       assert.equal(fs.readFileSync(sentinel, 'utf8'), 'do not modify\n');
       assert.equal(fs.lstatSync(linked).isSymbolicLink(), true, 'the rejected path remains untouched');
       assert.equal(fs.existsSync(path.join(source, 'plugins')), true);

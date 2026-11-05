@@ -10,11 +10,21 @@ export const PAYLOAD_DIRECTORY = 'plugins/peer';
 
 /** Authoring paths copied into the payload, with their relative layout preserved. */
 export const PAYLOAD_PARTS = [
-  'LICENSE', 'README.md', 'package.json', 'defaults.yaml',
-  '.claude-plugin/plugin.json', '.codex-plugin/plugin.json', 'hooks',
-  'skills', 'workflow', 'tools',
-  'docs/installation.md', 'docs/writing-guidance.md', 'docs/guidance/adr-format.md',
-  'docs/guidance/glossary-format.md', 'docs/guidance/record-format-adoption.md',
+  'LICENSE',
+  'README.md',
+  'package.json',
+  'defaults.yaml',
+  '.claude-plugin/plugin.json',
+  '.codex-plugin/plugin.json',
+  'hooks',
+  'skills',
+  'workflow',
+  'tools',
+  'docs/installation.md',
+  'docs/writing-guidance.md',
+  'docs/guidance/adr-format.md',
+  'docs/guidance/glossary-format.md',
+  'docs/guidance/record-format-adoption.md',
 ];
 
 /**
@@ -23,8 +33,13 @@ export const PAYLOAD_PARTS = [
  * must not copy itself into its own output.
  */
 export const PAYLOAD_EXCLUSIONS = [
-  'tools/test', 'tools/test-support', 'tools/verify.mjs', 'tools/commit-verify.mjs',
-  'tools/install-hooks.mjs', 'tools/generate-plugin.mjs', 'tools/lib/plugin-package.mjs',
+  'tools/test',
+  'tools/test-support',
+  'tools/verify.mjs',
+  'tools/commit-verify.mjs',
+  'tools/install-hooks.mjs',
+  'tools/generate-plugin.mjs',
+  'tools/lib/plugin-package.mjs',
   'tools/lib/plugin-payload.mjs',
 ];
 
@@ -46,7 +61,10 @@ function requireRealDirectories(root, relative, { allowMissing = false } = {}) {
       if (allowMissing && error.code === 'ENOENT') return;
       throw error;
     }
-    if (!stat.isDirectory()) throw new Error(`${path.relative(root, current)} is a link or not a directory; the plugin payload neither follows nor replaces links`);
+    if (!stat.isDirectory())
+      throw new Error(
+        `${path.relative(root, current)} is a link or not a directory; the plugin payload neither follows nor replaces links`,
+      );
   }
 }
 
@@ -62,7 +80,10 @@ function requireUnlinkedOutput(sourceRoot) {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
       const full = path.join(directory, entry.name);
       if (entry.isDirectory()) visit(full);
-      else if (!entry.isFile()) throw new Error(`${path.relative(sourceRoot, full)} is not a regular file or directory; the plugin payload neither follows nor replaces links`);
+      else if (!entry.isFile())
+        throw new Error(
+          `${path.relative(sourceRoot, full)} is not a regular file or directory; the plugin payload neither follows nor replaces links`,
+        );
     }
   };
   visit(target);
@@ -84,7 +105,9 @@ export function payloadFiles(sourceRoot) {
     } else if (stat.isFile()) {
       files.push(relative);
     } else {
-      throw new Error(`${relative} is not a regular file or directory; the plugin payload copies neither links nor special files`);
+      throw new Error(
+        `${relative} is not a regular file or directory; the plugin payload copies neither links nor special files`,
+      );
     }
   };
   for (const part of PAYLOAD_PARTS) {

@@ -23,7 +23,14 @@ const [command, set, ...extra] = process.argv.slice(2);
 if (extra.length || (set !== undefined && !Object.hasOwn(SKILL_SETS, set))) usage(USAGE);
 
 const host = hostContext();
-const context = { sourceRoot, scopes: skillScopes(host), sets: set === undefined ? undefined : [set], platform: process.platform, host, out };
+const context = {
+  sourceRoot,
+  scopes: skillScopes(host),
+  sets: set === undefined ? undefined : [set],
+  platform: process.platform,
+  host,
+  out,
+};
 let ok;
 switch (command) {
   case 'link': {
@@ -34,7 +41,9 @@ switch (command) {
     ok = supportHooks({ ...context, action: 'link' }) && ok;
     if (ok) {
       out.info(`Codex environment from ${instructionPath}`);
-      out.info('Add this top-level setting to ~/.codex/config.toml or a trusted project\'s .codex/config.toml; preserve any existing developer_instructions. See README.md#codex-environment. Codex session instructions were not changed.');
+      out.info(
+        "Add this top-level setting to ~/.codex/config.toml or a trusted project's .codex/config.toml; preserve any existing developer_instructions. See README.md#codex-environment. Codex session instructions were not changed.",
+      );
       out.info(`developer_instructions = ${JSON.stringify(instructions)}`);
     }
     break;
@@ -49,6 +58,7 @@ switch (command) {
     ok = supportHooks({ ...context, action: 'check' }) && links && references;
     break;
   }
-  default: usage(USAGE);
+  default:
+    usage(USAGE);
 }
 process.exitCode = ok ? 0 : 1;

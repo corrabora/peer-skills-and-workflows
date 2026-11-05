@@ -32,8 +32,14 @@ let ajvPath;
 try {
   ajvPath = require.resolve(AJV_PACKAGE);
 } catch (error) {
-  if (error.code !== 'MODULE_NOT_FOUND' || !error.message.startsWith(`Cannot find module '${AJV_PACKAGE}'`)) throw error;
-  throw Object.assign(new Error(`the 'ajv' runtime dependency is missing from ${path.join(SOURCE_ROOT, 'tools', 'vendor')}; reinstall the package or regenerate its vendored dependencies from the source checkout`), { name: 'MissingDependencyError' });
+  if (error.code !== 'MODULE_NOT_FOUND' || !error.message.startsWith(`Cannot find module '${AJV_PACKAGE}'`))
+    throw error;
+  throw Object.assign(
+    new Error(
+      `the 'ajv' runtime dependency is missing from ${path.join(SOURCE_ROOT, 'tools', 'vendor')}; reinstall the package or regenerate its vendored dependencies from the source checkout`,
+    ),
+    { name: 'MissingDependencyError' },
+  );
 }
 const Ajv = require(ajvPath);
 
@@ -58,18 +64,32 @@ export const MANIFEST_VERSION = 1;
  * record format/adoption references, not the rest of `docs/`.
  */
 const SOURCE_PARTS = [
-  'workflow', 'skills', 'tools', 'defaults.yaml', 'README.md', 'package.json',
-  'hooks', '.codex-plugin/plugin.json', '.claude-plugin/plugin.json',
-  '.agents/plugins/marketplace.json', '.claude-plugin/marketplace.json',
-  'docs/writing-guidance.md', 'docs/guidance/adr-format.md',
-  'docs/guidance/glossary-format.md', 'docs/guidance/record-format-adoption.md',
+  'workflow',
+  'skills',
+  'tools',
+  'defaults.yaml',
+  'README.md',
+  'package.json',
+  'hooks',
+  '.codex-plugin/plugin.json',
+  '.claude-plugin/plugin.json',
+  '.agents/plugins/marketplace.json',
+  '.claude-plugin/marketplace.json',
+  'docs/writing-guidance.md',
+  'docs/guidance/adr-format.md',
+  'docs/guidance/glossary-format.md',
+  'docs/guidance/record-format-adoption.md',
 ];
 
 /**
  * Representative local paths probed to report partial ignore effects when the
  * directory itself is not excluded: the binding, its manifest and a run record.
  */
-const LOCAL_PROBES = [`${LOCAL_DIRECTORY}/binding.md`, `${LOCAL_DIRECTORY}/binding-sources.json`, `${LOCAL_DIRECTORY}/runs/run/report.md`];
+const LOCAL_PROBES = [
+  `${LOCAL_DIRECTORY}/binding.md`,
+  `${LOCAL_DIRECTORY}/binding-sources.json`,
+  `${LOCAL_DIRECTORY}/runs/run/report.md`,
+];
 
 // Candidate guidance sources, by category, matched against every tracked and
 // untracked (not ignored) path of the checkout. The list is deliberately
@@ -78,14 +98,20 @@ const LOCAL_PROBES = [`${LOCAL_DIRECTORY}/binding.md`, `${LOCAL_DIRECTORY}/bindi
 const CANDIDATES = [
   ['instructions', /^(?:.*\/)?(?:AGENTS|CLAUDE)\.md$/i],
   ['instructions', /^\.(?:claude|codex|agents)\/.+/],
-  ['guidance', /^(?:README|CONTRIBUTING|CONTRIBUTORS|DEVELOPMENT|DEVELOPING|MAINTAINERS|SECURITY|SUPPORT)(?:\.[^/]+)?$/i],
+  [
+    'guidance',
+    /^(?:README|CONTRIBUTING|CONTRIBUTORS|DEVELOPMENT|DEVELOPING|MAINTAINERS|SECURITY|SUPPORT)(?:\.[^/]+)?$/i,
+  ],
   ['guidance', /^docs?\/.+\.(?:md|markdown|txt|rst)$/i],
   ['quality', /^\.quality\/config\.json$/],
   ['quality', /^\.quality\/profiles\/[^/]+\/_manifest\/profile\.json$/],
   ['quality', /^\.quality\/profiles\/[^/]+\/README\.md$/],
   ['verification', /^\.github\/.+/],
   ['verification', /^\.gitlab-ci\.yml$/],
-  ['verification', /^(?:package\.json|Makefile|GNUmakefile|justfile|Justfile|Taskfile\.ya?ml|\.pre-commit-config\.yaml)$/],
+  [
+    'verification',
+    /^(?:package\.json|Makefile|GNUmakefile|justfile|Justfile|Taskfile\.ya?ml|\.pre-commit-config\.yaml)$/,
+  ],
   ['verification', /^\.githooks\/.+/],
 ];
 
@@ -120,7 +146,11 @@ function gitRecords(bytes) {
     const end = found === -1 ? bytes.length : found;
     const record = bytes.subarray(start, end);
     if (record.length) {
-      try { records.push(strictUtf8.decode(record)); } catch { invalid.push(record); }
+      try {
+        records.push(strictUtf8.decode(record));
+      } catch {
+        invalid.push(record);
+      }
     }
     start = end + 1;
   }
@@ -129,7 +159,15 @@ function gitRecords(bytes) {
 
 /** Bytes as ASCII text: printable characters as themselves, `\` doubled and every other byte as `\xHH`. */
 function escapedName(bytes) {
-  return [...bytes].map((byte) => (byte === 0x5c ? '\\\\' : byte >= 0x20 && byte < 0x7f ? String.fromCharCode(byte) : `\\x${byte.toString(16).padStart(2, '0')}`)).join('');
+  return [...bytes]
+    .map((byte) =>
+      byte === 0x5c
+        ? '\\\\'
+        : byte >= 0x20 && byte < 0x7f
+          ? String.fromCharCode(byte)
+          : `\\x${byte.toString(16).padStart(2, '0')}`,
+    )
+    .join('');
 }
 
 /**
@@ -166,7 +204,11 @@ export function checkoutFacts(checkout) {
   try {
     lines = gitPaths(['--show-toplevel', '--git-dir', '--git-common-dir'], { cwd: top });
   } catch (error) {
-    if (/^git rev-parse failed: fatal: (?:not a git repository|this operation must be run in a work tree)/.test(error.message)) {
+    if (
+      /^git rev-parse failed: fatal: (?:not a git repository|this operation must be run in a work tree)/.test(
+        error.message,
+      )
+    ) {
       throw new Error(`${checkout} is not inside a Git working tree (${error.message})`);
     }
     throw error;
@@ -221,7 +263,9 @@ export function localPathState(checkout) {
     let target = null;
     try {
       target = fs.readlinkSync(local, 'utf8');
-    } catch { /* target unreadable; the kind alone names the conflict */ }
+    } catch {
+      /* target unreadable; the kind alone names the conflict */
+    }
     return { kind: 'link', target };
   }
   return { kind: stat.isFile() ? 'file' : 'other' };
@@ -232,8 +276,11 @@ export function bindingFileState(file) {
   try {
     const stat = fs.lstatSync(file);
     if (stat.isSymbolicLink()) {
-      try { return { kind: 'link', present: true, target: fs.readlinkSync(file, 'utf8') }; }
-      catch (error) { return { kind: 'link', present: true, target: null, error: error.code ?? error.message }; }
+      try {
+        return { kind: 'link', present: true, target: fs.readlinkSync(file, 'utf8') };
+      } catch (error) {
+        return { kind: 'link', present: true, target: null, error: error.code ?? error.message };
+      }
     }
     return { kind: stat.isFile() ? 'file' : stat.isDirectory() ? 'directory' : 'other', present: true };
   } catch (error) {
@@ -249,7 +296,12 @@ export function bindingFileState(file) {
  */
 function occupiedConflict(checkout, state) {
   const local = path.join(checkout, LOCAL_DIRECTORY);
-  const what = state.kind === 'link' ? `a link to ${state.target ?? 'an unreadable target'}` : state.kind === 'unreadable' ? `an entry that cannot be inspected (${state.error})` : `a ${state.kind}`;
+  const what =
+    state.kind === 'link'
+      ? `a link to ${state.target ?? 'an unreadable target'}`
+      : state.kind === 'unreadable'
+        ? `an entry that cannot be inspected (${state.error})`
+        : `a ${state.kind}`;
   return {
     path: local,
     kind: state.kind,
@@ -280,17 +332,32 @@ function occupiedConflict(checkout, state) {
 export function ignoreCoverage(checkout) {
   const state = localPathState(checkout);
   if (state.kind !== 'directory' && state.kind !== 'absent') {
-    return { directoryPresent: false, ignored: false, reason: 'path occupied', occupied: occupiedConflict(checkout, state), match: null, negatedBy: null, partial: false, children: [] };
+    return {
+      directoryPresent: false,
+      ignored: false,
+      reason: 'path occupied',
+      occupied: occupiedConflict(checkout, state),
+      match: null,
+      negatedBy: null,
+      partial: false,
+      children: [],
+    };
   }
   const directoryPresent = state.kind === 'directory';
   const children = LOCAL_PROBES.map((probe) => {
     const rule = checkIgnore(checkout, probe);
-    return { path: probe, ignored: rule !== null && !rule.negated, ...(rule ? { source: rule.source, line: rule.line, pattern: rule.pattern, negated: rule.negated } : {}) };
+    return {
+      path: probe,
+      ignored: rule !== null && !rule.negated,
+      ...(rule ? { source: rule.source, line: rule.line, pattern: rule.pattern, negated: rule.negated } : {}),
+    };
   });
   const directory = directoryPresent ? checkIgnore(checkout, LOCAL_DIRECTORY) : null;
   const ignored = directory !== null && !directory.negated;
   const match = ignored ? { source: directory.source, line: directory.line, pattern: directory.pattern } : null;
-  const negatedBy = directory?.negated ? { source: directory.source, line: directory.line, pattern: directory.pattern } : null;
+  const negatedBy = directory?.negated
+    ? { source: directory.source, line: directory.line, pattern: directory.pattern }
+    : null;
   return {
     directoryPresent,
     ignored,
@@ -346,31 +413,59 @@ export function establishLocalStorage(checkout) {
       fs.mkdirSync(local);
       directoryCreated = true;
     } catch (error) {
-      if (error.code !== 'EEXIST') return { status: 'unwritable', localDirectory: local, error: error.code ?? error.message, changed: false };
+      if (error.code !== 'EEXIST')
+        return { status: 'unwritable', localDirectory: local, error: error.code ?? error.message, changed: false };
       // Another setup may have created it after our first inspection. Never
       // treat EEXIST itself as proof that the occupant is safe to use.
       const collided = localPathState(checkout);
-      if (collided.kind === 'absent') return { status: 'unwritable', localDirectory: local, error: error.code, changed: false };
+      if (collided.kind === 'absent')
+        return { status: 'unwritable', localDirectory: local, error: error.code, changed: false };
       if (collided.kind !== 'directory') {
-        return { status: 'occupied', localDirectory: local, occupied: occupiedConflict(checkout, collided), changed: false };
+        return {
+          status: 'occupied',
+          localDirectory: local,
+          occupied: occupiedConflict(checkout, collided),
+          changed: false,
+        };
       }
     }
   }
   const file = excludeFile(checkout);
   const before = ignoreCoverage(checkout);
-  const coverage = (state) => ({ match: state.match, negatedBy: state.negatedBy, partial: state.partial, children: state.children });
-  if (before.ignored) return { status: 'ignored', ...coverage(before), excludeFile: file, directoryCreated, changed: false };
+  const coverage = (state) => ({
+    match: state.match,
+    negatedBy: state.negatedBy,
+    partial: state.partial,
+    children: state.children,
+  });
+  if (before.ignored)
+    return { status: 'ignored', ...coverage(before), excludeFile: file, directoryCreated, changed: false };
   let existing = '';
   try {
     existing = fs.readFileSync(file, 'utf8');
   } catch (error) {
-    if (error.code !== 'ENOENT') return { status: 'unwritable', excludeFile: file, error: error.code ?? error.message, directoryCreated, changed: false };
+    if (error.code !== 'ENOENT')
+      return {
+        status: 'unwritable',
+        excludeFile: file,
+        error: error.code ?? error.message,
+        directoryCreated,
+        changed: false,
+      };
   }
   if (hasExcludeRule(existing)) {
     const current = ignoreCoverage(checkout);
-    if (current.ignored) return { status: 'ignored', ...coverage(current), excludeFile: file, directoryCreated, changed: false };
+    if (current.ignored)
+      return { status: 'ignored', ...coverage(current), excludeFile: file, directoryCreated, changed: false };
     return {
-      status: 'unverified', ...coverage(current), excludeFile: file, pattern: EXCLUDE_RULE, rulePresent: true, overriddenBy: current.negatedBy, directoryCreated, changed: false,
+      status: 'unverified',
+      ...coverage(current),
+      excludeFile: file,
+      pattern: EXCLUDE_RULE,
+      rulePresent: true,
+      overriddenBy: current.negatedBy,
+      directoryCreated,
+      changed: false,
     };
   }
   const separator = existing.length && !existing.endsWith('\n') ? '\n' : '';
@@ -382,15 +477,35 @@ export function establishLocalStorage(checkout) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.appendFileSync(file, addition);
   } catch (error) {
-    return { status: 'unwritable', excludeFile: file, error: error.code ?? error.message, directoryCreated, changed: false };
+    return {
+      status: 'unwritable',
+      excludeFile: file,
+      error: error.code ?? error.message,
+      directoryCreated,
+      changed: false,
+    };
   }
   const after = ignoreCoverage(checkout);
   if (!after.ignored) {
     return {
-      status: 'unverified', ...coverage(after), excludeFile: file, pattern: EXCLUDE_RULE, rulePresent: true, overriddenBy: after.negatedBy, directoryCreated, changed: true,
+      status: 'unverified',
+      ...coverage(after),
+      excludeFile: file,
+      pattern: EXCLUDE_RULE,
+      rulePresent: true,
+      overriddenBy: after.negatedBy,
+      directoryCreated,
+      changed: true,
     };
   }
-  return { status: 'added', ...coverage(after), excludeFile: file, pattern: EXCLUDE_RULE, directoryCreated, changed: true };
+  return {
+    status: 'added',
+    ...coverage(after),
+    excludeFile: file,
+    pattern: EXCLUDE_RULE,
+    directoryCreated,
+    changed: true,
+  };
 }
 
 /**
@@ -407,17 +522,28 @@ export function establishLocalStorage(checkout) {
  */
 function visiblePaths(checkout) {
   const errors = [];
-  const listed = gitRecords(gitIn(checkout)(['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
-    bytes: true,
-    onStderr: (message) => {
-      for (const line of message.trim().split('\n')) {
-        const known = /^warning: (?:unable to access|could not open directory) '(.*)': (.*)$/.exec(line);
-        errors.push({ path: known ? path.resolve(checkout, known[1]) : null, error: known?.[2] ?? line, message: line });
-      }
-    },
-  }));
+  const listed = gitRecords(
+    gitIn(checkout)(['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
+      bytes: true,
+      onStderr: (message) => {
+        for (const line of message.trim().split('\n')) {
+          const known = /^warning: (?:unable to access|could not open directory) '(.*)': (.*)$/.exec(line);
+          errors.push({
+            path: known ? path.resolve(checkout, known[1]) : null,
+            error: known?.[2] ?? line,
+            message: line,
+          });
+        }
+      },
+    }),
+  );
   for (const name of new Set(listed.invalid.map(escapedName))) {
-    errors.push({ path: checkout, name, error: UNSUPPORTED_NAME, message: `git ls-files listed ${name}: ${UNSUPPORTED_NAME}` });
+    errors.push({
+      path: checkout,
+      name,
+      error: UNSUPPORTED_NAME,
+      message: `git ls-files listed ${name}: ${UNSUPPORTED_NAME}`,
+    });
   }
   return { paths: [...new Set(listed.records)].sort(byCodeUnit), errors };
 }
@@ -462,27 +588,46 @@ export function qualitySelection(checkout) {
   const named = path.join(checkout, '.quality', 'config.json');
   const contained = containedLocation(checkout, named);
   if (contained.error) {
-    return { present: false, config: '.quality/config.json', error: contained.error, ...(contained.location ? { location: contained.location } : {}), profiles: [] };
+    return {
+      present: false,
+      config: '.quality/config.json',
+      error: contained.error,
+      ...(contained.location ? { location: contained.location } : {}),
+      profiles: [],
+    };
   }
   const origin = contained.location === named ? {} : { resolved: relativeLookup(checkout, contained.location) };
   const config = readQualityConfig(contained.location);
-  if (config.error) return { present: false, config: '.quality/config.json', ...origin, error: config.error, profiles: [] };
+  if (config.error)
+    return { present: false, config: '.quality/config.json', ...origin, error: config.error, profiles: [] };
   const profiles = [];
   const blocked = new Map();
   const seen = new Set();
-  const related = (list, relation) => (Array.isArray(list) ? list : []).map((item) => ({
-    profileId: item?.profileId ?? null, versionRequirement: item?.versionRequirement ?? null, relation,
-  }));
+  const related = (list, relation) =>
+    (Array.isArray(list) ? list : []).map((item) => ({
+      profileId: item?.profileId ?? null,
+      versionRequirement: item?.versionRequirement ?? null,
+      relation,
+    }));
   const visit = (profileId, profilePath, selectedBy) => {
     const relative = typeof profilePath === 'string' ? path.posix.normalize(profilePath) : null;
     const manifest = relative
       ? containedJson(checkout, path.resolve(checkout, '.quality', relative, '_manifest', 'profile.json'))
-      : profilePath?.error ? profilePath : { error: 'not installed' };
-    const entry = { profileId: profileId ?? manifest.data?.profileId ?? null, path: relative ? `.quality/${relative}` : null, selectedBy };
+      : profilePath?.error
+        ? profilePath
+        : { error: 'not installed' };
+    const entry = {
+      profileId: profileId ?? manifest.data?.profileId ?? null,
+      path: relative ? `.quality/${relative}` : null,
+      selectedBy,
+    };
     if (manifest.error) {
       profiles.push({
-        ...entry, present: false, error: manifest.error,
-        ...(manifest.location ? { location: manifest.location } : {}), ...(manifest.inaccessible ? { inaccessible: manifest.inaccessible } : {}),
+        ...entry,
+        present: false,
+        error: manifest.error,
+        ...(manifest.location ? { location: manifest.location } : {}),
+        ...(manifest.inaccessible ? { inaccessible: manifest.inaccessible } : {}),
       });
       return;
     }
@@ -499,16 +644,27 @@ export function qualitySelection(checkout) {
     seen.add(selection.profileId);
     visit(selection.profileId, selection.path, 'config');
   }
-  return { present: true, config: '.quality/config.json', ...origin, profiles, ...(blocked.size ? { blockedLocations: [...blocked.values()] } : {}) };
+  return {
+    present: true,
+    config: '.quality/config.json',
+    ...origin,
+    profiles,
+    ...(blocked.size ? { blockedLocations: [...blocked.values()] } : {}),
+  };
 }
 
 const validateQualityConfig = new Ajv({ coerceTypes: false, useDefaults: false, removeAdditional: false }).compile({
-  type: 'object', required: ['profiles'], additionalProperties: false,
+  type: 'object',
+  required: ['profiles'],
+  additionalProperties: false,
   properties: {
     profiles: {
-      type: 'array', minItems: 1,
+      type: 'array',
+      minItems: 1,
       items: {
-        type: 'object', required: ['profileId', 'path'], additionalProperties: false,
+        type: 'object',
+        required: ['profileId', 'path'],
+        additionalProperties: false,
         properties: { profileId: { type: 'string', minLength: 1 }, path: { type: 'string' } },
       },
     },
@@ -599,12 +755,18 @@ function readQualityConfig(file) {
   if (duplicate) return { error: `invalid structure: ${memberLocation(duplicate)} is a duplicate member` };
   if (!validateQualityConfig(data)) {
     const [error] = validateQualityConfig.errors;
-    const steps = error.instancePath.split('/').slice(1).map((step) => (/^\d+$/.test(step) ? Number(step) : step));
+    const steps = error.instancePath
+      .split('/')
+      .slice(1)
+      .map((step) => (/^\d+$/.test(step) ? Number(step) : step));
     return { error: `invalid structure: ${memberLocation(steps)} ${error.message}` };
   }
   const ids = new Map();
   for (const [index, { profileId }] of data.profiles.entries()) {
-    if (ids.has(profileId)) return { error: `invalid structure: profiles[${index}].profileId repeats profiles[${ids.get(profileId)}].profileId` };
+    if (ids.has(profileId))
+      return {
+        error: `invalid structure: profiles[${index}].profileId repeats profiles[${ids.get(profileId)}].profileId`,
+      };
     ids.set(profileId, index);
   }
   return { data };
@@ -613,8 +775,13 @@ function readQualityConfig(file) {
 /** `profiles[0].path` style location of decoded steps; other member names are not repeated. */
 function memberLocation(steps) {
   if (!steps.length) return 'the document';
-  return steps.map((step, index) => (typeof step === 'number' ? `[${step}]`
-    : `${index ? '.' : ''}${CONFIG_MEMBERS.has(step) ? step : '(unknown member)'}`)).join('');
+  return steps
+    .map((step, index) =>
+      typeof step === 'number'
+        ? `[${step}]`
+        : `${index ? '.' : ''}${CONFIG_MEMBERS.has(step) ? step : '(unknown member)'}`,
+    )
+    .join('');
 }
 
 /**
@@ -682,11 +849,13 @@ function locateProfile(checkout, profileId, blocked) {
     return result;
   };
   const root = guard(profiles);
-  if (root.error) return root.error === 'outside the checkout' ? null : { ...root, location: root.location ?? profiles };
+  if (root.error)
+    return root.error === 'outside the checkout' ? null : { ...root, location: root.location ?? profiles };
   const expected = `${match[1]}-${match[2]}`;
   let entries;
-  try { entries = readSource(root.location, () => fs.readdirSync(root.location, { withFileTypes: true })); }
-  catch (error) {
+  try {
+    entries = readSource(root.location, () => fs.readdirSync(root.location, { withFileTypes: true }));
+  } catch (error) {
     if (!(error instanceof SourceAccessError)) throw error;
     if (error.cause.code === 'ENOENT') return null;
     return { error: error.cause.code, location: error.cause.path ?? error.member };
@@ -697,16 +866,22 @@ function locateProfile(checkout, profileId, blocked) {
     const file = path.join(profiles, entry.name, '_manifest', 'profile.json');
     const location = guard(file);
     if (location.error) {
-      if (location.error !== 'outside the checkout') inaccessible.set(file, { path: relativeLookup(checkout, file), error: location.error });
+      if (location.error !== 'outside the checkout')
+        inaccessible.set(file, { path: relativeLookup(checkout, file), error: location.error });
       continue;
     }
     let bytes;
-    try { bytes = readSource(location.location, () => fs.readFileSync(location.location)); }
-    catch (error) {
+    try {
+      bytes = readSource(location.location, () => fs.readFileSync(location.location));
+    } catch (error) {
       if (!(error instanceof SourceAccessError)) throw error;
       // A directory without a manifest is not an installed profile.
       if (!['ENOENT', 'ENOTDIR'].includes(error.cause.code)) {
-        inaccessible.set(file, { path: relativeLookup(checkout, file), location: location.location, error: error.cause.code ?? error.cause.message });
+        inaccessible.set(file, {
+          path: relativeLookup(checkout, file),
+          location: location.location,
+          error: error.cause.code ?? error.cause.message,
+        });
       }
       continue;
     }
@@ -715,7 +890,11 @@ function locateProfile(checkout, profileId, blocked) {
     // parser text, which can quote file content, out of the report.
     const manifest = decodeJson(bytes);
     if (manifest.error) {
-      inaccessible.set(file, { path: relativeLookup(checkout, file), location: location.location, error: 'invalid JSON' });
+      inaccessible.set(file, {
+        path: relativeLookup(checkout, file),
+        location: location.location,
+        error: 'invalid JSON',
+      });
       continue;
     }
     if (manifest.data?.profileId === profileId) return `profiles/${entry.name}`;
@@ -789,8 +968,25 @@ function readSource(member, read) {
   try {
     return read();
   } catch (error) {
-    if (['EACCES', 'EPERM', 'EIO', 'ELOOP', 'ENOENT', 'ENOTDIR', 'EISDIR', 'ESTALE', 'EMFILE', 'ENFILE', 'EBUSY', 'ETIMEDOUT', 'ENAMETOOLONG'].includes(error.code)
-      || error.message.startsWith('git hash-object failed:')) throw new SourceAccessError(member, error);
+    if (
+      [
+        'EACCES',
+        'EPERM',
+        'EIO',
+        'ELOOP',
+        'ENOENT',
+        'ENOTDIR',
+        'EISDIR',
+        'ESTALE',
+        'EMFILE',
+        'ENFILE',
+        'EBUSY',
+        'ETIMEDOUT',
+        'ENAMETOOLONG',
+      ].includes(error.code) ||
+      error.message.startsWith('git hash-object failed:')
+    )
+      throw new SourceAccessError(member, error);
     throw error;
   }
 }
@@ -816,8 +1012,13 @@ function incompleteIdentity(error, root) {
   const cause = error.cause ?? error;
   return {
     kind: error instanceof UnsupportedSourceError ? 'unsupported' : 'unreadable',
-    error: cause.code ?? cause.message, message: cause.message,
-    member: error.escaped ? escapedMember(root, error.repository, error.escaped) : isWithin(root, error.member) ? relativeLookup(root, error.member) : error.member,
+    error: cause.code ?? cause.message,
+    message: cause.message,
+    member: error.escaped
+      ? escapedMember(root, error.repository, error.escaped)
+      : isWithin(root, error.member)
+        ? relativeLookup(root, error.member)
+        : error.member,
   };
 }
 
@@ -831,7 +1032,9 @@ function memberStat(file, { follow = true } = {}) {
     return follow ? fs.statSync(file) : fs.lstatSync(file);
   } catch (error) {
     if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return null;
-    return readSource(file, () => { throw error; });
+    return readSource(file, () => {
+      throw error;
+    });
   }
 }
 
@@ -848,7 +1051,11 @@ function childPins(root, paths, { exact = false } = {}) {
   if (exact) selected.push(...paths.map((item) => `:(top,exclude,glob)${item.replace(/[\\*?\[\]]/g, '\\$&')}/**`));
   const listed = gitRecords(gitIn(root)(['ls-files', '-s', '-z', '--', ...selected], { bytes: true }));
   const gitlink = listed.invalid.find((record) => record.subarray(0, 7).toString('latin1') === '160000 ');
-  if (gitlink) throw new UnsupportedSourceError(UNSUPPORTED_NAME, { repository: root, escaped: escapedName(gitlink.subarray(gitlink.indexOf(0x09) + 1)) });
+  if (gitlink)
+    throw new UnsupportedSourceError(UNSUPPORTED_NAME, {
+      repository: root,
+      escaped: escapedName(gitlink.subarray(gitlink.indexOf(0x09) + 1)),
+    });
   for (const record of listed.records) {
     if (!record.startsWith('160000 ')) continue;
     const metadata = record.slice(0, record.indexOf('\t'));
@@ -869,11 +1076,30 @@ function childPins(root, paths, { exact = false } = {}) {
 function contentPaths(root, paths) {
   try {
     let warning = null;
-    const listed = gitRecords(gitIn(root)(['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', ...paths.map((item) => `:(literal)${item}`)], {
-      bytes: true, onStderr: (message) => { warning = message.trim(); },
-    }));
-    const error = warning ? new SourceAccessError(root, new Error(`git ls-files: ${warning}`))
-      : listed.invalid.length ? new UnsupportedSourceError(UNSUPPORTED_NAME, { repository: root, escaped: escapedName(listed.invalid[0]) }) : null;
+    const listed = gitRecords(
+      gitIn(root)(
+        [
+          'ls-files',
+          '-z',
+          '--cached',
+          '--others',
+          '--exclude-standard',
+          '--',
+          ...paths.map((item) => `:(literal)${item}`),
+        ],
+        {
+          bytes: true,
+          onStderr: (message) => {
+            warning = message.trim();
+          },
+        },
+      ),
+    );
+    const error = warning
+      ? new SourceAccessError(root, new Error(`git ls-files: ${warning}`))
+      : listed.invalid.length
+        ? new UnsupportedSourceError(UNSUPPORTED_NAME, { repository: root, escaped: escapedName(listed.invalid[0]) })
+        : null;
     return { files: listed.records, error };
   } catch (error) {
     if (error.message.startsWith('git ls-files failed:')) throw new SourceAccessError(root, error);
@@ -885,9 +1111,15 @@ function contentPaths(root, paths) {
 function childRepository(parent, full, pin, repositories, reportRoot) {
   if (pin === 'unmerged') throw new UnsupportedSourceError('unmerged submodule index entry', { member: full });
   const own = memberStat(full, { follow: false });
-  if (!own?.isDirectory()) throw new UnsupportedSourceError('child checkout unavailable: expected a plain working-tree directory', { member: full });
+  if (!own?.isDirectory())
+    throw new UnsupportedSourceError('child checkout unavailable: expected a plain working-tree directory', {
+      member: full,
+    });
   const marker = memberStat(path.join(full, '.git'), { follow: false });
-  if (!marker) throw new UnsupportedSourceError('child checkout unavailable or uninitialized: .git entry absent', { member: full });
+  if (!marker)
+    throw new UnsupportedSourceError('child checkout unavailable or uninitialized: .git entry absent', {
+      member: full,
+    });
   const run = gitIn(full);
   let top, head;
   try {
@@ -901,7 +1133,9 @@ function childRepository(parent, full, pin, repositories, reportRoot) {
     throw new SourceAccessError(full, error);
   }
   if (readSource(full, () => canonical(top)) !== readSource(full, () => canonical(full))) {
-    throw new UnsupportedSourceError('child checkout unavailable: Git resolved another working-tree root', { member: full });
+    throw new UnsupportedSourceError('child checkout unavailable: Git resolved another working-tree root', {
+      member: full,
+    });
   }
   const kind = pin ? 'submodule' : 'nested';
   const fact = { path: relativeLookup(reportRoot, full), kind, head };
@@ -927,14 +1161,20 @@ function sourceRepository(root, absolute, repositories) {
     current = path.join(current, segment);
     const relative = relativeLookup(owner, current);
     let pin;
-    try { pin = childPins(owner, [relative], { exact: true }).get(relative); } catch (error) {
+    try {
+      pin = childPins(owner, [relative], { exact: true }).get(relative);
+    } catch (error) {
       if (owner !== root && error.message.startsWith('git ')) throw new SourceAccessError(owner, error);
       throw error;
     }
     const own = memberStat(current, { follow: false });
     if (pin || (own?.isDirectory() && memberStat(path.join(current, '.git'), { follow: false }))) {
-      if (!pin && !gitIn(owner)(['ls-files', '-z', '--', `:(literal)${relativeLookup(owner, current)}`])
-        && gitIn(owner)(['check-ignore', '-q', '--', relativeLookup(owner, current)], { allowMissing: true }) !== null) return owner;
+      if (
+        !pin &&
+        !gitIn(owner)(['ls-files', '-z', '--', `:(literal)${relativeLookup(owner, current)}`]) &&
+        gitIn(owner)(['check-ignore', '-q', '--', relativeLookup(owner, current)], { allowMissing: true }) !== null
+      )
+        return owner;
       childRepository(owner, current, pin, repositories, root);
       owner = current;
     }
@@ -963,7 +1203,9 @@ function foldsCase(dir) {
   while (!memberStat(current, { follow: false }) && path.dirname(current) !== current) current = path.dirname(current);
   for (; path.dirname(current) !== current; current = path.dirname(current)) {
     const name = path.basename(current);
-    const variant = /[a-z]/.test(name) ? name.replace(/[a-z]+/g, (letters) => letters.toUpperCase()) : name.replace(/[A-Z]+/g, (letters) => letters.toLowerCase());
+    const variant = /[a-z]/.test(name)
+      ? name.replace(/[a-z]+/g, (letters) => letters.toUpperCase())
+      : name.replace(/[A-Z]+/g, (letters) => letters.toLowerCase());
     if (variant === name) continue;
     const own = memberStat(current, { follow: false });
     const other = memberStat(path.join(path.dirname(current), variant), { follow: false });
@@ -996,11 +1238,14 @@ function sameEntryName(dir, name, reserved) {
   if (own || other) {
     if (!own || !other || own.dev !== other.dev || own.ino !== other.ino) return false;
     const listed = readSource(dir, () => fs.readdirSync(dir));
-    const stored = (spelling) => (listed.includes(spelling) ? [spelling] : listed.filter((entry) => {
-      if (foldName(entry) !== foldName(spelling)) return false;
-      const stat = memberStat(path.join(dir, entry), { follow: false });
-      return stat?.dev === own.dev && stat?.ino === own.ino;
-    }));
+    const stored = (spelling) =>
+      listed.includes(spelling)
+        ? [spelling]
+        : listed.filter((entry) => {
+            if (foldName(entry) !== foldName(spelling)) return false;
+            const stat = memberStat(path.join(dir, entry), { follow: false });
+            return stat?.dev === own.dev && stat?.ino === own.ino;
+          });
     const named = stored(name);
     const entry = stored(reserved);
     return !named.length || !entry.length || named.some((spelling) => entry.includes(spelling));
@@ -1085,12 +1330,26 @@ export function outputDestinationProblem(facts, out) {
     const occupied = named === null ? null : storageOccupant(facts.checkout);
     if (occupied) return { reason: 'local storage path occupied', occupied };
     resolved = canonicalLocation(out);
-    if ([named, resolved].some((file) => localStorageChild(facts.checkout, file) === path.join(facts.checkout, LOCAL_DIRECTORY, BINDING_FILE))) {
-      return { reason: 'binding.md holds operator choices; write the factual manifest to binding-sources.json instead', resolved };
+    if (
+      [named, resolved].some(
+        (file) => localStorageChild(facts.checkout, file) === path.join(facts.checkout, LOCAL_DIRECTORY, BINDING_FILE),
+      )
+    ) {
+      return {
+        reason: 'binding.md holds operator choices; write the factual manifest to binding-sources.json instead',
+        resolved,
+      };
     }
     const administrative = (owner) => {
       const administrativePath = [owner.gitDir, owner.commonDir].find((dir) => isWithin(dir, resolved));
-      return administrativePath ? { reason: 'the destination resolves to Git administration', resolved, administrativePath, repository: owner.checkout } : null;
+      return administrativePath
+        ? {
+            reason: 'the destination resolves to Git administration',
+            resolved,
+            administrativePath,
+            repository: owner.checkout,
+          }
+        : null;
     };
     const parentAdmin = administrative(facts);
     if (parentAdmin) return parentAdmin;
@@ -1101,13 +1360,27 @@ export function outputDestinationProblem(facts, out) {
       let current = facts.checkout;
       for (const segment of path.relative(facts.checkout, named).split(path.sep).filter(Boolean)) {
         current = path.join(current, segment);
-        if (segment === '.git') return { reason: 'the destination names Git administration', resolved, administrativePath: current, repository: owner.checkout };
+        if (segment === '.git')
+          return {
+            reason: 'the destination names Git administration',
+            resolved,
+            administrativePath: current,
+            repository: owner.checkout,
+          };
         const relative = relativeLookup(owner.checkout, current);
         const pin = childPins(owner.checkout, [relative], { exact: true }).get(relative);
         const stat = memberStat(current, { follow: false });
         if (pin || (stat?.isDirectory() && memberStat(path.join(current, '.git'), { follow: false }))) {
-          if (pin === 'unmerged' || !stat?.isDirectory() || !memberStat(path.join(current, '.git'), { follow: false })) {
-            return { reason: 'destination child checkout unavailable or unmerged; restore it before exporting', resolved, repository: current };
+          if (
+            pin === 'unmerged' ||
+            !stat?.isDirectory() ||
+            !memberStat(path.join(current, '.git'), { follow: false })
+          ) {
+            return {
+              reason: 'destination child checkout unavailable or unmerged; restore it before exporting',
+              resolved,
+              repository: current,
+            };
           }
           owner = checkoutFacts(current);
           owners.set(owner.checkout, owner);
@@ -1121,11 +1394,21 @@ export function outputDestinationProblem(facts, out) {
       if (!isWithin(owner.checkout, resolved)) continue;
       const relative = relativeLookup(owner.checkout, resolved);
       const tracked = gitIn(owner.checkout)(['ls-files', '-z', '--', `:(top,literal)${relative}`]).split('\0');
-      if (tracked.includes(relative)) return { reason: 'the destination resolves to a file tracked by the checkout or owning child', resolved, trackedPath: relative, repository: owner.checkout };
+      if (tracked.includes(relative))
+        return {
+          reason: 'the destination resolves to a file tracked by the checkout or owning child',
+          resolved,
+          trackedPath: relative,
+          repository: owner.checkout,
+        };
     }
     return null;
   } catch (error) {
-    return { reason: 'destination protection could not be established; resolve the reported cause before exporting', ...(resolved ? { resolved } : {}), error: error.cause?.code ?? error.code ?? error.message };
+    return {
+      reason: 'destination protection could not be established; resolve the reported cause before exporting',
+      ...(resolved ? { resolved } : {}),
+      error: error.cause?.code ?? error.code ?? error.message,
+    };
   }
 }
 
@@ -1146,7 +1429,10 @@ function gitMemberEntries(root, paths, hashFile, { omitMissing = false, reposito
       const ancestor = parts.slice(0, count).join('/');
       const full = path.join(root, ancestor);
       const ancestorStat = memberStat(full, { follow: false });
-      if (ancestorStat?.isSymbolicLink() || (ancestorStat?.isDirectory() && memberStat(path.join(full, '.git'), { follow: false }))) {
+      if (
+        ancestorStat?.isSymbolicLink() ||
+        (ancestorStat?.isDirectory() && memberStat(path.join(full, '.git'), { follow: false }))
+      ) {
         file = ancestor;
         break;
       }
@@ -1161,7 +1447,8 @@ function gitMemberEntries(root, paths, hashFile, { omitMissing = false, reposito
       try {
         children = gitMemberEntries(full, ['.'], hashFile, { omitMissing, repositories, reportRoot });
       } catch (error) {
-        if (!(error instanceof SourceAccessError) && error.message.startsWith('git ')) throw new SourceAccessError(full, error);
+        if (!(error instanceof SourceAccessError) && error.message.startsWith('git '))
+          throw new SourceAccessError(full, error);
         throw error;
       }
       entries.push(`${file}\0${JSON.stringify(['repository', kind])}\n`);
@@ -1261,7 +1548,9 @@ export function sourceIdentity(checkout, source) {
       // A gitlink replaced by an alias is unavailable, even if following that
       // alias would reach readable content outside the child boundary.
       owner = sourceRepository(checkout, lookupAbsolute, repositories);
-      const candidate = readSource(lookupAbsolute, () => path.join(canonicalLocation(path.dirname(lookupAbsolute)), path.basename(lookupAbsolute)));
+      const candidate = readSource(lookupAbsolute, () =>
+        path.join(canonicalLocation(path.dirname(lookupAbsolute)), path.basename(lookupAbsolute)),
+      );
       if (candidate !== lookupAbsolute && isWithin(checkout, candidate) && !isGitAdministrative(candidate)) {
         owner = sourceRepository(checkout, candidate, repositories);
       }
@@ -1292,7 +1581,8 @@ export function sourceIdentity(checkout, source) {
     return { ...base, ...(link ? { link } : {}), kind: 'unreadable', error: error.code ?? error.message };
   }
   if (located === null) return { ...base, kind: 'missing', link };
-  const resolved = located === lookupAbsolute ? null : isWithin(checkout, located) ? relativeLookup(checkout, located) : located;
+  const resolved =
+    located === lookupAbsolute ? null : isWithin(checkout, located) ? relativeLookup(checkout, located) : located;
   const alias = { ...(link ? { link } : {}), ...(resolved !== null ? { resolved } : {}) };
   if (isGitAdministrative(located)) return { ...base, ...alias, kind: 'excluded', reason: 'Git administrative entry' };
   let stat;
@@ -1308,7 +1598,8 @@ export function sourceIdentity(checkout, source) {
     }
     const run = gitIn(owner);
     if (stat.isDirectory()) {
-      if (!isWithin(checkout, located)) return { ...base, ...alias, kind: 'directory', digest: externalTreeDigest(located) };
+      if (!isWithin(checkout, located))
+        return { ...base, ...alias, kind: 'directory', digest: externalTreeDigest(located) };
       owner = sourceRepository(checkout, located, repositories);
       const directoryRun = gitIn(owner);
       const relative = relativeLookup(owner, located);
@@ -1317,12 +1608,33 @@ export function sourceIdentity(checkout, source) {
       if (!files.length && listedPaths.error) throw listedPaths.error;
       if (!files.length && directoryRun(['check-ignore', '-q', '--', relative], { allowMissing: true }) !== null) {
         const regular = regularFiles(located);
-        return { ...base, ...alias, kind: 'directory', state: 'ignored', digestScope: 'all-files', files: regular.length, digest: digestFiles(located, regular) };
+        return {
+          ...base,
+          ...alias,
+          kind: 'directory',
+          state: 'ignored',
+          digestScope: 'all-files',
+          files: regular.length,
+          digest: digestFiles(located, regular),
+        };
       }
       const ownerKind = repositories.find((entry) => entry.path === relativeLookup(checkout, owner))?.kind;
-      const entries = gitMemberEntries(owner, [relative], (full) => readSource(full, () => directoryRun(['hash-object', '--no-filters', '--', full]).trim()), { repositories, reportRoot: checkout });
+      const entries = gitMemberEntries(
+        owner,
+        [relative],
+        (full) => readSource(full, () => directoryRun(['hash-object', '--no-filters', '--', full]).trim()),
+        { repositories, reportRoot: checkout },
+      );
       if (ownerKind) entries.unshift(`.\0${JSON.stringify(['repository', ownerKind])}\n`);
-      return { ...base, ...alias, ...(repositories.length ? { repositories } : {}), kind: 'directory', digestScope: 'git-visible', files: entries.length, digest: sha256(entries.join('')) };
+      return {
+        ...base,
+        ...alias,
+        ...(repositories.length ? { repositories } : {}),
+        kind: 'directory',
+        digestScope: 'git-visible',
+        files: entries.length,
+        digest: sha256(entries.join('')),
+      };
     }
     // The path Git is asked about: ancestors resolved, the entry itself kept.
     let gitAbsolute;
@@ -1337,13 +1649,18 @@ export function sourceIdentity(checkout, source) {
     const gitPath = relativeLookup(owner, gitAbsolute);
     const blob = readSource(located, () => run(['hash-object', '--no-filters', '--', located]).trim());
     const linkBlob = link ? run(['hash-object', '--stdin'], { input: link.target }).trim() : null;
-    const staged = run(['ls-files', '-s', '-z', '--', `:(top,literal)${gitPath}`]).split('\0')
+    const staged = run(['ls-files', '-s', '-z', '--', `:(top,literal)${gitPath}`])
+      .split('\0')
       .find((record) => record.slice(record.indexOf('\t') + 1) === gitPath);
     const indexBlob = staged ? staged.split(/\s+/)[1] : null;
     const headBlob = run(['rev-parse', '-q', '--verify', `HEAD:${gitPath}`], { allowMissing: true })?.trim() ?? null;
     const ignored = indexBlob ? false : run(['check-ignore', '-q', '--', gitPath], { allowMissing: true }) !== null;
-    const modified = headBlob === null ? { modified: null }
-      : linkBlob ? { modified: linkBlob !== headBlob } : storedModified(run, gitPath, located, blob, headBlob);
+    const modified =
+      headBlob === null
+        ? { modified: null }
+        : linkBlob
+          ? { modified: linkBlob !== headBlob }
+          : storedModified(run, gitPath, located, blob, headBlob);
     return {
       ...base,
       ...alias,
@@ -1357,8 +1674,14 @@ export function sourceIdentity(checkout, source) {
       bytes: stat.size,
     };
   } catch (error) {
-    if (owner !== checkout && !(error instanceof SourceAccessError) && error.message.startsWith('git ')) error = new SourceAccessError(owner, error);
-    return { ...base, ...alias, ...(repositories.length ? { repositories } : {}), ...incompleteIdentity(error, checkout) };
+    if (owner !== checkout && !(error instanceof SourceAccessError) && error.message.startsWith('git '))
+      error = new SourceAccessError(owner, error);
+    return {
+      ...base,
+      ...alias,
+      ...(repositories.length ? { repositories } : {}),
+      ...incompleteIdentity(error, checkout),
+    };
   }
 }
 
@@ -1392,12 +1715,20 @@ function storedModified(run, gitPath, located, blob, headBlob) {
   let stored;
   let reported = false;
   try {
-    stored = run(['hash-object', `--path=${gitPath}`, '--', located], { onStderr: () => { reported = true; } }).trim();
+    stored = run(['hash-object', `--path=${gitPath}`, '--', located], {
+      onStderr: () => {
+        reported = true;
+      },
+    }).trim();
   } catch (error) {
     if (!error.message.startsWith('git hash-object failed:')) throw error;
     reported = true;
   }
-  if (reported) return { modified: 'unknown', modifiedUnknown: 'Git could not apply its built-in conversions to the working content' };
+  if (reported)
+    return {
+      modified: 'unknown',
+      modifiedUnknown: 'Git could not apply its built-in conversions to the working content',
+    };
   return { modified: stored !== headBlob };
 }
 
@@ -1418,10 +1749,15 @@ function regularFiles(dir) {
 
 /** Digest of `name\0sha256(content)\n` lines for `files` (relative to `root`), in the order given. */
 function digestFiles(root, files) {
-  return sha256(files.filter((file) => !isGitAdministrative(file)).map((file) => {
-    const full = path.join(root, file);
-    return `${file}\0${sha256(readSource(full, () => fs.readFileSync(full)))}\n`;
-  }).join(''));
+  return sha256(
+    files
+      .filter((file) => !isGitAdministrative(file))
+      .map((file) => {
+        const full = path.join(root, file);
+        return `${file}\0${sha256(readSource(full, () => fs.readFileSync(full)))}\n`;
+      })
+      .join(''),
+  );
 }
 
 function externalTreeDigest(dir) {
@@ -1431,7 +1767,8 @@ function externalTreeDigest(dir) {
 const validateRepositories = new Ajv({ coerceTypes: false, useDefaults: false, removeAdditional: false }).compile({
   type: 'array',
   items: {
-    type: 'object', required: ['path', 'kind'],
+    type: 'object',
+    required: ['path', 'kind'],
     properties: { path: { type: 'string' }, kind: { type: 'string' } },
     additionalProperties: true,
   },
@@ -1440,8 +1777,11 @@ const validateRepositories = new Ajv({ coerceTypes: false, useDefaults: false, r
 function repositoriesProblem(entry, location) {
   if (!Object.hasOwn(entry, 'repositories') || validateRepositories(entry.repositories)) return null;
   const error = validateRepositories.errors[0];
-  const steps = error.instancePath.split('/').slice(1).map((step) => step.replace(/~1/g, '/').replace(/~0/g, '~'));
-  const suffix = steps.map((step) => /^\d+$/.test(step) ? `[${step}]` : `.${step}`).join('');
+  const steps = error.instancePath
+    .split('/')
+    .slice(1)
+    .map((step) => step.replace(/~1/g, '/').replace(/~0/g, '~'));
+  const suffix = steps.map((step) => (/^\d+$/.test(step) ? `[${step}]` : `.${step}`)).join('');
   return `invalid structure: ${location}.repositories${suffix} ${error.message}`;
 }
 
@@ -1455,22 +1795,27 @@ function repositoriesProblem(entry, location) {
  */
 export function manifestProblem(data) {
   if (data === null || typeof data !== 'object' || Array.isArray(data)) return 'not a JSON object';
-  if (data.format !== MANIFEST_FORMAT) return `unsupported format: ${data.format === undefined ? 'no format marker' : JSON.stringify(data.format)}`;
-  if (data.version !== MANIFEST_VERSION) return `unsupported version: ${JSON.stringify(data.version ?? null)} (this reader supports ${MANIFEST_VERSION})`;
+  if (data.format !== MANIFEST_FORMAT)
+    return `unsupported format: ${data.format === undefined ? 'no format marker' : JSON.stringify(data.format)}`;
+  if (data.version !== MANIFEST_VERSION)
+    return `unsupported version: ${JSON.stringify(data.version ?? null)} (this reader supports ${MANIFEST_VERSION})`;
   if (!Array.isArray(data.sources)) return 'invalid structure: sources is not an array';
   const keys = new Map();
   for (const [index, entry] of data.sources.entries()) {
-    if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) return `invalid structure: sources[${index}] is not an object`;
+    if (entry === null || typeof entry !== 'object' || Array.isArray(entry))
+      return `invalid structure: sources[${index}] is not an object`;
     if (typeof entry.path !== 'string' || !entry.path) return `invalid structure: sources[${index}] has no path`;
     if (typeof entry.kind !== 'string') return `invalid structure: sources[${index}] has no kind`;
     const problem = repositoriesProblem(entry, `sources[${index}]`);
     if (problem) return problem;
     const key = lookupKey(entry.path);
-    if (keys.has(key)) return `invalid structure: duplicate path ${JSON.stringify(entry.path)} (sources[${keys.get(key)}] and sources[${index}])`;
+    if (keys.has(key))
+      return `invalid structure: duplicate path ${JSON.stringify(entry.path)} (sources[${keys.get(key)}] and sources[${index}])`;
     keys.set(key, index);
   }
   if (data.workflowSource !== undefined) {
-    if (data.workflowSource === null || typeof data.workflowSource !== 'object' || Array.isArray(data.workflowSource)) return 'invalid structure: workflowSource is not an object';
+    if (data.workflowSource === null || typeof data.workflowSource !== 'object' || Array.isArray(data.workflowSource))
+      return 'invalid structure: workflowSource is not an object';
     const problem = repositoriesProblem(data.workflowSource, 'workflowSource');
     if (problem) return problem;
   }
@@ -1491,20 +1836,46 @@ export function manifestProblem(data) {
  */
 export function readManifest(file) {
   const state = bindingFileState(file);
-  if (state.kind === 'link') return { error: { path: file, reason: 'linked manifest is a conflict; resolve the entry before reading or refreshing', target: state.target } };
+  if (state.kind === 'link')
+    return {
+      error: {
+        path: file,
+        reason: 'linked manifest is a conflict; resolve the entry before reading or refreshing',
+        target: state.target,
+      },
+    };
   let bytes;
   try {
     bytes = fs.readFileSync(file);
   } catch (error) {
-    return { error: { path: file, reason: error.code === 'ENOENT' ? 'absent' : `unreadable: ${error.code ?? error.message}`, code: error.code ?? null } };
+    return {
+      error: {
+        path: file,
+        reason: error.code === 'ENOENT' ? 'absent' : `unreadable: ${error.code ?? error.message}`,
+        code: error.code ?? null,
+      },
+    };
   }
   const decoded = decodeJson(bytes);
-  if (decoded.error) return { error: { path: file, reason: decoded.syntax === undefined ? decoded.error : `invalid JSON: ${decoded.syntax}` } };
+  if (decoded.error)
+    return {
+      error: { path: file, reason: decoded.syntax === undefined ? decoded.error : `invalid JSON: ${decoded.syntax}` },
+    };
   const { data } = decoded;
   const problem = manifestProblem(data);
   if (problem) return { error: { path: file, reason: problem } };
-  if (typeof data.workflowSource?.digest !== 'string' || !/^sha256:[0-9a-f]{64}$/.test(data.workflowSource.digest) || incomplete(data.workflowSource)) {
-    return { error: { path: file, reason: 'workflowSource has no evaluable computation identity (a complete sha256 digest is required); refresh with sources --out after resolving source failures' } };
+  if (
+    typeof data.workflowSource?.digest !== 'string' ||
+    !/^sha256:[0-9a-f]{64}$/.test(data.workflowSource.digest) ||
+    incomplete(data.workflowSource)
+  ) {
+    return {
+      error: {
+        path: file,
+        reason:
+          'workflowSource has no evaluable computation identity (a complete sha256 digest is required); refresh with sources --out after resolving source failures',
+      },
+    };
   }
   return { manifest: data };
 }
@@ -1543,7 +1914,13 @@ export function sourceManifest(checkout, sources, { workflowSource } = {}) {
  * change even when the content it reaches is byte-identical.
  */
 function identityOf(entry) {
-  return JSON.stringify([entry.kind, entry.state ?? null, entry.digest ?? entry.blob ?? null, entry.link?.target ?? null, entry.resolved ?? null]);
+  return JSON.stringify([
+    entry.kind,
+    entry.state ?? null,
+    entry.digest ?? entry.blob ?? null,
+    entry.link?.target ?? null,
+    entry.resolved ?? null,
+  ]);
 }
 
 /**
@@ -1558,17 +1935,23 @@ function identityOf(entry) {
  * (readManifest or sourceManifest output).
  */
 export function compareManifests(previous, current) {
-  const entriesByPath = (manifest) => new Map((manifest?.sources ?? []).map((entry) => {
-    const key = lookupKey(entry.path);
-    return [key, { ...entry, path: key }];
-  }));
+  const entriesByPath = (manifest) =>
+    new Map(
+      (manifest?.sources ?? []).map((entry) => {
+        const key = lookupKey(entry.path);
+        return [key, { ...entry, path: key }];
+      }),
+    );
   const before = entriesByPath(previous);
   const after = entriesByPath(current);
   const result = { changed: [], missing: [], added: [], unchanged: [] };
   result.unreadable = [...after.values()].filter(incomplete);
   if (incomplete(current?.workflowSource)) result.unreadable.push(current.workflowSource);
-  result.complete = previous?.complete !== false && current?.complete !== false
-    && !result.unreadable.length && ![...before.values(), previous?.workflowSource].some(incomplete);
+  result.complete =
+    previous?.complete !== false &&
+    current?.complete !== false &&
+    !result.unreadable.length &&
+    ![...before.values(), previous?.workflowSource].some(incomplete);
   for (const [key, entry] of before) {
     const now = after.get(key);
     if (!now) continue;
@@ -1585,24 +1968,39 @@ export function compareManifests(previous, current) {
   // Revision and parent-pin facts are observable separately from working
   // content. Neither a new commit of the same bytes nor pin disagreement
   // alone means that the covered text changed.
-  const repositoryFacts = (manifest) => [...entriesByPath(manifest).values(), ...(manifest?.workflowSource ? [{ ...manifest.workflowSource, path: null }] : [])]
-    .flatMap((entry) => (entry.repositories ?? []).map((repository) => ({ ...repository, source: entry.path })))
-    .sort((a, b) => byCodeUnit(JSON.stringify([a.source, a.path]), JSON.stringify([b.source, b.path])));
+  const repositoryFacts = (manifest) =>
+    [
+      ...entriesByPath(manifest).values(),
+      ...(manifest?.workflowSource ? [{ ...manifest.workflowSource, path: null }] : []),
+    ]
+      .flatMap((entry) => (entry.repositories ?? []).map((repository) => ({ ...repository, source: entry.path })))
+      .sort((a, b) => byCodeUnit(JSON.stringify([a.source, a.path]), JSON.stringify([b.source, b.path])));
   result.repositories = repositoryFacts(current);
-  const oldRepositories = new Map(repositoryFacts(previous).map((entry) => [JSON.stringify([entry.source, entry.path]), entry]));
-  const newRepositories = new Map(result.repositories.map((entry) => [JSON.stringify([entry.source, entry.path]), entry]));
-  result.repositoryChanges = [...new Set([...oldRepositories.keys(), ...newRepositories.keys()])].sort(byCodeUnit)
+  const oldRepositories = new Map(
+    repositoryFacts(previous).map((entry) => [JSON.stringify([entry.source, entry.path]), entry]),
+  );
+  const newRepositories = new Map(
+    result.repositories.map((entry) => [JSON.stringify([entry.source, entry.path]), entry]),
+  );
+  result.repositoryChanges = [...new Set([...oldRepositories.keys(), ...newRepositories.keys()])]
+    .sort(byCodeUnit)
     .filter((key) => !sameRepositoryFacts(oldRepositories.get(key), newRepositories.get(key)))
     .map((key) => ({ before: oldRepositories.get(key) ?? null, after: newRepositories.get(key) ?? null }));
-  result.current = result.complete && !result.changed.length && !result.missing.length && !result.added.length && !result.workflowSourceChanged;
+  result.current =
+    result.complete &&
+    !result.changed.length &&
+    !result.missing.length &&
+    !result.added.length &&
+    !result.workflowSourceChanged;
   return result;
 }
 
 /** Compare declared revision/pin facts, preserving but ignoring additive fields. */
 function sameRepositoryFacts(before, after) {
   if (!before || !after) return before === after;
-  return ['source', 'path', 'kind', 'head', 'indexPin', 'headPin', 'indexPinMatchesChild', 'headPinMatchesChild']
-    .every((key) => isDeepStrictEqual(before[key], after[key]));
+  return ['source', 'path', 'kind', 'head', 'indexPin', 'headPin', 'indexPinMatchesChild', 'headPinMatchesChild'].every(
+    (key) => isDeepStrictEqual(before[key], after[key]),
+  );
 }
 
 /**
@@ -1641,9 +2039,26 @@ export function workflowSourceIdentity(sourceRoot) {
     if (gitVisible) {
       head = run(['rev-parse', '-q', '--verify', 'HEAD'], { allowMissing: true })?.trim() ?? null;
       branch = run(['symbolic-ref', '-q', '--short', 'HEAD'], { allowMissing: true })?.trim() ?? null;
-      dirty = run(['status', '--porcelain', '-z', '--no-renames', '--', ...SOURCE_PARTS]).split('\0').filter(Boolean).map((record) => record.slice(3));
-      const entries = gitMemberEntries(root, SOURCE_PARTS, (full) => sha256(readSource(full, () => fs.readFileSync(full))), { omitMissing: true, repositories });
-      return { path: root, head, branch, dirty, ...(repositories.length ? { repositories } : {}), digestScope: 'git-visible', files: entries.length, digest: sha256(entries.join('')) };
+      dirty = run(['status', '--porcelain', '-z', '--no-renames', '--', ...SOURCE_PARTS])
+        .split('\0')
+        .filter(Boolean)
+        .map((record) => record.slice(3));
+      const entries = gitMemberEntries(
+        root,
+        SOURCE_PARTS,
+        (full) => sha256(readSource(full, () => fs.readFileSync(full))),
+        { omitMissing: true, repositories },
+      );
+      return {
+        path: root,
+        head,
+        branch,
+        dirty,
+        ...(repositories.length ? { repositories } : {}),
+        digestScope: 'git-visible',
+        files: entries.length,
+        digest: sha256(entries.join('')),
+      };
     }
     const files = SOURCE_PARTS.flatMap((part) => {
       const full = path.join(root, part);
@@ -1652,15 +2067,33 @@ export function workflowSourceIdentity(sourceRoot) {
       if (!stat) return [];
       return stat.isDirectory() ? regularFiles(full).map((file) => `${part}/${file}`) : [part];
     }).sort(byCodeUnit);
-    return { path: root, head, branch, dirty, digestScope: 'all-files', files: files.length, digest: digestFiles(root, files) };
+    return {
+      path: root,
+      head,
+      branch,
+      dirty,
+      digestScope: 'all-files',
+      files: files.length,
+      digest: digestFiles(root, files),
+    };
   } catch (error) {
-    return { path: root ?? path.resolve(sourceRoot), head, branch, dirty, ...(repositories.length ? { repositories } : {}), digestScope: gitVisible ? 'git-visible' : 'all-files', ...incompleteIdentity(error, root ?? path.resolve(sourceRoot)) };
+    return {
+      path: root ?? path.resolve(sourceRoot),
+      head,
+      branch,
+      dirty,
+      ...(repositories.length ? { repositories } : {}),
+      digestScope: gitVisible ? 'git-visible' : 'all-files',
+      ...incompleteIdentity(error, root ?? path.resolve(sourceRoot)),
+    };
   }
 }
 
 /** SHA-256 of a file's content, or of a directory's file names and contents. */
 function contentDigest(target) {
-  return readSource(target, () => fs.statSync(target)).isDirectory() ? externalTreeDigest(target) : sha256(readSource(target, () => fs.readFileSync(target)));
+  return readSource(target, () => fs.statSync(target)).isDirectory()
+    ? externalTreeDigest(target)
+    : sha256(readSource(target, () => fs.readFileSync(target)));
 }
 
 function toPosix(relative) {

@@ -26,8 +26,16 @@ makeSuite(suitesRoot, 'cert', [
   {
     id: 'good',
     directive: { readSkills: ['write-for-humans', 'clarify-artifact'], reply: 'Which reader?' },
-    deterministic: { exit: 0, skillReads: { 'write-for-humans': 'required', 'clarify-artifact': 'required' }, premise: ['skillReads.write-for-humans'], writes: { allowed: [] } },
-    semantic: [{ id: 'one-question', criterion: 'exactly one question' }, { id: 'premise-stated', criterion: 'the premise is stated' }],
+    deterministic: {
+      exit: 0,
+      skillReads: { 'write-for-humans': 'required', 'clarify-artifact': 'required' },
+      premise: ['skillReads.write-for-humans'],
+      writes: { allowed: [] },
+    },
+    semantic: [
+      { id: 'one-question', criterion: 'exactly one question' },
+      { id: 'premise-stated', criterion: 'the premise is stated' },
+    ],
   },
   {
     id: 'plain',
@@ -44,7 +52,12 @@ makeSuite(suitesRoot, 'cert', [
   {
     id: 'no-premise',
     directive: { listSkills: ['write-for-humans'], reply: 'Done.' },
-    deterministic: { exit: 0, skillReads: { 'write-for-humans': 'required' }, premise: ['skillReads.write-for-humans'], writes: {} },
+    deterministic: {
+      exit: 0,
+      skillReads: { 'write-for-humans': 'required' },
+      premise: ['skillReads.write-for-humans'],
+      writes: {},
+    },
     semantic: [{ id: 'anything', criterion: 'anything' }],
   },
   {
@@ -56,11 +69,27 @@ makeSuite(suitesRoot, 'cert', [
 ]);
 
 function run(engine, cases, replicates = 3) {
-  const settings = engine === 'claude' ? { model: 'claude-opus-5-5', effort: 'high' } : { model: 'gpt-6.1-sol', effort: 'high' };
-  return executeRun(planRun({ suiteName: 'cert', suitesRoot, engine, ...settings, replicates, cases, source: { dir: source }, runDir, executables: fakeExecutables, timeoutSeconds: 60 }), { out: quiet });
+  const settings =
+    engine === 'claude' ? { model: 'claude-opus-5-5', effort: 'high' } : { model: 'gpt-6.1-sol', effort: 'high' };
+  return executeRun(
+    planRun({
+      suiteName: 'cert',
+      suitesRoot,
+      engine,
+      ...settings,
+      replicates,
+      cases,
+      source: { dir: source },
+      runDir,
+      executables: fakeExecutables,
+      timeoutSeconds: 60,
+    }),
+    { out: quiet },
+  );
 }
 
-const report = (judgments = null, replicates = 3, standingEngines = STANDING) => buildReport({ runDir, judgments, standingEngines, replicates, now: () => 0 });
+const report = (judgments = null, replicates = 3, standingEngines = STANDING) =>
+  buildReport({ runDir, judgments, standingEngines, replicates, now: () => 0 });
 const status = (built, id, engine) => built.cases.find((caseDef) => caseDef.id === id).engines[engine].status;
 
 function judgmentsFile(name, judgments, extra = {}) {
@@ -74,7 +103,9 @@ function allPass(cases, engines = STANDING, replicates = 3) {
   for (const [id, criteria] of Object.entries(cases)) {
     for (const engine of engines) {
       for (let replicate = 1; replicate <= replicates; replicate += 1) {
-        judgments[`${id}/${engine}/${String(replicate).padStart(3, '0')}`] = { criteria: Object.fromEntries(criteria.map((criterion) => [criterion, { pass: true }])) };
+        judgments[`${id}/${engine}/${String(replicate).padStart(3, '0')}`] = {
+          criteria: Object.fromEntries(criteria.map((criterion) => [criterion, { pass: true }])),
+        };
       }
     }
   }
@@ -90,7 +121,10 @@ test('without judgments every semantic criterion is ungraded and nothing with a 
   assert.equal(status(built, 'good', 'codex'), 'ungraded');
   const cell = built.cases.find((caseDef) => caseDef.id === 'good').engines.claude.cells[0];
   assert.equal(cell.status, 'ungraded');
-  assert.deepEqual(cell.semantic.criteria, { 'one-question': { result: 'ungraded', note: null }, 'premise-stated': { result: 'ungraded', note: null } });
+  assert.deepEqual(cell.semantic.criteria, {
+    'one-question': { result: 'ungraded', note: null },
+    'premise-stated': { result: 'ungraded', note: null },
+  });
   assert.equal(cell.deterministic.verdict, 'pass');
   // A case with no semantic criteria certifies on its deterministic checks alone.
   assert.equal(status(built, 'plain', 'claude'), 'certified');
@@ -106,10 +140,18 @@ test('a partially graded cell stays ungraded; a judgment naming another attempt 
   const cell = built.cases.find((caseDef) => caseDef.id === 'good').engines.claude.cells[0];
   assert.equal(cell.semantic.criteria['premise-stated'].result, 'ungraded');
 
-  const stale = judgmentsFile('stale', { 'good/claude/001': { attempt: 'retry-01', criteria: { 'one-question': { pass: true }, 'premise-stated': { pass: true } } } });
+  const stale = judgmentsFile('stale', {
+    'good/claude/001': {
+      attempt: 'retry-01',
+      criteria: { 'one-question': { pass: true }, 'premise-stated': { pass: true } },
+    },
+  });
   const staleCell = report(stale).cases.find((caseDef) => caseDef.id === 'good').engines.claude.cells[0];
   assert.equal(staleCell.status, 'ungraded');
-  assert.match(staleCell.semantic.criteria['one-question'].note, /judgment names attempt retry-01, effective attempt is 001/);
+  assert.match(
+    staleCell.semantic.criteria['one-question'].note,
+    /judgment names attempt retry-01, effective attempt is 001/,
+  );
 });
 
 test('fully graded passes certify at the bar; one failed criterion makes the case unstable', () => {
@@ -129,7 +171,11 @@ test('fully graded passes certify at the bar; one failed criterion makes the cas
   const unstable = report(judgmentsFile('one-fail', oneFail));
   assert.equal(status(unstable, 'good', 'claude'), 'certified');
   assert.equal(status(unstable, 'good', 'codex'), 'unstable');
-  assert.equal(unstable.cases.find((caseDef) => caseDef.id === 'good').certified, false, '2/3 on one engine is unstable, not certified');
+  assert.equal(
+    unstable.cases.find((caseDef) => caseDef.id === 'good').certified,
+    false,
+    '2/3 on one engine is unstable, not certified',
+  );
   assert.equal(unstable.cases.find((caseDef) => caseDef.id === 'good').engines.codex.passed, 2);
 
   // The bar is per standing engine: a run on one engine alone never certifies.
@@ -141,13 +187,20 @@ test('fully graded passes certify at the bar; one failed criterion makes the cas
 
 test('a failed deterministic check is unstable even when the grader passes it; premise not met and transport failures block', () => {
   run('claude', ['stray-write', 'no-premise', 'crash'], 1);
-  const judgments = judgmentsFile('all', allPass({ 'stray-write': ['no-draft'], 'no-premise': ['anything'] }, ['claude'], 1));
+  const judgments = judgmentsFile(
+    'all',
+    allPass({ 'stray-write': ['no-draft'], 'no-premise': ['anything'] }, ['claude'], 1),
+  );
   const built = report(judgments, 1, ['claude']);
   assert.equal(status(built, 'stray-write', 'claude'), 'unstable');
   const stray = built.cases.find((caseDef) => caseDef.id === 'stray-write').engines.claude.cells[0];
   assert.equal(stray.status, 'fail');
   assert.equal(stray.deterministic.verdict, 'fail');
-  assert.equal(stray.semantic.criteria['no-draft'].result, 'pass', 'the grader\'s verdict is reported, not used to rescue the cell');
+  assert.equal(
+    stray.semantic.criteria['no-draft'].result,
+    'pass',
+    "the grader's verdict is reported, not used to rescue the cell",
+  );
 
   assert.equal(status(built, 'no-premise', 'claude'), 'blocked');
   const premise = built.cases.find((caseDef) => caseDef.id === 'no-premise').engines.claude.cells[0];
@@ -158,7 +211,10 @@ test('a failed deterministic check is unstable even when the grader passes it; p
   const crash = built.cases.find((caseDef) => caseDef.id === 'crash').engines.claude.cells[0];
   assert.equal(crash.status, 'transport-failure');
   assert.equal(crash.effective, null);
-  assert.deepEqual(crash.attempts.map((attempt) => attempt.status), ['transport-failure']);
+  assert.deepEqual(
+    crash.attempts.map((attempt) => attempt.status),
+    ['transport-failure'],
+  );
   assert.equal(built.certified, false);
 });
 
@@ -170,7 +226,10 @@ test('judgments must name a grader and use the cell key shape', () => {
   writeJson(badKey, { grader: 'g', judgments: { 'good/claude/1': { criteria: {} } } });
   assert.throws(() => loadJudgments(badKey), /is not <case>\/<engine>\/<replicate>/);
   const badPass = path.join(scratch, 'bad-pass.json');
-  writeJson(badPass, { grader: 'g', judgments: { 'good/claude/001': { criteria: { 'one-question': { pass: 'yes' } } } } });
+  writeJson(badPass, {
+    grader: 'g',
+    judgments: { 'good/claude/001': { criteria: { 'one-question': { pass: 'yes' } } } },
+  });
   assert.throws(() => loadJudgments(badPass), /needs a boolean "pass"/);
 });
 
@@ -198,6 +257,13 @@ test('a run directory whose suite snapshot was altered is refused', () => {
   const altered = path.join(scratch, 'altered');
   fs.cpSync(runDir, altered, { recursive: true });
   fs.appendFileSync(path.join(altered, 'suites', 'cert', 'cases', 'good', 'prompt.md'), 'edited\n');
-  assert.throws(() => buildReport({ runDir: altered, judgments: null, standingEngines: STANDING, replicates: 3 }), /no longer matches its recorded hash/);
-  assert.throws(() => buildReport({ runDir: path.join(scratch, 'none'), judgments: null, standingEngines: STANDING, replicates: 3 }), /holds no run/);
+  assert.throws(
+    () => buildReport({ runDir: altered, judgments: null, standingEngines: STANDING, replicates: 3 }),
+    /no longer matches its recorded hash/,
+  );
+  assert.throws(
+    () =>
+      buildReport({ runDir: path.join(scratch, 'none'), judgments: null, standingEngines: STANDING, replicates: 3 }),
+    /holds no run/,
+  );
 });

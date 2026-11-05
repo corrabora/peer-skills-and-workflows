@@ -15,8 +15,12 @@ const selected = (sets) => sets === undefined || sets.includes('workflow');
 
 function read(file) {
   let stat;
-  try { stat = fs.lstatSync(file); }
-  catch (error) { if (error.code === 'ENOENT') return { file, bytes: null, value: {} }; throw error; }
+  try {
+    stat = fs.lstatSync(file);
+  } catch (error) {
+    if (error.code === 'ENOENT') return { file, bytes: null, value: {} };
+    throw error;
+  }
   if (!stat.isFile()) throw new Error(`${file}: expected a regular file; links and other entries are left alone`);
   const bytes = fs.readFileSync(file, 'utf8');
   const value = JSON.parse(bytes);
@@ -39,7 +43,8 @@ function write(snapshot, value) {
   try {
     fs.writeFileSync(temp, encode(value), { flag: 'wx', mode: snapshot.mode ?? 0o600 });
     unchanged(snapshot);
-    if (snapshot.bytes === null) fs.linkSync(temp, snapshot.file); // refuses a concurrent creation
+    if (snapshot.bytes === null)
+      fs.linkSync(temp, snapshot.file); // refuses a concurrent creation
     else fs.renameSync(temp, snapshot.file);
   } finally {
     if (fs.existsSync(temp)) fs.unlinkSync(temp);
@@ -50,7 +55,12 @@ function validateConfig(snapshot) {
   const { value, file } = snapshot;
   if (value.hooks !== undefined && !object(value.hooks)) throw new Error(`${file}: hooks must be an object`);
   for (const [event, groups] of Object.entries(value.hooks ?? {})) {
-    if (!Array.isArray(groups) || groups.some((group) => !object(group) || !Array.isArray(group.hooks) || group.hooks.some((handler) => !object(handler)))) {
+    if (
+      !Array.isArray(groups) ||
+      groups.some(
+        (group) => !object(group) || !Array.isArray(group.hooks) || group.hooks.some((handler) => !object(handler)),
+      )
+    ) {
       throw new Error(`${file}: malformed ${event} hook groups; settings left alone`);
     }
   }
@@ -59,9 +69,15 @@ function validateConfig(snapshot) {
 function readReceipt(snapshot, engine, platform) {
   if (snapshot.bytes === null) return null;
   const r = snapshot.value;
-  if (r.version !== 1 || r.engine !== engine || typeof r.sourceRoot !== 'string'
-      || !path.isAbsolute(r.sourceRoot) || typeof r.executable !== 'string'
-      || !path.isAbsolute(r.executable) || !object(r.ownedHooks)) {
+  if (
+    r.version !== 1 ||
+    r.engine !== engine ||
+    typeof r.sourceRoot !== 'string' ||
+    !path.isAbsolute(r.sourceRoot) ||
+    typeof r.executable !== 'string' ||
+    !path.isAbsolute(r.executable) ||
+    !object(r.ownedHooks)
+  ) {
     throw new Error(`${snapshot.file}: unsupported or malformed ownership receipt; preserved`);
   }
   validateConfig({ file: snapshot.file, value: { hooks: r.ownedHooks } });
@@ -74,7 +90,9 @@ function readReceipt(snapshot, engine, platform) {
   return r;
 }
 
-function groupsFor(config, event) { return config.hooks?.[event] ?? []; }
+function groupsFor(config, event) {
+  return config.hooks?.[event] ?? [];
+}
 
 function matches(config, event, group) {
   return groupsFor(config, event).filter((entry) => isDeepStrictEqual(entry, group)).length;
@@ -91,12 +109,17 @@ function removeOwned(config, ownedHooks) {
   for (const [event, groups] of Object.entries(ownedHooks)) {
     for (const group of groups) {
       const count = matches(config, event, group);
-      if (count > 1) throw new Error(`${event}: duplicate owned hook definitions; reconcile before updating or removing`);
+      if (count > 1)
+        throw new Error(`${event}: duplicate owned hook definitions; reconcile before updating or removing`);
       if (count === 0) {
-        if (altered(config, event, group)) throw new Error(`${event}: owned hook definition was modified; preserved for review`);
+        if (altered(config, event, group))
+          throw new Error(`${event}: owned hook definition was modified; preserved for review`);
         continue; // deleted by the operator, or replaced with a different command
       }
-      config.hooks[event].splice(config.hooks[event].findIndex((g) => isDeepStrictEqual(g, group)), 1);
+      config.hooks[event].splice(
+        config.hooks[event].findIndex((g) => isDeepStrictEqual(g, group)),
+        1,
+      );
       if (!config.hooks[event].length) delete config.hooks[event];
     }
   }
@@ -112,13 +135,20 @@ function one({ action, sourceRoot, scope, skillScope, executable, platform, out 
     const receipt = readReceipt(receiptSnapshot, scope.engine, platform);
     return { config, receiptSnapshot, receipt };
   };
-  const expected = hookConfig(scope.engine, path.join(sourceRoot, 'tools', 'successor.mjs'), executable, platform).hooks;
+  const expected = hookConfig(
+    scope.engine,
+    path.join(sourceRoot, 'tools', 'successor.mjs'),
+    executable,
+    platform,
+  ).hooks;
   if (action === 'check') {
     const { config, receipt } = inspect();
     for (const [event, [group]] of Object.entries(expected)) {
-      if (matches(config.value, event, group) !== 1) throw new Error(`${event}: missing, changed or duplicate required hook in ${scope.file}`);
+      if (matches(config.value, event, group) !== 1)
+        throw new Error(`${event}: missing, changed or duplicate required hook in ${scope.file}`);
     }
-    if (receipt && receipt.sourceRoot !== sourceRoot) throw new Error(`${receiptFile}: hooks belong to ${receipt.sourceRoot}`);
+    if (receipt && receipt.sourceRoot !== sourceRoot)
+      throw new Error(`${receiptFile}: hooks belong to ${receipt.sourceRoot}`);
     out.info(`hooks ok ${scope.file} (definitions only; host trust and delivery require verification)`);
     return;
   }
@@ -129,7 +159,10 @@ function one({ action, sourceRoot, scope, skillScope, executable, platform, out 
     out.info(`hooks kept ${scope.file} (no installer-owned entries)`);
     return;
   }
-  if (action === 'link' && !isOwnedLink(path.join(skillScope.dir, 'successor'), path.join(sourceRoot, 'skills', 'successor'), platform)) {
+  if (
+    action === 'link' &&
+    !isOwnedLink(path.join(skillScope.dir, 'successor'), path.join(sourceRoot, 'skills', 'successor'), platform)
+  ) {
     throw new Error(`successor is not this checkout's installed link in ${skillScope.dir}; hooks left alone`);
   }
   fs.mkdirSync(path.dirname(scope.file), { recursive: true });
@@ -174,7 +207,8 @@ function one({ action, sourceRoot, scope, skillScope, executable, platform, out 
         if (retainedOwned[event]) ownedHooks[event] = [group];
         continue; // pre-existing matching hook: use, but do not own or remove
       }
-      if (altered(updated, event, group)) throw new Error(`${event}: conflicting definition of the successor command in ${scope.file}; preserved`);
+      if (altered(updated, event, group))
+        throw new Error(`${event}: conflicting definition of the successor command in ${scope.file}; preserved`);
       updated.hooks ??= {};
       updated.hooks[event] ??= [];
       updated.hooks[event].push(group);
@@ -185,7 +219,10 @@ function one({ action, sourceRoot, scope, skillScope, executable, platform, out 
     // unrecorded entries as pre-existing rather than claiming their ownership.
     write(receiptSnapshot, { version: 1, engine: scope.engine, sourceRoot, executable, ownedHooks });
     out.info(`hooks installed ${scope.file} (SessionStart, UserPromptSubmit, Stop)`);
-    if (scope.engine === 'codex') out.info('hooks review: open /hooks in Codex and trust each new or changed definition; the installer never changes trust records.');
+    if (scope.engine === 'codex')
+      out.info(
+        'hooks review: open /hooks in Codex and trust each new or changed definition; the installer never changes trust records.',
+      );
   } finally {
     fs.closeSync(fd);
     fs.unlinkSync(lock);
@@ -199,7 +236,15 @@ export function supportHooks({ action, sourceRoot, scopes, sets, host, out, exec
   let ok = true;
   for (const scope of supportHookScopes(host)) {
     try {
-      one({ action, sourceRoot, scope, skillScope: scopes.find((s) => s.engine === scope.engine), executable, platform: host.platform, out });
+      one({
+        action,
+        sourceRoot,
+        scope,
+        skillScope: scopes.find((s) => s.engine === scope.engine),
+        executable,
+        platform: host.platform,
+        out,
+      });
     } catch (error) {
       out.error(`hooks FAIL ${scope.file}: ${error.message}`);
       ok = false;

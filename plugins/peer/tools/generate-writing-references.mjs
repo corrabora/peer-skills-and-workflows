@@ -3,7 +3,8 @@ import { sourceRoot, terminal as out, usage } from './lib/cli.mjs';
 import { checkWritingReferences, generateWritingReferences } from './lib/writing-references.mjs';
 
 const args = process.argv.slice(2);
-if (args.length > 1 || (args.length === 1 && args[0] !== '--check')) usage('node tools/generate-writing-references.mjs [--check]');
+if (args.length > 1 || (args.length === 1 && args[0] !== '--check'))
+  usage('node tools/generate-writing-references.mjs [--check]');
 try {
   if (args[0] === '--check') {
     if (!checkWritingReferences({ sourceRoot, out })) process.exitCode = 1;

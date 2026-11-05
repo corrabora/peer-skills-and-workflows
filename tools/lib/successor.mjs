@@ -5,8 +5,25 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { canonicalLocation, hostContext, isWithin, LOCAL_DIRECTORY, localDirectory, machineBase } from './paths.mjs';
-import { assessSuccession, establishLog, locateLog, mergeObservation, observationFor, readCounts, readSessionLog, writeCounts } from './succession.mjs';
-import { amendTransferSources, captureSources, committedAmendment, freezeSources, reconcileSource, verifyFrozenSources, verifyCurrentSource } from './successor-instructions.mjs';
+import {
+  assessSuccession,
+  establishLog,
+  locateLog,
+  mergeObservation,
+  observationFor,
+  readCounts,
+  readSessionLog,
+  writeCounts,
+} from './succession.mjs';
+import {
+  amendTransferSources,
+  captureSources,
+  committedAmendment,
+  freezeSources,
+  reconcileSource,
+  verifyFrozenSources,
+  verifyCurrentSource,
+} from './successor-instructions.mjs';
 import { cancelledTitle, retainRecovery, verifyRecoveryRetry } from './successor-recovery.mjs';
 
 const FORMAT = 'agent-workflow succession chain';
@@ -14,17 +31,26 @@ const STATES = ['active', 'transferring', 'disabled', 'complete'];
 const ID = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$/;
 const text = (v) => typeof v === 'string' && v.trim().length > 0;
 const object = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
-const assert = (yes, message) => { if (!yes) throw new Error(message); };
+const assert = (yes, message) => {
+  if (!yes) throw new Error(message);
+};
 const now = () => new Date().toISOString();
 const uuid = () => crypto.randomUUID();
 export const controlFile = (root) => path.join(root, 'state.json');
 export function limits(compactions = 3, turns = 40) {
-  for (const n of [compactions, turns]) assert(Number.isSafeInteger(n) && n > 0, 'thresholds must be positive safe integers');
+  for (const n of [compactions, turns])
+    assert(Number.isSafeInteger(n) && n > 0, 'thresholds must be positive safe integers');
   return { 'compaction-threshold': compactions, 'turn-threshold': turns };
 }
 function identity(v) {
-  return object(v) && ['claude', 'codex'].includes(v.engine) && text(v.session) && ID.test(v.session)
-    && typeof v.log === 'string' && path.isAbsolute(v.log);
+  return (
+    object(v) &&
+    ['claude', 'codex'].includes(v.engine) &&
+    text(v.session) &&
+    ID.test(v.session) &&
+    typeof v.log === 'string' &&
+    path.isAbsolute(v.log)
+  );
 }
 function regular(file) {
   assert(fs.lstatSync(file).isFile(), `${file} must be a regular file, not a link`);
@@ -36,105 +62,214 @@ function atomic(file, value) {
   try {
     fs.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
     fs.renameSync(tmp, file);
-  } finally { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); }
+  } finally {
+    if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+  }
 }
 export function readChain(root) {
   const file = controlFile(root);
   let s;
-  try { s = JSON.parse(regular(file)); } catch (e) { throw new Error(`cannot read ${file}: ${e.message}; preserve and repair the record`); }
+  try {
+    s = JSON.parse(regular(file));
+  } catch (e) {
+    throw new Error(`cannot read ${file}: ${e.message}; preserve and repair the record`);
+  }
   assert(object(s) && s.format === FORMAT && s.version === 1, `${file}: unsupported succession format/version`);
-  assert(text(s.id) && ID.test(s.id) && text(s.task) && !/[\r\n\x00-\x1f]/.test(s.task), `${file}: invalid chain identity/task`);
+  assert(
+    text(s.id) && ID.test(s.id) && text(s.task) && !/[\r\n\x00-\x1f]/.test(s.task),
+    `${file}: invalid chain identity/task`,
+  );
   assert(s.root === fs.realpathSync(root) && path.isAbsolute(s.workspace), `${file}: root/workspace identity mismatch`);
-  assert(STATES.includes(s.status) && Number.isSafeInteger(s.generation) && s.generation >= 1, `${file}: invalid lifecycle`);
-  assert(identity(s.owner) && Array.isArray(s.retired) && s.retired.every(identity), `${file}: invalid session identity`);
+  assert(
+    STATES.includes(s.status) && Number.isSafeInteger(s.generation) && s.generation >= 1,
+    `${file}: invalid lifecycle`,
+  );
+  assert(
+    identity(s.owner) && Array.isArray(s.retired) && s.retired.every(identity),
+    `${file}: invalid session identity`,
+  );
   assert(text(s.createdAt) && text(s.updatedAt) && object(s.thresholds), `${file}: missing timestamps/thresholds`);
-  assert(Object.hasOwn(s.thresholds, 'compaction-threshold') && Object.hasOwn(s.thresholds, 'turn-threshold'), `${file}: missing threshold values`);
+  assert(
+    Object.hasOwn(s.thresholds, 'compaction-threshold') && Object.hasOwn(s.thresholds, 'turn-threshold'),
+    `${file}: missing threshold values`,
+  );
   limits(s.thresholds['compaction-threshold'], s.thresholds['turn-threshold']);
   assert(typeof s.counts === 'string' && path.isAbsolute(s.counts), `${file}: invalid counts path`);
-  const allowedCounts = s.runRoot ? path.join(s.runRoot, 'control', 'coordinator-counts.json') : path.join(s.root, 'counts.json');
+  const allowedCounts = s.runRoot
+    ? path.join(s.runRoot, 'control', 'coordinator-counts.json')
+    : path.join(s.root, 'counts.json');
   assert(s.counts === allowedCounts, `${file}: unexpected counts path`);
-  assert(s.runRoot === null || (path.isAbsolute(s.runRoot) && s.root === path.join(s.runRoot, 'control', 'successor')), `${file}: invalid Run root`);
+  assert(
+    s.runRoot === null || (path.isAbsolute(s.runRoot) && s.root === path.join(s.runRoot, 'control', 'successor')),
+    `${file}: invalid Run root`,
+  );
   if (s.transfer !== null) {
     const t = s.transfer;
-    assert(object(t) && text(t.nonce) && ID.test(t.nonce) && ['prepared', 'yielded', 'confirmed', 'cancelled'].includes(t.phase), `${file}: invalid transfer`);
-    assert(s.status === 'transferring' && t.generation === s.generation + 1 && text(t.handoff), `${file}: transfer/lifecycle mismatch`);
+    assert(
+      object(t) &&
+        text(t.nonce) &&
+        ID.test(t.nonce) &&
+        ['prepared', 'yielded', 'confirmed', 'cancelled'].includes(t.phase),
+      `${file}: invalid transfer`,
+    );
+    assert(
+      s.status === 'transferring' && t.generation === s.generation + 1 && text(t.handoff),
+      `${file}: transfer/lifecycle mismatch`,
+    );
     assert(t.handoff === path.join(s.root, 'handoffs', t.nonce, 'handoff.md'), `${file}: invalid handoff path`);
-    assert(t.phase !== 'confirmed' || (identity(t.successor) && t.successor.session !== s.owner.session && text(t.confirmation)), `${file}: invalid confirmation`);
+    assert(
+      t.phase !== 'confirmed' ||
+        (identity(t.successor) && t.successor.session !== s.owner.session && text(t.confirmation)),
+      `${file}: invalid confirmation`,
+    );
     const revision = t.revision === undefined ? 0 : t.revision;
     const amendments = t.amendments === undefined ? [] : t.amendments;
-    assert(Number.isSafeInteger(revision) && revision >= 0 && Array.isArray(amendments)
-      && amendments.length === revision, `${file}: invalid transfer revision history`);
+    assert(
+      Number.isSafeInteger(revision) && revision >= 0 && Array.isArray(amendments) && amendments.length === revision,
+      `${file}: invalid transfer revision history`,
+    );
     for (const [i, amendment] of amendments.entries()) {
       assert(object(amendment) && amendment.revision === i + 1, `${file}: invalid amendment revision`);
     }
     const acknowledged = t.acknowledgedRevision === undefined ? 0 : t.acknowledgedRevision;
-    assert(Number.isSafeInteger(acknowledged) && acknowledged >= 0 && acknowledged <= revision
-      && (t.acknowledgedRevision === undefined || t.phase === 'confirmed'), `${file}: invalid acknowledged revision`);
+    assert(
+      Number.isSafeInteger(acknowledged) &&
+        acknowledged >= 0 &&
+        acknowledged <= revision &&
+        (t.acknowledgedRevision === undefined || t.phase === 'confirmed'),
+      `${file}: invalid acknowledged revision`,
+    );
     if (t.confirmations !== undefined) {
-      assert(t.phase === 'confirmed' && Array.isArray(t.confirmations) && t.confirmations.length > 0,
-        `${file}: invalid confirmation history`);
+      assert(
+        t.phase === 'confirmed' && Array.isArray(t.confirmations) && t.confirmations.length > 0,
+        `${file}: invalid confirmation history`,
+      );
       let prior = -1;
       for (const [i, confirmation] of t.confirmations.entries()) {
-        assert(object(confirmation) && Number.isSafeInteger(confirmation.revision) && confirmation.revision > prior
-          && confirmation.revision <= acknowledged && /^[a-f0-9]{64}$/.test(confirmation.sha256)
-          && confirmation.file === (i === 0 ? t.confirmation
-            : path.join(path.dirname(t.handoff), 'revisions', String(confirmation.revision), 'confirmation.md')),
-        `${file}: invalid confirmation revision history`);
+        assert(
+          object(confirmation) &&
+            Number.isSafeInteger(confirmation.revision) &&
+            confirmation.revision > prior &&
+            confirmation.revision <= acknowledged &&
+            /^[a-f0-9]{64}$/.test(confirmation.sha256) &&
+            confirmation.file ===
+              (i === 0
+                ? t.confirmation
+                : path.join(path.dirname(t.handoff), 'revisions', String(confirmation.revision), 'confirmation.md')),
+          `${file}: invalid confirmation revision history`,
+        );
         prior = confirmation.revision;
       }
-      assert(prior === acknowledged && t.confirmations[0].file === path.join(path.dirname(t.handoff), 'confirmation.md')
-        && (!t.confirmationSha256 || t.confirmations[0].sha256 === t.confirmationSha256),
-      `${file}: confirmation history differs from acknowledgment`);
+      assert(
+        prior === acknowledged &&
+          t.confirmations[0].file === path.join(path.dirname(t.handoff), 'confirmation.md') &&
+          (!t.confirmationSha256 || t.confirmations[0].sha256 === t.confirmationSha256),
+        `${file}: confirmation history differs from acknowledgment`,
+      );
     }
-    assert(t.phase !== 'cancelled' || (t.cancellation?.action === 'cancel-transfer' && t.cancellation.nonce === t.nonce
-      && s.recoveries?.some((r) => r.record?.sha256 === t.cancellation.record?.sha256)), `${file}: missing cancellation evidence`);
+    assert(
+      t.phase !== 'cancelled' ||
+        (t.cancellation?.action === 'cancel-transfer' &&
+          t.cancellation.nonce === t.nonce &&
+          s.recoveries?.some((r) => r.record?.sha256 === t.cancellation.record?.sha256)),
+      `${file}: missing cancellation evidence`,
+    );
   } else assert(s.status !== 'transferring', `${file}: missing transfer`);
-  if (s.recoveries !== undefined) assert(Array.isArray(s.recoveries) && s.recoveries.every((r) => object(r)
-    && ['cancel-transfer', 'resume-cancelled', 'finish-transfer'].includes(r.action) && text(r.nonce) && ID.test(r.nonce)
-    && Number.isSafeInteger(r.generation) && r.generation >= 1 && r.generation <= s.generation
-    && identity(r.predecessor) && text(r.at) && /^[a-f0-9]{64}$/.test(r.record?.sha256)
-    && r.record.file === path.join(s.root, 'recovery', `${r.record.sha256}.json`)
-    && Number.isSafeInteger(r.record.bytes) && r.record.bytes > 0), `${file}: invalid recovery history`);
+  if (s.recoveries !== undefined)
+    assert(
+      Array.isArray(s.recoveries) &&
+        s.recoveries.every(
+          (r) =>
+            object(r) &&
+            ['cancel-transfer', 'resume-cancelled', 'finish-transfer'].includes(r.action) &&
+            text(r.nonce) &&
+            ID.test(r.nonce) &&
+            Number.isSafeInteger(r.generation) &&
+            r.generation >= 1 &&
+            r.generation <= s.generation &&
+            identity(r.predecessor) &&
+            text(r.at) &&
+            /^[a-f0-9]{64}$/.test(r.record?.sha256) &&
+            r.record.file === path.join(s.root, 'recovery', `${r.record.sha256}.json`) &&
+            Number.isSafeInteger(r.record.bytes) &&
+            r.record.bytes > 0,
+        ),
+      `${file}: invalid recovery history`,
+    );
   if (s.lastRetirement !== undefined) {
     const r = s.lastRetirement;
-    assert(object(r) && text(r.nonce) && ID.test(r.nonce) && r.generation === s.generation && r.generation >= 2,
-      `${file}: invalid committed retirement`);
-    assert(identity(r.predecessor) && identity(r.successor) && matches(r.successor, s.owner)
-      && !matches(r.predecessor, r.successor) && s.retired.some((v) => matches(v, r.predecessor)),
-    `${file}: retirement/owner mismatch`);
+    assert(
+      object(r) && text(r.nonce) && ID.test(r.nonce) && r.generation === s.generation && r.generation >= 2,
+      `${file}: invalid committed retirement`,
+    );
+    assert(
+      identity(r.predecessor) &&
+        identity(r.successor) &&
+        matches(r.successor, s.owner) &&
+        !matches(r.predecessor, r.successor) &&
+        s.retired.some((v) => matches(v, r.predecessor)),
+      `${file}: retirement/owner mismatch`,
+    );
     const retiredTitle = titles({ ...s, generation: r.generation - 1 }).retired;
     // Earlier chains committed DEAD labels. Read their immutable history without
     // allowing that former label for a new retirement.
-    assert(text(r.at) && [retiredTitle, retiredTitle.replace(/^RETIRED — /, 'DEAD — ')].includes(r.title),
-      `${file}: invalid retirement title/time`);
+    assert(
+      text(r.at) && [retiredTitle, retiredTitle.replace(/^RETIRED — /, 'DEAD — ')].includes(r.title),
+      `${file}: invalid retirement title/time`,
+    );
   }
   return s;
 }
 function locked(root, action) {
   const lock = path.join(root, '.lock');
   let fd;
-  try { fd = fs.openSync(lock, 'wx', 0o600); }
-  catch (e) { throw new Error(`${lock}: ${e.code}; another state update may be active; inspect before removing a stale lock`); }
-  try { fs.writeFileSync(fd, String(process.pid)); return action(); }
-  finally { fs.closeSync(fd); fs.unlinkSync(lock); }
+  try {
+    fd = fs.openSync(lock, 'wx', 0o600);
+  } catch (e) {
+    throw new Error(`${lock}: ${e.code}; another state update may be active; inspect before removing a stale lock`);
+  }
+  try {
+    fs.writeFileSync(fd, String(process.pid));
+    return action();
+  } finally {
+    fs.closeSync(fd);
+    fs.unlinkSync(lock);
+  }
 }
-function save(s) { s.updatedAt = now(); atomic(controlFile(s.root), s); return s; }
-function matches(a, b) { return a.engine === b.engine && a.session === b.session; }
-function owner(s, caller) { assert(matches(s.owner, caller), 'only the recorded current owner can perform this action'); }
+function save(s) {
+  s.updatedAt = now();
+  atomic(controlFile(s.root), s);
+  return s;
+}
+function matches(a, b) {
+  return a.engine === b.engine && a.session === b.session;
+}
+function owner(s, caller) {
+  assert(matches(s.owner, caller), 'only the recorded current owner can perform this action');
+}
 export function sessionPointer(engine, session, host = hostContext()) {
-  assert(['claude', 'codex'].includes(engine) && typeof session === 'string' && ID.test(session), 'invalid engine/session');
+  assert(
+    ['claude', 'codex'].includes(engine) && typeof session === 'string' && ID.test(session),
+    'invalid engine/session',
+  );
   return path.join(machineBase(host), 'successions', 'sessions', `${engine}-${session}.json`);
 }
 export function lookup(engine, session, host = hostContext()) {
   const file = sessionPointer(engine, session, host);
   if (!fs.existsSync(file)) return null;
   const p = JSON.parse(regular(file));
-  assert(p.version === 1 && p.engine === engine && p.session === session && path.isAbsolute(p.root), `${file}: invalid session pointer`);
+  assert(
+    p.version === 1 && p.engine === engine && p.session === session && path.isAbsolute(p.root),
+    `${file}: invalid session pointer`,
+  );
   return readChain(p.root);
 }
 export function register(s, caller, host = hostContext()) {
   const existing = lookup(caller.engine, caller.session, host);
-  assert(!existing || existing.id === s.id || ['disabled', 'complete'].includes(existing.status), 'this session already belongs to another active succession chain');
+  assert(
+    !existing || existing.id === s.id || ['disabled', 'complete'].includes(existing.status),
+    'this session already belongs to another active succession chain',
+  );
   const file = sessionPointer(caller.engine, caller.session, host);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   atomic(file, { version: 1, engine: caller.engine, session: caller.session, root: s.root });
@@ -143,12 +278,18 @@ export function register(s, caller, host = hostContext()) {
 // identity still has to match the caller; a parent's/subagent's log is refused.
 export function currentSession({ engine, session, log, host = hostContext() }) {
   assert(['claude', 'codex'].includes(engine), 'engine must be claude or codex');
-  const given = session ?? (engine === 'codex' ? host.env.CODEX_THREAD_ID || host.env.CODEX_SESSION_ID : host.env.CLAUDE_CODE_SESSION_ID);
+  const given =
+    session ??
+    (engine === 'codex' ? host.env.CODEX_THREAD_ID || host.env.CODEX_SESSION_ID : host.env.CLAUDE_CODE_SESSION_ID);
   if (!log) {
     const found = locateLog({ engine, home: host.home, env: host.env, session: given });
-    log = found.log; session = found.session;
+    log = found.log;
+    session = found.session;
   } else session = given;
-  assert(text(session), 'current session identity is unavailable; use succession.mjs marker and locate, then supply --session and --log');
+  assert(
+    text(session),
+    'current session identity is unavailable; use succession.mjs marker and locate, then supply --session and --log',
+  );
   log = fs.realpathSync(log);
   const observed = readSessionLog(engine, fs.readFileSync(log, 'utf8'), log);
   const established = establishLog(engine, log, observed, session);
@@ -158,13 +299,28 @@ export function currentSession({ engine, session, log, host = hostContext() }) {
 function localStorage(workspace) {
   const local = localDirectory(workspace);
   if (!fs.existsSync(local)) return false;
-  assert(fs.lstatSync(local).isDirectory() && !fs.lstatSync(local).isSymbolicLink(), `${local} is not a plain directory`);
+  assert(
+    fs.lstatSync(local).isDirectory() && !fs.lstatSync(local).isSymbolicLink(),
+    `${local} is not a plain directory`,
+  );
   const tracked = spawnSync('git', ['-C', workspace, 'ls-files', '--', LOCAL_DIRECTORY], { encoding: 'utf8' });
   const ignored = spawnSync('git', ['-C', workspace, 'check-ignore', '-q', '--', `${LOCAL_DIRECTORY}/`]);
-  assert(tracked.status === 0 && tracked.stdout.trim() === '' && ignored.status === 0, `${local} must be wholly untracked and the directory itself ignored`);
+  assert(
+    tracked.status === 0 && tracked.stdout.trim() === '' && ignored.status === 0,
+    `${local} must be wholly untracked and the directory itself ignored`,
+  );
   return true;
 }
-export function initialize({ caller, workspace, task, storage = 'auto', runRoot = null, compactions, turns, host = hostContext() }) {
+export function initialize({
+  caller,
+  workspace,
+  task,
+  storage = 'auto',
+  runRoot = null,
+  compactions,
+  turns,
+  host = hostContext(),
+}) {
   const thresholds = limits(compactions, turns);
   assert(text(task) && !/[\r\n\x00-\x1f]/.test(task), 'task must be a nonempty single-line title');
   assert(['auto', 'local', 'external'].includes(storage), 'storage must be auto, local or external');
@@ -175,11 +331,16 @@ export function initialize({ caller, workspace, task, storage = 'auto', runRoot 
     return locked(existing.root, () => {
       const s = readChain(existing.root);
       assert(s.status === 'disabled', 'chain changed while re-enabling; inspect its current state');
-      observeState(s); s.status = 'active'; return save(s);
+      observeState(s);
+      s.status = 'active';
+      return save(s);
     });
   }
   if (existing && !['disabled', 'complete'].includes(existing.status)) {
-    assert(existing.workspace === workspace && existing.task === task, 'session already has a chain; use its root or disable it before starting another task');
+    assert(
+      existing.workspace === workspace && existing.task === task,
+      'session already has a chain; use its root or disable it before starting another task',
+    );
     assert(existing.status === 'active', `chain is ${existing.status}; use its recorded recovery/continuation`);
     return existing; // Re-invocation never resets counts or overwrites policy.
   }
@@ -187,20 +348,51 @@ export function initialize({ caller, workspace, task, storage = 'auto', runRoot 
   let root;
   if (runRoot) {
     runRoot = fs.realpathSync(runRoot);
-    assert(localStorage(workspace) && isWithin(path.join(localDirectory(workspace), 'runs'), runRoot), 'Run records must be inside this checkout’s established local runs directory');
+    assert(
+      localStorage(workspace) && isWithin(path.join(localDirectory(workspace), 'runs'), runRoot),
+      'Run records must be inside this checkout’s established local runs directory',
+    );
     root = path.join(runRoot, 'control', 'successor');
   } else {
     const local = storage !== 'external' && localStorage(workspace);
-    assert(storage !== 'local' || local, 'local storage is not established; use external storage or establish the ignored directory first');
-    root = local ? path.join(localDirectory(workspace), 'successions', id) : path.join(machineBase(host), 'successions', id);
+    assert(
+      storage !== 'local' || local,
+      'local storage is not established; use external storage or establish the ignored directory first',
+    );
+    root = local
+      ? path.join(localDirectory(workspace), 'successions', id)
+      : path.join(machineBase(host), 'successions', id);
   }
   assert(canonicalLocation(root) === root, `succession root crosses a symlink: ${root}`);
-  assert(!fs.existsSync(controlFile(root)), `succession state already exists at ${root}; read it instead of reinitializing`);
+  assert(
+    !fs.existsSync(controlFile(root)),
+    `succession state already exists at ${root}; read it instead of reinitializing`,
+  );
   fs.mkdirSync(root, { recursive: true });
-  const s = { format: FORMAT, version: 1, id, task, root, workspace, runRoot,
+  const s = {
+    format: FORMAT,
+    version: 1,
+    id,
+    task,
+    root,
+    workspace,
+    runRoot,
     counts: runRoot ? path.join(runRoot, 'control', 'coordinator-counts.json') : path.join(root, 'counts.json'),
-    status: 'active', generation: 1, owner: caller, retired: [], transfer: null, thresholds, createdAt: now(), updatedAt: now() };
-  return locked(root, () => { observeState(s); save(s); register(s, caller, host); return s; });
+    status: 'active',
+    generation: 1,
+    owner: caller,
+    retired: [],
+    transfer: null,
+    thresholds,
+    createdAt: now(),
+    updatedAt: now(),
+  };
+  return locked(root, () => {
+    observeState(s);
+    save(s);
+    register(s, caller, host);
+    return s;
+  });
 }
 function observeState(s, caller = s.owner) {
   const before = readCounts(s.counts);
@@ -212,10 +404,12 @@ function observeState(s, caller = s.owner) {
 }
 export function titles(s) {
   const label = `${s.task} [${s.id.slice(0, 8)}]`;
-  return { current: `CURRENT — ${label} #${s.generation}`,
+  return {
+    current: `CURRENT — ${label} #${s.generation}`,
     successor: `STARTING — ${label} #${s.generation + 1}`,
     retired: `RETIRED — ${label} #${s.generation} → #${s.generation + 1}`,
-    ...(s.transfer ? { cancelledSuccessor: cancelledTitle(s) } : {}) };
+    ...(s.transfer ? { cancelledSuccessor: cancelledTitle(s) } : {}),
+  };
 }
 export function report(s) {
   const counts = readCounts(s.counts);
@@ -225,9 +419,16 @@ export function report(s) {
   assert(entry?.engine === s.owner.engine && entry.log === s.owner.log, 'counts do not establish the committed owner');
   const countsReport = assessSuccession({ ...counts, current: s.owner.session }, s.thresholds);
   // Keep staged observations in the raw evidence, not in predecessor history.
-  countsReport.earlierSessions = countsReport.earlierSessions.filter((v) => v.session !== s.transfer?.successor?.session);
-  return { ...s, ...(s.transfer ? { transfer: { ...s.transfer, next: transferNext(s.transfer) } } : {}),
-    titles: titles(s), continuation: path.join(s.root, 'continuation.md'), countsReport };
+  countsReport.earlierSessions = countsReport.earlierSessions.filter(
+    (v) => v.session !== s.transfer?.successor?.session,
+  );
+  return {
+    ...s,
+    ...(s.transfer ? { transfer: { ...s.transfer, next: transferNext(s.transfer) } } : {}),
+    titles: titles(s),
+    continuation: path.join(s.root, 'continuation.md'),
+    countsReport,
+  };
 }
 // Phase guidance only: the named command still checks its own preconditions,
 // and new predecessor input first needs amend-transfer by the predecessor.
@@ -236,7 +437,8 @@ function transferNext(t) {
   if (t.phase === 'yielded') return { actor: 'successor', command: 'accept' };
   if (t.phase === 'cancelled') return { actor: 'predecessor', command: 'resume-cancelled' };
   return (t.acknowledgedRevision ?? 0) < (t.revision ?? 0)
-    ? { actor: 'successor', command: 'reconfirm' } : { actor: 'predecessor', command: 'retire' };
+    ? { actor: 'successor', command: 'reconfirm' }
+    : { actor: 'predecessor', command: 'retire' };
 }
 function retirementReceipt(s) {
   const r = s.lastRetirement;
@@ -246,52 +448,84 @@ function retirementReceipt(s) {
 // confirmed records without history fall back to their single stored hash.
 function verifyConfirmations(t) {
   const digest = (file) => crypto.createHash('sha256').update(regular(file)).digest('hex');
-  const history = t.confirmations ?? (t.confirmationSha256 ? [{ revision: 0, file: t.confirmation, sha256: t.confirmationSha256 }] : []);
-  for (const c of history) assert(digest(c.file) === c.sha256, `confirmation for revision ${c.revision} changed after acknowledgment; reconcile it before transfer`);
+  const history =
+    t.confirmations ??
+    (t.confirmationSha256 ? [{ revision: 0, file: t.confirmation, sha256: t.confirmationSha256 }] : []);
+  for (const c of history)
+    assert(
+      digest(c.file) === c.sha256,
+      `confirmation for revision ${c.revision} changed after acknowledgment; reconcile it before transfer`,
+    );
   return history.at(-1)?.file ?? t.confirmation;
 }
 export function update(root, caller, action, options = {}, host = hostContext()) {
   return locked(root, () => {
     const s = readChain(root);
-    if (action === 'resume-cancelled' && s.status === 'active' && s.lastCancellation?.nonce === options.nonce
-      && s.lastCancellation.generation === s.generation) {
-      owner(s, caller); verifyRecoveryRetry(s, s.lastCancellation, options.recordFile); return s;
+    if (
+      action === 'resume-cancelled' &&
+      s.status === 'active' &&
+      s.lastCancellation?.nonce === options.nonce &&
+      s.lastCancellation.generation === s.generation
+    ) {
+      owner(s, caller);
+      verifyRecoveryRetry(s, s.lastCancellation, options.recordFile);
+      return s;
     }
     if (action === 'finish-transfer' && s.lastRetirement?.nonce === options.nonce) {
-      assert(s.lastRetirement.recovery?.action === 'finish-transfer' && matches(s.lastRetirement.successor, caller),
-        'only the designated successor can retry its committed recovery receipt');
+      assert(
+        s.lastRetirement.recovery?.action === 'finish-transfer' && matches(s.lastRetirement.successor, caller),
+        'only the designated successor can retry its committed recovery receipt',
+      );
       assert(options.retiredTitle === s.lastRetirement.title, 'retry requires the committed RETIRED title');
-      verifyRecoveryRetry(s, s.lastRetirement.recovery, options.recordFile); retirementReceipt(s); return s;
+      verifyRecoveryRetry(s, s.lastRetirement.recovery, options.recordFile);
+      retirementReceipt(s);
+      return s;
     }
     if (action === 'retire' && s.lastRetirement?.nonce === options.nonce) {
-      assert(matches(s.lastRetirement.predecessor, caller), 'only the committed predecessor can retry its retirement receipt');
+      assert(
+        matches(s.lastRetirement.predecessor, caller),
+        'only the committed predecessor can retry its retirement receipt',
+      );
       assert(options.retiredTitle === s.lastRetirement.title, 'retry requires the committed RETIRED title');
       retirementReceipt(s);
       return s; // Repair a missing receipt; never repeat the ownership transition.
     }
     if (action === 'reconfirm' && s.transfer?.phase === 'confirmed' && s.transfer.nonce === options.nonce) {
-      const history = s.transfer.confirmations ?? []; const i = history.findIndex((c) => c.revision === options.revision);
+      const history = s.transfer.confirmations ?? [];
+      const i = history.findIndex((c) => c.revision === options.revision);
       if (i > 0 && history[i - 1].revision === options.expectedAcknowledgedRevision) {
         assert(matches(s.transfer.successor, caller), 'only the designated successor can reconfirm');
-        verifyFrozenSources(s); verifyConfirmations(s.transfer); return s; // Exact retry of a committed acknowledgment.
+        verifyFrozenSources(s);
+        verifyConfirmations(s.transfer);
+        return s; // Exact retry of a committed acknowledgment.
       }
     }
     if (action === 'amend-transfer' && s.transfer?.nonce === options.nonce && committedAmendment(s, options)) {
-      owner(s, caller); return s; // Exact retry; never recapture or republish.
+      owner(s, caller);
+      return s; // Exact retry; never recapture or republish.
     }
     if (!['accept', 'reconfirm', 'finish-transfer'].includes(action)) owner(s, caller);
     if (action === 'capture') {
-      assert(s.status === 'active', 'capture instructions only while active; reconcile an existing frozen transfer first');
+      assert(
+        s.status === 'active',
+        'capture instructions only while active; reconcile an existing frozen transfer first',
+      );
       s.instructionSource = captureSources(s, options);
     } else if (action === 'reconcile-source') {
-      assert(s.status === 'active', 'reconcile source limitations only while active; this does not recover a frozen transfer');
+      assert(
+        s.status === 'active',
+        'reconcile source limitations only while active; this does not recover a frozen transfer',
+      );
       s.instructionSource = reconcileSource(s, options);
     } else if (action === 'observe') {
       assert(s.status === 'active', `cannot observe as active owner while ${s.status}`);
       observeState(s);
     } else if (action === 'policy') {
       assert(s.status === 'active', 'change policy only while active');
-      s.thresholds = limits(options.compactions ?? s.thresholds['compaction-threshold'], options.turns ?? s.thresholds['turn-threshold']);
+      s.thresholds = limits(
+        options.compactions ?? s.thresholds['compaction-threshold'],
+        options.turns ?? s.thresholds['turn-threshold'],
+      );
       observeState(s);
     } else if (['disable', 'complete'].includes(action)) {
       assert(s.status === 'active', 'resolve the transfer before disabling or completing the chain');
@@ -308,91 +542,172 @@ export function update(root, caller, action, options = {}, host = hostContext())
       const instructions = freezeSources(s, dir);
       fs.writeFileSync(path.join(dir, 'handoff.md'), content, { flag: 'wx', mode: 0o600 });
       s.status = 'transferring';
-      s.transfer = { nonce, phase: 'prepared', generation: s.generation + 1, handoff: path.join(dir, 'handoff.md'),
-        handoffSha256: crypto.createHash('sha256').update(content).digest('hex'), instructions, successor: null, confirmation: null };
+      s.transfer = {
+        nonce,
+        phase: 'prepared',
+        generation: s.generation + 1,
+        handoff: path.join(dir, 'handoff.md'),
+        handoffSha256: crypto.createHash('sha256').update(content).digest('hex'),
+        instructions,
+        successor: null,
+        confirmation: null,
+      };
     } else if (action === 'amend-transfer') {
-      assert(['prepared', 'yielded', 'confirmed'].includes(s.transfer?.phase) && s.transfer.nonce === options.nonce,
-        'amend-transfer requires this prepared, yielded or confirmed transfer nonce');
+      assert(
+        ['prepared', 'yielded', 'confirmed'].includes(s.transfer?.phase) && s.transfer.nonce === options.nonce,
+        'amend-transfer requires this prepared, yielded or confirmed transfer nonce',
+      );
       amendTransferSources(s, options);
     } else if (action === 'cancel-transfer') {
-      assert(s.transfer?.nonce === options.nonce && ['prepared', 'yielded', 'cancelled'].includes(s.transfer.phase),
-        'cancel-transfer requires this prepared or yielded nonce; confirmed transfers cannot be cancelled');
-      if (s.transfer.phase === 'cancelled') { verifyRecoveryRetry(s, s.transfer.cancellation, options.recordFile); return s; }
+      assert(
+        s.transfer?.nonce === options.nonce && ['prepared', 'yielded', 'cancelled'].includes(s.transfer.phase),
+        'cancel-transfer requires this prepared or yielded nonce; confirmed transfers cannot be cancelled',
+      );
+      if (s.transfer.phase === 'cancelled') {
+        verifyRecoveryRetry(s, s.transfer.cancellation, options.recordFile);
+        return s;
+      }
       const evidence = retainRecovery(s, caller, action, options.recordFile, titles(s));
       s.recoveries = [...(s.recoveries ?? []), evidence];
       s.transfer.cancellation = evidence;
       s.transfer.phase = 'cancelled'; // Invalidate accept before any return to task work.
     } else if (action === 'resume-cancelled') {
-      assert(s.transfer?.nonce === options.nonce && s.transfer.phase === 'cancelled', 'resume-cancelled requires the invalidated transfer nonce');
+      assert(
+        s.transfer?.nonce === options.nonce && s.transfer.phase === 'cancelled',
+        'resume-cancelled requires the invalidated transfer nonce',
+      );
       const evidence = retainRecovery(s, caller, action, options.recordFile, titles(s));
       // New input that prevented the old transfer is captured before work resumes.
-      s.instructionSource = captureSources(s); observeState(s);
-      s.recoveries = [...(s.recoveries ?? []), evidence]; s.lastCancellation = evidence;
-      s.transfer = null; s.status = 'active';
+      s.instructionSource = captureSources(s);
+      observeState(s);
+      s.recoveries = [...(s.recoveries ?? []), evidence];
+      s.lastCancellation = evidence;
+      s.transfer = null;
+      s.status = 'active';
     } else if (action === 'yield') {
-      assert(s.transfer?.phase === 'prepared' && s.transfer.nonce === options.nonce, 'yield requires the prepared transfer nonce');
-      verifyFrozenSources(s); verifyCurrentSource(s);
+      assert(
+        s.transfer?.phase === 'prepared' && s.transfer.nonce === options.nonce,
+        'yield requires the prepared transfer nonce',
+      );
+      verifyFrozenSources(s);
+      verifyCurrentSource(s);
       s.transfer.phase = 'yielded';
     } else if (action === 'accept') {
-      assert(s.transfer?.phase === 'yielded' && s.transfer.nonce === options.nonce, 'accept requires a yielded transfer with the matching nonce');
-      assert(!matches(s.owner, caller) && !s.retired.some((r) => matches(r, caller)), 'a successor must be a fresh session');
-      assert(!readCounts(s.counts).sessions.some((r) => r.session === caller.session), 'successor session was already used in this chain');
-      assert(!(s.recoveries ?? []).some((r) => ['cancel-transfer', 'resume-cancelled'].includes(r.action) && matches(r.successor ?? {}, caller)), 'a cancelled successor must not be reused');
+      assert(
+        s.transfer?.phase === 'yielded' && s.transfer.nonce === options.nonce,
+        'accept requires a yielded transfer with the matching nonce',
+      );
+      assert(
+        !matches(s.owner, caller) && !s.retired.some((r) => matches(r, caller)),
+        'a successor must be a fresh session',
+      );
+      assert(
+        !readCounts(s.counts).sessions.some((r) => r.session === caller.session),
+        'successor session was already used in this chain',
+      );
+      assert(
+        !(s.recoveries ?? []).some(
+          (r) => ['cancel-transfer', 'resume-cancelled'].includes(r.action) && matches(r.successor ?? {}, caller),
+        ),
+        'a cancelled successor must not be reused',
+      );
       const confirmation = path.join(path.dirname(s.transfer.handoff), 'confirmation.md');
       const instructions = verifyFrozenSources(s);
       const confirmationText = regular(confirmation);
-      assert(confirmationText.includes(instructions.sha256), `record continuity, instruction-source digest and UI verification in ${confirmation} before accepting`);
-      for (const amendment of s.transfer.amendments ?? []) for (const id of [...amendment.newEntryIds, ...(amendment.newLimitationIds ?? [])]) {
-        assert(confirmationText.includes(id), `record the disposition of amended entry ${id} in ${confirmation} before accepting`);
-      }
+      assert(
+        confirmationText.includes(instructions.sha256),
+        `record continuity, instruction-source digest and UI verification in ${confirmation} before accepting`,
+      );
+      for (const amendment of s.transfer.amendments ?? [])
+        for (const id of [...amendment.newEntryIds, ...(amendment.newLimitationIds ?? [])]) {
+          assert(
+            confirmationText.includes(id),
+            `record the disposition of amended entry ${id} in ${confirmation} before accepting`,
+          );
+        }
       register(s, caller, host);
       s.transfer.successor = caller;
       s.transfer.confirmation = confirmation;
       s.transfer.confirmationSha256 = crypto.createHash('sha256').update(confirmationText).digest('hex');
       s.transfer.acknowledgedRevision = s.transfer.revision ?? 0;
-      s.transfer.confirmations = [{ revision: s.transfer.acknowledgedRevision,
-        file: confirmation, sha256: s.transfer.confirmationSha256 }];
+      s.transfer.confirmations = [
+        { revision: s.transfer.acknowledgedRevision, file: confirmation, sha256: s.transfer.confirmationSha256 },
+      ];
       s.transfer.phase = 'confirmed';
     } else if (action === 'reconfirm') {
       const t = s.transfer;
       assert(t?.phase === 'confirmed' && t.nonce === options.nonce, 'reconfirm requires the confirmed transfer nonce');
       assert(matches(t.successor, caller), 'only the designated successor can reconfirm');
-      assert(Number.isSafeInteger(options.revision) && options.revision === (t.revision ?? 0),
-        'reconfirm must name the current transfer revision');
+      assert(
+        Number.isSafeInteger(options.revision) && options.revision === (t.revision ?? 0),
+        'reconfirm must name the current transfer revision',
+      );
       const previous = t.acknowledgedRevision ?? 0;
-      assert(Number.isSafeInteger(options.expectedAcknowledgedRevision) && options.expectedAcknowledgedRevision === previous,
-        'expected acknowledged revision must match the previous acknowledgment');
+      assert(
+        Number.isSafeInteger(options.expectedAcknowledgedRevision) && options.expectedAcknowledgedRevision === previous,
+        'expected acknowledged revision must match the previous acknowledgment',
+      );
       assert(options.revision > previous, 'current transfer revision is already acknowledged');
       const instructions = verifyFrozenSources(s);
       const file = path.join(path.dirname(t.handoff), 'revisions', String(options.revision), 'confirmation.md');
       const content = regular(file);
       assert(content.includes(instructions.sha256), 'reconfirmation must name the current instruction-source digest');
-      for (const amendment of t.amendments.filter((v) => v.revision > previous)) for (const id of [...amendment.newEntryIds, ...(amendment.newLimitationIds ?? [])]) {
-        assert(content.includes(id), `record the disposition of amended entry ${id} before reconfirming`);
-      }
+      for (const amendment of t.amendments.filter((v) => v.revision > previous))
+        for (const id of [...amendment.newEntryIds, ...(amendment.newLimitationIds ?? [])]) {
+          assert(content.includes(id), `record the disposition of amended entry ${id} before reconfirming`);
+        }
       verifyConfirmations(t);
-      const history = t.confirmations ?? [{ revision: previous, file: t.confirmation,
-        sha256: t.confirmationSha256 ?? crypto.createHash('sha256').update(regular(t.confirmation)).digest('hex') }];
-      t.confirmations = [...history, { revision: options.revision, file,
-        sha256: crypto.createHash('sha256').update(content).digest('hex') }];
+      const history = t.confirmations ?? [
+        {
+          revision: previous,
+          file: t.confirmation,
+          sha256: t.confirmationSha256 ?? crypto.createHash('sha256').update(regular(t.confirmation)).digest('hex'),
+        },
+      ];
+      t.confirmations = [
+        ...history,
+        { revision: options.revision, file, sha256: crypto.createHash('sha256').update(content).digest('hex') },
+      ];
       t.acknowledgedRevision = options.revision;
     } else if (action === 'retire' || action === 'finish-transfer') {
-      assert(s.transfer?.phase === 'confirmed' && s.transfer.nonce === options.nonce, 'retire requires the successor’s matching confirmation');
-      assert(options.retiredTitle === titles(s).retired, 'verify the predecessor’s exact RETIRED title in Orca, then pass it with --retired-title');
-      assert((s.transfer.acknowledgedRevision ?? 0) === (s.transfer.revision ?? 0),
-        `the designated successor must reconfirm transfer revision ${s.transfer.revision} before ownership transfers; its acknowledgment covers revision ${s.transfer.acknowledgedRevision ?? 0}`);
-      const acknowledged = verifyFrozenSources(s); verifyCurrentSource(s);
+      assert(
+        s.transfer?.phase === 'confirmed' && s.transfer.nonce === options.nonce,
+        'retire requires the successor’s matching confirmation',
+      );
+      assert(
+        options.retiredTitle === titles(s).retired,
+        'verify the predecessor’s exact RETIRED title in Orca, then pass it with --retired-title',
+      );
+      assert(
+        (s.transfer.acknowledgedRevision ?? 0) === (s.transfer.revision ?? 0),
+        `the designated successor must reconfirm transfer revision ${s.transfer.revision} before ownership transfers; its acknowledgment covers revision ${s.transfer.acknowledgedRevision ?? 0}`,
+      );
+      const acknowledged = verifyFrozenSources(s);
+      verifyCurrentSource(s);
       const latest = verifyConfirmations(s.transfer);
       if (action === 'finish-transfer') {
-        assert(regular(latest).includes(acknowledged.sha256), 'confirmed instruction evidence is missing from the confirmation');
+        assert(
+          regular(latest).includes(acknowledged.sha256),
+          'confirmed instruction evidence is missing from the confirmation',
+        );
       }
-      const recovery = action === 'finish-transfer' ? retainRecovery(s, caller, action, options.recordFile, titles(s)) : null;
+      const recovery =
+        action === 'finish-transfer' ? retainRecovery(s, caller, action, options.recordFile, titles(s)) : null;
       // All fallible log observation precedes the ownership commit. The counts
       // file may advance first; report() still selects the committed owner.
       observeState(s, s.transfer.successor);
-      s.lastRetirement = { nonce: s.transfer.nonce, generation: s.transfer.generation,
-        predecessor: s.owner, successor: s.transfer.successor, title: options.retiredTitle, at: now() };
-      if (recovery) { s.lastRetirement.recovery = recovery; s.recoveries = [...(s.recoveries ?? []), recovery]; }
+      s.lastRetirement = {
+        nonce: s.transfer.nonce,
+        generation: s.transfer.generation,
+        predecessor: s.owner,
+        successor: s.transfer.successor,
+        title: options.retiredTitle,
+        at: now(),
+      };
+      if (recovery) {
+        s.lastRetirement.recovery = recovery;
+        s.recoveries = [...(s.recoveries ?? []), recovery];
+      }
       s.retired.push(s.owner);
       s.owner = s.transfer.successor;
       s.generation = s.transfer.generation;
@@ -420,19 +735,28 @@ export function hook(engine, event, { host = hostContext(), skill } = {}) {
   if (!matches(s.owner, caller) && !matches(s.transfer?.successor ?? {}, caller)) {
     message = `This session is retired from succession chain ${s.id}. Its current owner is ${s.owner.engine}/${s.owner.session}. Do not resume its task here. Records: ${s.root}.`;
   } else if (s.status === 'transferring') {
-    message = `Succession transfer ${s.transfer.nonce} is ${s.transfer.phase}. Load ${skill}; read ${controlFile(s.root)}. `
-      + (s.transfer.phase === 'cancelled' ? 'Follow references/recovery.md to reconcile UI and run resume-cancelled. Start no task work until that command commits the predecessor active again.'
+    message =
+      `Succession transfer ${s.transfer.nonce} is ${s.transfer.phase}. Load ${skill}; read ${controlFile(s.root)}. ` +
+      (s.transfer.phase === 'cancelled'
+        ? 'Follow references/recovery.md to reconcile UI and run resume-cancelled. Start no task work until that command commits the predecessor active again.'
         : 'Preserve the yield/confirmation/retirement boundary; start no task work until ownership transfers.');
   } else {
     try {
-      if (event.transcript_path) assert(fs.realpathSync(event.transcript_path) === s.owner.log, 'hook transcript differs from the recorded session log');
+      if (event.transcript_path)
+        assert(
+          fs.realpathSync(event.transcript_path) === s.owner.log,
+          'hook transcript differs from the recorded session log',
+        );
       s = update(s.root, caller, 'observe', {}, host);
       const counts = report(s).countsReport;
       due = counts.due;
-      message = `Succession ${s.id}, observed in the session log: ${counts.compactions.count}/${counts.compactions.threshold} compactions, ${counts.turns.count}/${counts.turns.threshold} turns${counts.lowerBound ? ' (known lower bound)' : ''}. `
-        + `Load ${skill}; preserve ${path.join(s.root, 'continuation.md')}. `
-        + (due ? 'Succession is due. Start no new work batch; prepare and transfer at the next safe checkpoint.'
-          : name === 'Stop' ? 'Update the continuation record after consequential decisions.'
+      message =
+        `Succession ${s.id}, observed in the session log: ${counts.compactions.count}/${counts.compactions.threshold} compactions, ${counts.turns.count}/${counts.turns.threshold} turns${counts.lowerBound ? ' (known lower bound)' : ''}. ` +
+        `Load ${skill}; preserve ${path.join(s.root, 'continuation.md')}. ` +
+        (due
+          ? 'Succession is due. Start no new work batch; prepare and transfer at the next safe checkpoint.'
+          : name === 'Stop'
+            ? 'Update the continuation record after consequential decisions.'
             : 'This hook can run before the current prompt or compaction is written to the log. Run the helper observe check in this session before task work; use that result to decide whether succession is due. Do not add to counts from this reminder.');
     } catch (e) {
       due = true;
@@ -447,9 +771,16 @@ export function hookConfig(engine, script, executable = process.execPath, platfo
   assert(['claude', 'codex'].includes(engine), 'engine must be claude or codex');
   const quote = (v) => {
     if (platform !== 'win32') return `'${v.replaceAll("'", "'\\''")}'`;
-    assert(!/["%!^&<>|\r\n]/.test(v), 'Windows hook command path contains shell metacharacters; choose a safe installation path');
+    assert(
+      !/["%!^&<>|\r\n]/.test(v),
+      'Windows hook command path contains shell metacharacters; choose a safe installation path',
+    );
     return `"${v}"`;
   };
   const command = `${quote(executable)} ${quote(script)} hook --engine ${engine}`;
-  return { hooks: Object.fromEntries(['SessionStart', 'UserPromptSubmit', 'Stop'].map((name) => [name, [{ hooks: [{ type: 'command', command }] }]])) };
+  return {
+    hooks: Object.fromEntries(
+      ['SessionStart', 'UserPromptSubmit', 'Stop'].map((name) => [name, [{ hooks: [{ type: 'command', command }] }]]),
+    ),
+  };
 }

@@ -19,8 +19,11 @@ fs.mkdirSync(emptyTemplates);
 const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
 Object.assign(env, { GIT_CONFIG_GLOBAL: emptyConfig, GIT_CONFIG_NOSYSTEM: '1', GIT_TEMPLATE_DIR: emptyTemplates });
 const paths = new Set(['docs/guide.md']);
-const validate = message => validateCommitMessage(message, paths);
-const errors = message => validate(message).errors.map(error => error.message).join('\n');
+const validate = (message) => validateCommitMessage(message, paths);
+const errors = (message) =>
+  validate(message)
+    .errors.map((error) => error.message)
+    .join('\n');
 
 test('subjects accept the type roster, optional scopes and imperative descriptions', () => {
   for (const type of COMMIT_TYPES) assert.equal(validate(`${type}: update guidance`).ok, true, type);
@@ -30,7 +33,12 @@ test('subjects accept the type roster, optional scopes and imperative descriptio
 });
 
 test('subject examples rejected by the guidance are rejected by the lint', () => {
-  for (const subject of ['docs: added guidance', 'docs: Adds guidance.', 'docs: add guidance.', 'feat: adding a role']) {
+  for (const subject of [
+    'docs: added guidance',
+    'docs: Adds guidance.',
+    'docs: add guidance.',
+    'feat: adding a role',
+  ]) {
     assert.match(errors(subject), /imperative subject/, subject);
   }
   for (const subject of ['', 'add a role', 'feat(): add a role', 'feat(Role): add a role', 'feat:  add a role']) {
@@ -40,8 +48,18 @@ test('subject examples rejected by the guidance are rejected by the lint', () =>
 });
 
 test('body details are imperative bullets with adjacent indented continuations', () => {
-  assert.equal(validate('refactor: separate roles\n\n- move shared guidance\n  into one reference\n- preserve ownership').ok, true);
-  for (const line of ['Prose paragraph', '- moved shared guidance', '- adds guidance', '- cleanup', '  orphan continuation', 'Signed-off-by: A <a@example.com>']) {
+  assert.equal(
+    validate('refactor: separate roles\n\n- move shared guidance\n  into one reference\n- preserve ownership').ok,
+    true,
+  );
+  for (const line of [
+    'Prose paragraph',
+    '- moved shared guidance',
+    '- adds guidance',
+    '- cleanup',
+    '  orphan continuation',
+    'Signed-off-by: A <a@example.com>',
+  ]) {
     assert.match(errors(`docs: update guidance\n\n${line}`), /imperative bullet/, line);
   }
   assert.equal(validate('docs: update guidance\n\n- move shared guidance\n\n  disconnected prose').ok, false);
@@ -49,7 +67,12 @@ test('body details are imperative bullets with adjacent indented continuations',
 
 test('breaking subjects need a meaningful callout and all failures are returned', () => {
   assert.match(errors('feat!: change review output'), /breaking subject requires/);
-  assert.equal(validate('feat!: change review output\n\n- preserve finding identities\n\nBREAKING CHANGE: report fields have changed').ok, true);
+  assert.equal(
+    validate(
+      'feat!: change review output\n\n- preserve finding identities\n\nBREAKING CHANGE: report fields have changed',
+    ).ok,
+    true,
+  );
   assert.equal(validate('feat: change review output\n\nBREAKING CHANGE: report fields have changed').ok, true);
   for (const callout of ['BREAKING CHANGE:', 'BREAKING CHANGE: ', 'BREAKING CHANGE:no space']) {
     assert.equal(validate(`feat!: change output\n\n${callout}`).ok, false);
@@ -61,7 +84,14 @@ test('reference checks distinguish candidate paths, outside paths and public URL
   assert.equal(validate('docs: update docs/guide.md').ok, true);
   assert.equal(validate('docs: update docs\\guide.md').ok, true);
   assert.equal(validate('docs: explain https://example.com/other/repo.md').ok, true);
-  for (const reference of ['other/repo.md', '../docs/guide.md', '/Users/example/work/repo.md', 'C:\\Users\\example\\repo.md', '~example/', '-users-example-project']) {
+  for (const reference of [
+    'other/repo.md',
+    '../docs/guide.md',
+    '/Users/example/work/repo.md',
+    'C:\\Users\\example\\repo.md',
+    '~example/',
+    '-users-example-project',
+  ]) {
     assert.equal(validate(`docs: explain ${reference}`).ok, false, reference);
   }
 });
@@ -70,10 +100,21 @@ let ordinal = 0;
 function fixture() {
   const root = path.join(scratch, `repo with spaces ${++ordinal}`);
   fs.mkdirSync(root);
-  for (const name of ['.githooks/commit-msg', 'tools/commit-message.mjs', 'tools/commit-verify.mjs',
-    'tools/verify.mjs', 'tools/install-hooks.mjs', 'tools/lib/commit-message.mjs',
-    'tools/lib/git.mjs', 'tools/lib/cli.mjs', 'tools/lib/paths.mjs', 'tools/lib/run-node.mjs',
-    'tools/lib/install.mjs', 'tools/lib/markdown.mjs', 'tools/lib/writing-references.mjs']) {
+  for (const name of [
+    '.githooks/commit-msg',
+    'tools/commit-message.mjs',
+    'tools/commit-verify.mjs',
+    'tools/verify.mjs',
+    'tools/install-hooks.mjs',
+    'tools/lib/commit-message.mjs',
+    'tools/lib/git.mjs',
+    'tools/lib/cli.mjs',
+    'tools/lib/paths.mjs',
+    'tools/lib/run-node.mjs',
+    'tools/lib/install.mjs',
+    'tools/lib/markdown.mjs',
+    'tools/lib/writing-references.mjs',
+  ]) {
     const dest = path.join(root, name);
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.copyFileSync(path.join(source, name), dest);
@@ -93,7 +134,10 @@ function fixture() {
   fs.writeFileSync(path.join(root, 'tools/lib/plugin-package.mjs'), 'export const checkPluginPackage = () => true;\n');
   fs.writeFileSync(path.join(root, 'tools/lib/plugin-payload.mjs'), 'export const checkPluginPayload = () => true;\n');
   fs.mkdirSync(path.join(root, 'tools/test'));
-  fs.writeFileSync(path.join(root, 'tools/test/suite.test.mjs'), "import test from 'node:test';\ntest('fixture suite ran', () => {});\n");
+  fs.writeFileSync(
+    path.join(root, 'tools/test/suite.test.mjs'),
+    "import test from 'node:test';\ntest('fixture suite ran', () => {});\n",
+  );
   git(root, ['init', '-q']);
   git(root, ['config', 'user.name', 'Fixture']);
   git(root, ['config', 'user.email', 'fixture@example.invalid']);
@@ -105,7 +149,7 @@ function run(root, command, args) {
   return spawnSync(command, args, { cwd: root, env, encoding: 'utf8' });
 }
 // Git redirects hook output to stderr; direct CLI output uses both streams.
-const output = result => result.stdout + result.stderr;
+const output = (result) => result.stdout + result.stderr;
 function git(root, args) {
   const result = run(root, 'git', args);
   assert.equal(result.status, 0, `${args.join(' ')}: ${result.stderr}`);
@@ -130,7 +174,11 @@ test('CLI checks the index, including staged additions, rather than working file
   assert.equal(lint(root, 'docs: update docs/guide.md').status, 1, 'untracked file is absent from candidate');
   git(root, ['add', 'docs/guide.md']);
   fs.unlinkSync(file);
-  assert.equal(lint(root, 'docs: update docs/guide.md', path.join(root, 'docs')).status, 0, 'staged file survives working-tree removal');
+  assert.equal(
+    lint(root, 'docs: update docs/guide.md', path.join(root, 'docs')).status,
+    0,
+    'staged file survives working-tree removal',
+  );
   git(root, ['rm', '--cached', 'docs/guide.md']);
   assert.equal(lint(root, 'docs: update docs/guide.md').status, 1);
 });
@@ -141,7 +189,10 @@ test('CLI uses Git comment settings and scissors, with CRLF input', () => {
   git(root, ['config', 'core.commentChar', ';']);
   assert.equal(lint(root, '; template\ndocs: explain guidance\n; comment').status, 0);
   assert.equal(lint(root, 'docs: explain guidance\n# retained prose').status, 1);
-  assert.equal(lint(root, 'docs: explain guidance\n; ------------------------ >8 ------------------------\nverbose diff').status, 0);
+  assert.equal(
+    lint(root, 'docs: explain guidance\n; ------------------------ >8 ------------------------\nverbose diff').status,
+    0,
+  );
 });
 
 test('CLI fails clearly for arguments, unreadable files, invalid UTF-8 and absent Git context', () => {
@@ -179,7 +230,10 @@ test('a failing test blocks a real commit, and a correction runs the full suite 
   const root = fixture();
   assert.equal(install(root).status, 0);
   const failing = path.join(root, 'tools/test/failing.test.mjs');
-  fs.writeFileSync(failing, "import test from 'node:test';\nimport assert from 'node:assert/strict';\ntest('second fixture test', () => assert.fail('intentional gate failure'));\n");
+  fs.writeFileSync(
+    failing,
+    "import test from 'node:test';\nimport assert from 'node:assert/strict';\ntest('second fixture test', () => assert.fail('intentional gate failure'));\n",
+  );
   const rejected = run(root, 'git', ['commit', '--allow-empty', '-m', 'test: exercise failing gate']);
   assert.notEqual(rejected.status, 0);
   assert.match(output(rejected), /fixture suite ran/);
@@ -211,7 +265,10 @@ test('metadata, generated-reference and package-reference failures stop the comm
   assert.doesNotMatch(output(drift), /verify: package references|fixture suite ran/);
   generateWritingReferences(root);
   const payloadCheck = path.join(root, 'tools/lib/plugin-payload.mjs');
-  fs.writeFileSync(payloadCheck, "export const checkPluginPayload = () => { console.error('fixture payload stale'); return false; };\n");
+  fs.writeFileSync(
+    payloadCheck,
+    "export const checkPluginPayload = () => { console.error('fixture payload stale'); return false; };\n",
+  );
   const payload = run(root, 'git', ['commit', '--allow-empty', '-m', 'test: exercise payload gate']);
   assert.notEqual(payload.status, 0);
   assert.match(payload.stderr, /fixture payload stale/);
@@ -250,7 +307,7 @@ test('hook setup preserves foreign hook directories and existing default hooks',
   assert.equal(run(existing, 'git', ['config', '--local', '--get', 'core.hooksPath']).status, 1);
 });
 
-test('the hook operates in a linked worktree and the CLI runs through a symlink', t => {
+test('the hook operates in a linked worktree and the CLI runs through a symlink', (t) => {
   const root = fixture();
   assert.equal(install(root).status, 0);
   git(root, ['commit', '--allow-empty', '-m', 'test: initialize fixture']);
@@ -266,8 +323,15 @@ test('the hook operates in a linked worktree and the CLI runs through a symlink'
   assert.notEqual(rejected.status, 0);
   assert.match(rejected.stderr, /conventional-commits\.md/);
   const link = path.join(scratch, `lint-link-${ordinal}.mjs`);
-  try { fs.symlinkSync(path.join(root, 'tools/commit-message.mjs'), link); }
-  catch (error) { if (error.code === 'EPERM') { t.diagnostic('host does not permit file symlinks'); return; } throw error; }
+  try {
+    fs.symlinkSync(path.join(root, 'tools/commit-message.mjs'), link);
+  } catch (error) {
+    if (error.code === 'EPERM') {
+      t.diagnostic('host does not permit file symlinks');
+      return;
+    }
+    throw error;
+  }
   const file = path.join(root, 'bad-message');
   fs.writeFileSync(file, 'wrong');
   assert.equal(run(root, process.execPath, [link, file]).status, 1);

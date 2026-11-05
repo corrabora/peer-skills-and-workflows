@@ -40,11 +40,16 @@ function installedPackages(dir, prefix = 'node_modules') {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const names = entry.name.startsWith('@')
-      ? fs.readdirSync(path.join(dir, entry.name), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => `${entry.name}/${e.name}`)
+      ? fs
+          .readdirSync(path.join(dir, entry.name), { withFileTypes: true })
+          .filter((e) => e.isDirectory())
+          .map((e) => `${entry.name}/${e.name}`)
       : [entry.name];
     for (const name of names) {
       keys.push(`${prefix}/${name}`);
-      keys.push(...installedPackages(path.join(dir, ...name.split('/'), 'node_modules'), `${prefix}/${name}/node_modules`));
+      keys.push(
+        ...installedPackages(path.join(dir, ...name.split('/'), 'node_modules'), `${prefix}/${name}/node_modules`),
+      );
     }
   }
   return keys.sort();
@@ -85,17 +90,23 @@ function vendorProblems(sourceRoot, vendor) {
   const locked = Object.entries(lock.packages ?? {}).filter(([key]) => key.startsWith('node_modules/'));
   const lockedKeys = locked.map(([key]) => key).sort();
   const installedKeys = installedPackages(nodeModules);
-  for (const key of installedKeys) if (!lockedKeys.includes(key)) problems.push(`tools/vendor/${key} is installed but not locked`);
+  for (const key of installedKeys)
+    if (!lockedKeys.includes(key)) problems.push(`tools/vendor/${key} is installed but not locked`);
   for (const [key, entry] of locked) {
     const name = key.slice(key.lastIndexOf('node_modules/') + 'node_modules/'.length);
     const where = `tools/vendor/${key}`;
     if (!/^https:\/\//.test(entry.resolved ?? '') || !/^sha512-/.test(entry.integrity ?? '')) {
       problems.push(`${key}: the lockfile lacks its npm source or sha512 integrity`);
     }
-    if (!installedKeys.includes(key)) { problems.push(`${where} is missing`); continue; }
+    if (!installedKeys.includes(key)) {
+      problems.push(`${where} is missing`);
+      continue;
+    }
     const installed = readJson(path.join(vendor, ...key.split('/'), 'package.json'));
     if (installed.name !== name || installed.version !== entry.version) {
-      problems.push(`${where} is ${installed.name}@${installed.version}, but the lockfile pins ${name}@${entry.version}`);
+      problems.push(
+        `${where} is ${installed.name}@${installed.version}, but the lockfile pins ${name}@${entry.version}`,
+      );
     }
     if (!fs.readdirSync(path.join(vendor, ...key.split('/'))).some((file) => /^licen[cs]e/i.test(file))) {
       problems.push(`${where} has no license file`);
@@ -137,10 +148,12 @@ function safeVendor(sourceRoot, cache) {
   const root = canonical(sourceRoot);
   if (root === null) throw new Error(`${sourceRoot} does not exist`);
   const vendor = path.join(root, VENDOR);
-  if (canonical(vendor) !== vendor) throw new Error(`${vendor} is a link or lies beneath one; regenerate in a plain checkout`);
+  if (canonical(vendor) !== vendor)
+    throw new Error(`${vendor} is a link or lies beneath one; regenerate in a plain checkout`);
   if (cache !== undefined) {
     const location = canonicalLocation(cache);
-    if (isWithin(root, location) || isWithin(location, root)) throw new Error(`npm cache ${cache} overlaps the package; choose a cache outside it`);
+    if (isWithin(root, location) || isWithin(location, root))
+      throw new Error(`npm cache ${cache} overlaps the package; choose a cache outside it`);
   }
   return vendor;
 }
@@ -154,12 +167,18 @@ function safeVendor(sourceRoot, cache) {
 function withStaged(root, vendor, cache, use) {
   const staging = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'peer-vendor-stage-')));
   try {
-    if (isWithin(root, staging)) throw new Error(`staging directory ${staging} lies inside the package; set TMPDIR elsewhere`);
+    if (isWithin(root, staging))
+      throw new Error(`staging directory ${staging} lies inside the package; set TMPDIR elsewhere`);
     for (const file of INPUTS) fs.copyFileSync(path.join(vendor, file), path.join(staging, file));
     const npm = spawnSync('npm', NPM_ARGS, {
-      cwd: staging, encoding: 'utf8', env: { ...process.env, npm_config_cache: cache ?? path.join(staging, '.npm-cache') },
+      cwd: staging,
+      encoding: 'utf8',
+      env: { ...process.env, npm_config_cache: cache ?? path.join(staging, '.npm-cache') },
     });
-    if (npm.status !== 0) throw new Error(`npm ${NPM_ARGS.join(' ')} failed (${npm.status ?? npm.error?.code}): ${(npm.stderr ?? '').trim()}`);
+    if (npm.status !== 0)
+      throw new Error(
+        `npm ${NPM_ARGS.join(' ')} failed (${npm.status ?? npm.error?.code}): ${(npm.stderr ?? '').trim()}`,
+      );
     const staged = path.join(staging, 'node_modules');
     fs.rmSync(path.join(staged, '.package-lock.json'), { force: true });
     return use(staged, staging);
@@ -191,7 +210,8 @@ export function generateVendor({ sourceRoot, out, check = false, cache }) {
       const recorded = readJson(path.join(vendor, 'manifest.json'));
       const problems = differences(recorded.files, vendorManifest(vendor, staged).files);
       for (const problem of problems) out.error(`FAIL    regeneration: ${problem}`);
-      if (!problems.length) out.info(`ok      regeneration reproduces the manifest (${Object.keys(recorded.files).length} files)`);
+      if (!problems.length)
+        out.info(`ok      regeneration reproduces the manifest (${Object.keys(recorded.files).length} files)`);
       return !problems.length;
     });
     return currentOk && regeneratedOk;

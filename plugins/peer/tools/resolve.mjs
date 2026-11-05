@@ -18,11 +18,18 @@ import { parseArgs } from 'node:util';
 import { operatorLayer, readLayerFile, resolveConfiguration } from './lib/config.mjs';
 import { sourceRoot, usage } from './lib/cli.mjs';
 import {
-  canonical, canonicalLocation, hostContext, isWithin, localDirectory, runRoot, scratchRoot,
+  canonical,
+  canonicalLocation,
+  hostContext,
+  isWithin,
+  localDirectory,
+  runRoot,
+  scratchRoot,
 } from './lib/paths.mjs';
 
-const USAGE = 'node tools/resolve.mjs --repo <checkout> [--run <run-id>] [--plan <name>] [--phase <id>] '
-  + '[--profile <name>=<agent>,<model>,<effort>]... [--assign <role-or-seat>=<profile>]...';
+const USAGE =
+  'node tools/resolve.mjs --repo <checkout> [--run <run-id>] [--plan <name>] [--phase <id>] ' +
+  '[--profile <name>=<agent>,<model>,<effort>]... [--assign <role-or-seat>=<profile>]...';
 const NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 let values;

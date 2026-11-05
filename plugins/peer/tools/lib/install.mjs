@@ -13,8 +13,23 @@ export const ROLE_SKILLS = ['plan-coordinator', 'plan-responsible-party', 'plan-
 // Binding and on-demand peer skills are entry points, not worker-profile roles.
 // Installing them with the supervised roles does not require their callers to
 // enter the plan workflow.
-export const WORKFLOW_SKILLS = ['bind-agent-workflow', ...ROLE_SKILLS, 'peer-review', 'peer-decision-making', 'peer-implementation', 'successor'];
-export const WRITING_SKILLS = ['clarify-artifact', 'write-for-humans', 'write-for-agents', 'maintain-glossary', 'record-decision', 'write-issue', 'write-pr'];
+export const WORKFLOW_SKILLS = [
+  'bind-agent-workflow',
+  ...ROLE_SKILLS,
+  'peer-review',
+  'peer-decision-making',
+  'peer-implementation',
+  'successor',
+];
+export const WRITING_SKILLS = [
+  'clarify-artifact',
+  'write-for-humans',
+  'write-for-agents',
+  'maintain-glossary',
+  'record-decision',
+  'write-issue',
+  'write-pr',
+];
 /** The published ADR and glossary formats and their adoption rules, in `docs/guidance/`, read by the vocabulary and decision skills. */
 export const RECORD_FORMATS = ['adr-format.md', 'glossary-format.md', 'record-format-adoption.md'];
 
@@ -34,16 +49,27 @@ export const SKILL_SETS = {
     skills: WORKFLOW_SKILLS,
     dependencies: ['writing'],
     references: [
-      ['workflow', 'PROCESS.md'], ['workflow', 'ORCA.md'], ['workflow', 'RECORDS.md'], ['workflow', 'BINDING.md'], ['workflow', 'templates', 'binding.md'],
-      ['defaults.yaml'], ['tools', 'resolve.mjs'], ['tools', 'bind.mjs'],
-      ['tools', 'peer-records.mjs'], ['tools', 'lib', 'peer-records.mjs'],
-      ['tools', 'lib', 'paths.mjs'], ['tools', 'lib', 'cli.mjs'],
-      ['tools', 'lib', 'bind.mjs'], ['tools', 'lib', 'git.mjs'],
+      ['workflow', 'PROCESS.md'],
+      ['workflow', 'ORCA.md'],
+      ['workflow', 'RECORDS.md'],
+      ['workflow', 'BINDING.md'],
+      ['workflow', 'templates', 'binding.md'],
+      ['defaults.yaml'],
+      ['tools', 'resolve.mjs'],
+      ['tools', 'bind.mjs'],
+      ['tools', 'peer-records.mjs'],
+      ['tools', 'lib', 'peer-records.mjs'],
+      ['tools', 'lib', 'paths.mjs'],
+      ['tools', 'lib', 'cli.mjs'],
+      ['tools', 'lib', 'bind.mjs'],
+      ['tools', 'lib', 'git.mjs'],
       ['package.json'],
-      ['tools', 'successor.mjs'], ['tools', 'lib', 'successor.mjs'],
+      ['tools', 'successor.mjs'],
+      ['tools', 'lib', 'successor.mjs'],
       ['tools', 'lib', 'successor-instructions.mjs'],
       ['tools', 'lib', 'successor-recovery.mjs'],
-      ['tools', 'succession.mjs'], ['tools', 'lib', 'succession.mjs'],
+      ['tools', 'succession.mjs'],
+      ['tools', 'lib', 'succession.mjs'],
       ['skills', 'successor', 'references', 'mechanics.md'],
       ['skills', 'successor', 'references', 'coordinator.md'],
       ['skills', 'successor', 'references', 'recovery.md'],
@@ -67,7 +93,8 @@ function selectedSets(sets = Object.keys(SKILL_SETS), dependencies = true) {
   const names = new Set();
   function add(name) {
     // An own-property test, so that inherited names such as `constructor` are unknown too.
-    if (!Object.hasOwn(SKILL_SETS, name)) throw new Error(`unknown skill set '${name}'; the sets are ${Object.keys(SKILL_SETS).join(', ')}`);
+    if (!Object.hasOwn(SKILL_SETS, name))
+      throw new Error(`unknown skill set '${name}'; the sets are ${Object.keys(SKILL_SETS).join(', ')}`);
     if (names.has(name)) return;
     names.add(name);
     if (dependencies) for (const dependency of SKILL_SETS[name].dependencies ?? []) add(dependency);
@@ -139,8 +166,11 @@ function staleSkillLink(dest, skill, platform) {
     if (!fs.lstatSync(dest).isSymbolicLink()) return false;
     const p = pathFor(platform);
     const target = p.resolve(p.dirname(dest), fs.readlinkSync(dest));
-    if (comparable(p.basename(target), platform) !== comparable(skill, platform)
-        || comparable(p.basename(p.dirname(target)), platform) !== 'skills') return false;
+    if (
+      comparable(p.basename(target), platform) !== comparable(skill, platform) ||
+      comparable(p.basename(p.dirname(target)), platform) !== 'skills'
+    )
+      return false;
     try {
       fs.statSync(dest);
       return false;
@@ -213,10 +243,12 @@ function command(verb, sets) {
 
 /** Recovery advice for destinations left alone, scoped to the selected sets. */
 function occupiedHelp(sets) {
-  return 'help    The installer never changes entries it does not own or cannot inspect, except that link repairs dangling links to the same skills/<name> in a former checkout. Inspect each '
-    + 'one above: restore access to one that cannot be inspected; if one is stale, remove it yourself, or run '
-    + `${command('unlink', sets === undefined ? undefined : selectedSets(sets))} from the checkout it links to while that checkout still exists. Then run `
-    + `${command('link', sets)} again.`;
+  return (
+    'help    The installer never changes entries it does not own or cannot inspect, except that link repairs dangling links to the same skills/<name> in a former checkout. Inspect each ' +
+    'one above: restore access to one that cannot be inspected; if one is stale, remove it yourself, or run ' +
+    `${command('unlink', sets === undefined ? undefined : selectedSets(sets))} from the checkout it links to while that checkout still exists. Then run ` +
+    `${command('link', sets)} again.`
+  );
 }
 
 /** `a`, `a and b`, or `a, b and c`. */
@@ -241,9 +273,11 @@ function absentSetHelp({ set, present, dirs }) {
   if (dependents.length) {
     return `help    The ${listed(dependents)} set requires the absent ${set} set in ${listed(dirs)}; run ${command('link', [set])} from this checkout. Checking ${listed(dependents)} alone also checks this dependency.`;
   }
-  return `help    No skill of the ${set} set is installed in ${listed(dirs)}, where ${installed} ${several ? 'are' : 'is'}. `
-    + `To install it too, run ${command('link', [set])}; if only ${installed} ${several ? 'were' : 'was'} intended, run `
-    + `${command('check', present)} to check ${several ? 'those sets' : 'that set'} alone.`;
+  return (
+    `help    No skill of the ${set} set is installed in ${listed(dirs)}, where ${installed} ${several ? 'are' : 'is'}. ` +
+    `To install it too, run ${command('link', [set])}; if only ${installed} ${several ? 'were' : 'was'} intended, run ` +
+    `${command('check', present)} to check ${several ? 'those sets' : 'that set'} alone.`
+  );
 }
 
 /**
@@ -261,7 +295,8 @@ function unusable(file, name) {
   } catch (error) {
     return absent(error) ? 'missing' : `cannot resolve ${name} (${error.code})`;
   }
-  if (!stat.isFile()) return `finds ${stat.isDirectory() ? 'a directory' : 'another kind of entry'}, not a regular file, at ${name}`;
+  if (!stat.isFile())
+    return `finds ${stat.isDirectory() ? 'a directory' : 'another kind of entry'}, not a regular file, at ${name}`;
   try {
     fs.accessSync(file, fs.constants.R_OK);
   } catch (error) {
@@ -377,7 +412,7 @@ export function checkLinks({ sourceRoot, scopes, sets, platform = process.platfo
   for (const { dir } of scopes) {
     const tally = {}; // set -> how many of its skills are missing from, or this checkout's links in, this scope
     for (const { set, skill, references } of selected(sets)) {
-      const counts = tally[set] ??= { nothing: 0, owned: 0, total: 0 };
+      const counts = (tally[set] ??= { nothing: 0, owned: 0, total: 0 });
       counts.total += 1;
       const dest = path.join(dir, skill);
       const expected = path.join(sourceRoot, 'skills', skill);
@@ -441,7 +476,9 @@ export function checkLinks({ sourceRoot, scopes, sets, platform = process.platfo
   }
   for (const group of helpGroups.values()) out.error(absentSetHelp(group));
   for (const [set, dirs] of partialGroups) {
-    out.error(`help    The ${set} set is partly linked in ${listed(dirs)}; run ${command('link', [set])} from this checkout to add the missing links.`);
+    out.error(
+      `help    The ${set} set is partly linked in ${listed(dirs)}; run ${command('link', [set])} from this checkout to add the missing links.`,
+    );
   }
   if (foreign) out.error(occupiedHelp(sets));
   return ok;
@@ -453,7 +490,9 @@ export function packageDocuments(sourceRoot) {
   for (const dir of ['docs', 'skills', 'workflow']) {
     if (!fs.existsSync(path.join(sourceRoot, dir))) continue;
     const walk = (current) => {
-      for (const entry of fs.readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      for (const entry of fs
+        .readdirSync(current, { withFileTypes: true })
+        .sort((a, b) => a.name.localeCompare(b.name))) {
         const full = path.join(current, entry.name);
         if (entry.isDirectory()) walk(full);
         else if (entry.isFile() && entry.name.endsWith('.md')) files.push(full);
@@ -511,7 +550,8 @@ export function checkReferences({ sourceRoot, files = packageDocuments(sourceRoo
       return;
     }
     if (resolved === null) fail(file, line, `missing ${label} ${target}`);
-    else if (!isWithin(root, resolved)) fail(file, line, `${label} ${target} resolves outside the package to ${resolved}`);
+    else if (!isWithin(root, resolved))
+      fail(file, line, `${label} ${target} resolves outside the package to ${resolved}`);
   };
   for (const file of files) {
     const { links, named } = referencesIn(fs.readFileSync(file, 'utf8'));

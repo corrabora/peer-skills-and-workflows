@@ -78,8 +78,10 @@ export class YamlError extends Error {
 /** The installed runtime payload is incomplete. */
 export class MissingDependencyError extends Error {
   constructor() {
-    super(`the 'yaml' runtime dependency is missing from ${path.join(SOURCE_ROOT, 'tools', 'vendor')}; `
-      + 'reinstall the package or regenerate its vendored dependencies from the source checkout');
+    super(
+      `the 'yaml' runtime dependency is missing from ${path.join(SOURCE_ROOT, 'tools', 'vendor')}; ` +
+        'reinstall the package or regenerate its vendored dependencies from the source checkout',
+    );
     this.name = 'MissingDependencyError';
   }
 }
@@ -124,7 +126,9 @@ function loadYaml() {
 export function parseYaml(text, { firstLine = 1 } = {}) {
   const { CST, parseAllDocuments, Parser } = loadYaml();
   const source = { text, firstLine };
-  const fail = (message, offset) => { throw located(source, message, offset); };
+  const fail = (message, offset) => {
+    throw located(source, message, offset);
+  };
 
   const tokens = [...new Parser().parse(text)];
   refuseCharacters(text, tokens, fail);
@@ -153,8 +157,11 @@ export function parseYaml(text, { firstLine = 1 } = {}) {
     const difference = firstDifference(value, compared, []);
     const { node, rest } = nodeAt(document, difference.path);
     const where = rest.length ? `at ${rest.map(describeStep).join(', ')} inside the value here` : 'here';
-    fail(`YAML 1.2 reads ${describe(difference.a)} ${where} and YAML 1.1 reads ${describe(difference.b)}; `
-      + 'write it so both read the same, for example by quoting a value meant as text', node?.range?.[0]);
+    fail(
+      `YAML 1.2 reads ${describe(difference.a)} ${where} and YAML 1.1 reads ${describe(difference.b)}; ` +
+        'write it so both read the same, for example by quoting a value meant as text',
+      node?.range?.[0],
+    );
   }
   return value;
 }
@@ -193,7 +200,11 @@ function unbrokenBlockScalars(tokens, CST) {
     if (/[^ ]/.test(last) || last.length > indent) offsets.add(token.offset);
   };
   for (const token of tokens) {
-    if (token.type === 'document') CST.visit(token, (item) => { check(item.key); check(item.value); });
+    if (token.type === 'document')
+      CST.visit(token, (item) => {
+        check(item.key);
+        check(item.value);
+      });
   }
   return offsets;
 }
@@ -252,8 +263,11 @@ function checkKey(key, document, fail) {
   // The package's YAML 1.1 schema takes any plain `<<` key, tagged or not, as
   // its merge key (yaml.org/type/merge), which YAML 1.2 reads as the text '<<'.
   if (isScalar(key) && key.type === 'PLAIN' && key.value === '<<') {
-    fail("a plain '<<' key is the YAML 1.1 merge key, not text, and merge keys are not supported; "
-      + 'write the fields to merge into this mapping instead, or quote it if it is text', key.range[0]);
+    fail(
+      "a plain '<<' key is the YAML 1.1 merge key, not text, and merge keys are not supported; " +
+        'write the fields to merge into this mapping instead, or quote it if it is text',
+      key.range[0],
+    );
   }
 }
 
@@ -308,17 +322,25 @@ function decode(document, fail) {
     value = document.toJS({ maxAliasCount: MAX_ALIAS_COUNT });
   } catch (error) {
     if (!(error instanceof ReferenceError && error.message.startsWith(EXCESSIVE_ALIASES) && raisedAt)) throw error;
-    fail(`alias *${raisedAt.source} takes alias expansion past the package's maxAliasCount of ${MAX_ALIAS_COUNT} `
-      + `(${error.message})`, raisedAt.range[0]);
+    fail(
+      `alias *${raisedAt.source} takes alias expansion past the package's maxAliasCount of ${MAX_ALIAS_COUNT} ` +
+        `(${error.message})`,
+      raisedAt.range[0],
+    );
   }
   return integersAsNumbers(value);
 }
 
 function integersAsNumbers(value) {
   if (typeof value === 'bigint') {
-    return value <= BigInt(Number.MAX_SAFE_INTEGER) && value >= -BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : value;
+    return value <= BigInt(Number.MAX_SAFE_INTEGER) && value >= -BigInt(Number.MAX_SAFE_INTEGER)
+      ? Number(value)
+      : value;
   }
-  if (Array.isArray(value)) value.forEach((item, index) => { value[index] = integersAsNumbers(item); });
+  if (Array.isArray(value))
+    value.forEach((item, index) => {
+      value[index] = integersAsNumbers(item);
+    });
   else if (isPlainObject(value)) for (const key of Object.keys(value)) value[key] = integersAsNumbers(value[key]);
   return value;
 }
@@ -433,24 +455,35 @@ function refuseCharacters(text, tokens, fail) {
     const [character] = match;
     const code = character.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
     if (ONE_VERSION_LINE_BREAKS[character]) {
-      fail(`U+${code} is a line break in YAML 1.1 but text in YAML 1.2, so the two read this differently; `
-        + `inside a double-quoted value write it as ${ONE_VERSION_LINE_BREAKS[character]} or \\u${code}, elsewhere remove it`, match.index);
+      fail(
+        `U+${code} is a line break in YAML 1.1 but text in YAML 1.2, so the two read this differently; ` +
+          `inside a double-quoted value write it as ${ONE_VERSION_LINE_BREAKS[character]} or \\u${code}, elsewhere remove it`,
+        match.index,
+      );
     }
     if (C0_CONTROL.test(character)) {
-      fail(`U+${code} is a control character, which YAML does not accept anywhere in its source; `
-        + `remove it, or inside a double-quoted value write it as \\u${code}`, match.index);
+      fail(
+        `U+${code} is a control character, which YAML does not accept anywhere in its source; ` +
+          `remove it, or inside a double-quoted value write it as \\u${code}`,
+        match.index,
+      );
     }
     checkedSpanAt ??= spanLookup(checkedSpans(tokens));
     const span = checkedSpanAt(match.index);
     if (!span) continue;
     if (UNPAIRED_SURROGATE.test(character)) {
-      fail(`U+${code} is half of a surrogate pair without its other half, which is not a character; remove it`, match.index);
+      fail(
+        `U+${code} is half of a surrogate pair without its other half, which is not a character; remove it`,
+        match.index,
+      );
     }
-    fail(character === BYTE_ORDER_MARK
-      ? `U+${code} is a byte order mark, which YAML accepts only at the start of its source or inside quotes; `
-        + REMEDY[span.kind]
-      : `U+${code} is not a printable character, which YAML accepts only inside quotes; ${REMEDY[span.kind]}`,
-    match.index);
+    fail(
+      character === BYTE_ORDER_MARK
+        ? `U+${code} is a byte order mark, which YAML accepts only at the start of its source or inside quotes; ` +
+            REMEDY[span.kind]
+        : `U+${code} is not a printable character, which YAML accepts only inside quotes; ${REMEDY[span.kind]}`,
+      match.index,
+    );
   }
 }
 
@@ -509,8 +542,11 @@ function checkBoundaryPlain(node, fail) {
   const { value, source } = node;
   const exponentText = EXPONENT_NUMBER.test(source) && (!source.includes('.') || /[eE][0-9]/.test(source));
   if (LEADING_ZERO_DECIMAL.test(source) || exponentText) {
-    fail(`'${source}' is a number in YAML 1.2 but text in YAML 1.1; quote it if it is text, `
-      + 'or write it in a form both read as the same number', node.range[0]);
+    fail(
+      `'${source}' is a number in YAML 1.2 but text in YAML 1.1; quote it if it is text, ` +
+        'or write it in a form both read as the same number',
+      node.range[0],
+    );
   }
   if (value === '=' || value === '<<') {
     fail(`a plain '${value}' is a YAML 1.1 indicator, not text; quote it if it is text`, node.range[0]);
@@ -529,9 +565,10 @@ function located(source, message, offset) {
   const spaces = revealTextSpaces(content);
   if (spaces) {
     const [it, looks] = spaces.plural ? ['them', 'they look like spaces'] : ['it', 'it looks like a space'];
-    message = `${message}; the line is "${spaces.shown}" with ${spaces.named} written as \\uXXXX: ${looks} `
-      + `but YAML reads ${it} as text, not as blank space or separation (if blank space is meant there, delete ${it} `
-      + `or replace ${it} with an ordinary space)`;
+    message =
+      `${message}; the line is "${spaces.shown}" with ${spaces.named} written as \\uXXXX: ${looks} ` +
+      `but YAML reads ${it} as text, not as blank space or separation (if blank space is meant there, delete ${it} ` +
+      `or replace ${it} with an ordinary space)`;
   }
   return new YamlError(message, line + source.firstLine - 1, column);
 }

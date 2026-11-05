@@ -58,7 +58,8 @@ export function readSessionLog(engine, text, file = 'the session log') {
       // A record cut short by a concurrent write or a crash may have dropped a
       // threshold-relevant event, so no complete observation exists; the
       // caller observes again once the engine has finished writing.
-      const fragment = index === lines.length - 1 ? 'is an unterminated final fragment' : 'is not a complete JSON record';
+      const fragment =
+        index === lines.length - 1 ? 'is an unterminated final fragment' : 'is not a complete JSON record';
       throw new Error(`${file} line ${index + 1} ${fragment}; the observation is refused and the counts are unchanged`);
     }
     if (value && typeof value === 'object' && !Array.isArray(value)) records.push({ value, line: index + 1 });
@@ -67,7 +68,15 @@ export function readSessionLog(engine, text, file = 'the session log') {
 }
 
 function readClaude(records) {
-  const result = { session: null, startObserved: false, recognized: false, identity: 'missing', reason: 'no entry records a session id', turns: [], compactions: [] };
+  const result = {
+    session: null,
+    startObserved: false,
+    recognized: false,
+    identity: 'missing',
+    reason: 'no entry records a session id',
+    turns: [],
+    compactions: [],
+  };
   let first = true;
   let chained = 0;
   let sidechain = 0;
@@ -84,14 +93,18 @@ function readClaude(records) {
     // The root session's first chained entry, of whatever type, has no parent;
     // a log that begins later in the chain starts with a parent it lacks.
     if (first && value.isSidechain !== true && typeof value.uuid === 'string' && Object.hasOwn(value, 'parentUuid')) {
-      result.startObserved = value.parentUuid === null && !(value.type === 'system' && value.subtype === 'compact_boundary');
+      result.startObserved =
+        value.parentUuid === null && !(value.type === 'system' && value.subtype === 'compact_boundary');
       first = false;
     }
     if (value.isSidechain === true) continue;
     if (value.type === 'system' && value.subtype === 'compact_boundary') {
       result.compactions.push({ id: value.uuid ?? `line-${line}-${digest(value)}`, at: value.timestamp ?? null });
     } else if (value.type === 'user' && isPrompt(value)) {
-      result.turns.push({ id: value.promptId ?? value.uuid ?? `line-${line}-${digest(value)}`, at: value.timestamp ?? null });
+      result.turns.push({
+        id: value.promptId ?? value.uuid ?? `line-${line}-${digest(value)}`,
+        at: value.timestamp ?? null,
+      });
     }
   }
   if (chained > 0 && sidechain === chained) {
@@ -114,10 +127,19 @@ function isPrompt(entry) {
 }
 
 function readCodex(records) {
-  const result = { session: null, startObserved: false, recognized: false, identity: 'missing', reason: 'no session_meta record', turns: [], compactions: [] };
+  const result = {
+    session: null,
+    startObserved: false,
+    recognized: false,
+    identity: 'missing',
+    reason: 'no session_meta record',
+    turns: [],
+    compactions: [],
+  };
   let meta = false;
   records.forEach(({ value, line }, index) => {
-    const payload = value.payload && typeof value.payload === 'object' && !Array.isArray(value.payload) ? value.payload : {};
+    const payload =
+      value.payload && typeof value.payload === 'object' && !Array.isArray(value.payload) ? value.payload : {};
     if (value.type === 'session_meta') {
       result.recognized = true;
       if (index === 0) result.startObserved = true;
@@ -130,8 +152,10 @@ function readCodex(records) {
       result.turns.push({ id: payload.turn_id ?? `line-${line}-${digest(value)}`, at: value.timestamp ?? null });
     } else if (value.type === 'compacted') {
       result.recognized = true;
-      const id = payload.compaction_response_id ?? payload.window_id
-        ?? (value.timestamp ? `${value.timestamp}#${value.ordinal ?? ''}` : `line-${line}-${digest(value)}`);
+      const id =
+        payload.compaction_response_id ??
+        payload.window_id ??
+        (value.timestamp ? `${value.timestamp}#${value.ordinal ?? ''}` : `line-${line}-${digest(value)}`);
       result.compactions.push({ id, at: value.timestamp ?? null });
     } else if (['turn_context', 'response_item', 'event_msg'].includes(value.type)) {
       result.recognized = true;
@@ -153,7 +177,11 @@ function codexIdentity(payload) {
   }
   if (!id) return { identity: 'missing', reason: 'session_meta records no session id' };
   if (typeof payload.session_id === 'string' && payload.session_id !== id) {
-    return { identity: 'contradictory', reason: `session_meta id ${id} differs from its session_id ${payload.session_id}`, session: id };
+    return {
+      identity: 'contradictory',
+      reason: `session_meta id ${id} differs from its session_id ${payload.session_id}`,
+      session: id,
+    };
   }
   return { identity: 'root', reason: null, session: id };
 }
@@ -161,9 +189,10 @@ function codexIdentity(payload) {
 /** The session id a log's file name carries, or null. */
 export function sessionIdFromPath(engine, file) {
   const name = path.basename(file);
-  const match = engine === 'codex'
-    ? /^rollout-.*-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.jsonl$/i.exec(name)
-    : /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.jsonl$/i.exec(name);
+  const match =
+    engine === 'codex'
+      ? /^rollout-.*-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.jsonl$/i.exec(name)
+      : /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.jsonl$/i.exec(name);
   return match ? match[1].toLowerCase() : null;
 }
 
@@ -215,10 +244,14 @@ export function readCounts(file) {
   try {
     data = JSON.parse(text);
   } catch {
-    throw new Error(`${file} is not a counts file (invalid JSON); restore it rather than starting counts again; report the problem if no valid copy is available`);
+    throw new Error(
+      `${file} is not a counts file (invalid JSON); restore it rather than starting counts again; report the problem if no valid copy is available`,
+    );
   }
   if (data?.format !== COUNTS_FORMAT || data.version !== COUNTS_VERSION || !Array.isArray(data.sessions)) {
-    throw new Error(`${file} is not a version ${COUNTS_VERSION} counts file; restore it rather than starting counts again; report the problem if no valid copy is available`);
+    throw new Error(
+      `${file} is not a version ${COUNTS_VERSION} counts file; restore it rather than starting counts again; report the problem if no valid copy is available`,
+    );
   }
   checkCounts(data, file);
   return data;
@@ -229,8 +262,10 @@ export function readCounts(file) {
 // event IDs, even when earlier history is unknown and lowerBound is true.
 function checkCounts(data, file) {
   const fail = (field, message) => {
-    throw new Error(`${file}: invalid version ${COUNTS_VERSION} counts at ${field}: ${message}; `
-      + 'restore a valid copy rather than starting counts again; report the problem if none is available');
+    throw new Error(
+      `${file}: invalid version ${COUNTS_VERSION} counts at ${field}: ${message}; ` +
+        'restore a valid copy rather than starting counts again; report the problem if none is available',
+    );
   };
   const record = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
   const text = (value) => typeof value === 'string' && value.trim() !== '';
@@ -285,18 +320,28 @@ export function writeCounts(file, counts) {
  * own, leaving earlier sessions' final counts as they were. `lowerBound`
  * records that events before the observed log are unknown.
  */
-export function mergeObservation(counts, { engine, log, observation, lowerBound = false, at = new Date().toISOString() }) {
+export function mergeObservation(
+  counts,
+  { engine, log, observation, lowerBound = false, at = new Date().toISOString() },
+) {
   if (!observation.recognized) {
-    throw new Error(`${log} has no ${engine} session records, so turns and compactions cannot be observed from it; `
-      + 'report the counts as unobservable rather than zero');
+    throw new Error(
+      `${log} has no ${engine} session records, so turns and compactions cannot be observed from it; ` +
+        'report the counts as unobservable rather than zero',
+    );
   }
   if (observation.identity === 'subagent') {
-    throw new Error(`${log} belongs to a sub-agent session (${observation.reason}), not the coordinator's own; observe the coordinator's own log`);
+    throw new Error(
+      `${log} belongs to a sub-agent session (${observation.reason}), not the coordinator's own; observe the coordinator's own log`,
+    );
   }
   if (observation.identity === 'contradictory') {
-    throw new Error(`${log} records contradictory session identities (${observation.reason}); its counts cannot be attributed`);
+    throw new Error(
+      `${log} records contradictory session identities (${observation.reason}); its counts cannot be attributed`,
+    );
   }
-  if (!observation.session) throw new Error(`${log} names no session, so its counts cannot be kept apart from another session's`);
+  if (!observation.session)
+    throw new Error(`${log} names no session, so its counts cannot be kept apart from another session's`);
   const sessions = counts.sessions.map((entry) => ({ ...entry }));
   let entry = sessions.find((candidate) => candidate.session === observation.session);
   if (entry && entry.engine !== engine) {
@@ -340,15 +385,27 @@ export function observationFor(engine, file, text, counts) {
   const observation = readSessionLog(engine, text, file);
   const fileId = sessionIdFromPath(engine, file);
   if (observation.identity === 'root' && fileId !== null && fileId !== observation.session.toLowerCase()) {
-    return { ...observation, identity: 'contradictory', reason: `it records session ${observation.session} but its file name carries ${fileId}` };
+    return {
+      ...observation,
+      identity: 'contradictory',
+      reason: `it records session ${observation.session} but its file name carries ${fileId}`,
+    };
   }
   if (observation.identity === 'missing') {
-    const established = fileId !== null && counts.sessions.some((entry) => entry.session.toLowerCase() === fileId && entry.engine === engine);
+    const established =
+      fileId !== null &&
+      counts.sessions.some((entry) => entry.session.toLowerCase() === fileId && entry.engine === engine);
     if (!established) {
-      throw new Error(`${file} does not record whose session it is (${observation.reason}), and no established coordinator session `
-        + 'matches its file name; locate the coordinator\'s log first');
+      throw new Error(
+        `${file} does not record whose session it is (${observation.reason}), and no established coordinator session ` +
+          "matches its file name; locate the coordinator's log first",
+      );
     }
-    return { ...observation, session: counts.sessions.find((entry) => entry.session.toLowerCase() === fileId).session, startObserved: false };
+    return {
+      ...observation,
+      session: counts.sessions.find((entry) => entry.session.toLowerCase() === fileId).session,
+      startObserved: false,
+    };
   }
   return observation;
 }
@@ -384,7 +441,11 @@ export function assessSuccession(counts, thresholds) {
     earlierSessions: counts.sessions
       .filter((candidate) => candidate.session !== entry.session)
       .map(({ session, engine, turns, compactions, lowerBound }) => ({
-        session, engine, turns: turns.count, compactions: compactions.count, lowerBound,
+        session,
+        engine,
+        turns: turns.count,
+        compactions: compactions.count,
+        lowerBound,
       })),
   };
 }
@@ -392,8 +453,16 @@ export function assessSuccession(counts, thresholds) {
 /** The directory under the engine's home that holds its session logs. */
 function logRoot(engine, home, env) {
   return engine === 'claude'
-    ? path.join(env.CLAUDE_CONFIG_DIR && path.isAbsolute(env.CLAUDE_CONFIG_DIR) ? env.CLAUDE_CONFIG_DIR : path.join(home, '.claude'), 'projects')
-    : path.join(env.CODEX_HOME && path.isAbsolute(env.CODEX_HOME) ? env.CODEX_HOME : path.join(home, '.codex'), 'sessions');
+    ? path.join(
+        env.CLAUDE_CONFIG_DIR && path.isAbsolute(env.CLAUDE_CONFIG_DIR)
+          ? env.CLAUDE_CONFIG_DIR
+          : path.join(home, '.claude'),
+        'projects',
+      )
+    : path.join(
+        env.CODEX_HOME && path.isAbsolute(env.CODEX_HOME) ? env.CODEX_HOME : path.join(home, '.codex'),
+        'sessions',
+      );
 }
 
 /** Session log files under `root`, leaving out Claude's sub-agent transcripts. */
@@ -411,7 +480,11 @@ function logFiles(engine, root) {
       const full = path.join(dir, item.name);
       if (item.isDirectory()) {
         if (!(engine === 'claude' && item.name === 'subagents')) walk(full);
-      } else if (item.isFile() && item.name.endsWith('.jsonl') && (engine === 'claude' || item.name.startsWith('rollout-'))) {
+      } else if (
+        item.isFile() &&
+        item.name.endsWith('.jsonl') &&
+        (engine === 'claude' || item.name.startsWith('rollout-'))
+      ) {
         found.push(full);
       }
     }
@@ -443,13 +516,18 @@ export function locateLog({ engine, home, env = process.env, session = null, mar
       if (check.ok) established.push(file);
       else excluded.push({ log: file, reason: check.reason });
     }
-    if (established.length === 1) return { log: established[0], session: id, basis: session ? 'given session' : 'environment', excluded };
-    throw new Error(established.length > 1
-      ? `${established.length} logs are established for session ${id}: ${established.join(', ')}`
-      : `no log is established for session ${id} under ${root}${describe(excluded)}`);
+    if (established.length === 1)
+      return { log: established[0], session: id, basis: session ? 'given session' : 'environment', excluded };
+    throw new Error(
+      established.length > 1
+        ? `${established.length} logs are established for session ${id}: ${established.join(', ')}`
+        : `no log is established for session ${id} under ${root}${describe(excluded)}`,
+    );
   }
   if (!marker || marker.length < 16) {
-    throw new Error('no session identity is available from the engine; print a marker with the marker command, then locate with --marker');
+    throw new Error(
+      'no session identity is available from the engine; print a marker with the marker command, then locate with --marker',
+    );
   }
   const found = [];
   for (const file of logFiles(engine, root)) {
@@ -461,15 +539,20 @@ export function locateLog({ engine, home, env = process.env, session = null, mar
     if (observation.identity !== 'root') {
       excluded.push({ log: file, reason: observation.reason });
     } else if (fileId !== null && fileId !== observation.session.toLowerCase()) {
-      excluded.push({ log: file, reason: `it records session ${observation.session} but its file name carries ${fileId}` });
+      excluded.push({
+        log: file,
+        reason: `it records session ${observation.session} but its file name carries ${fileId}`,
+      });
     } else {
       found.push({ file, session: observation.session });
     }
   }
   if (found.length === 1) return { log: found[0].file, session: found[0].session, basis: 'marker', excluded };
-  throw new Error(found.length > 1
-    ? `${found.length} root session logs contain the marker, so this session's log is ambiguous: ${found.map((entry) => entry.file).join(', ')}`
-    : `no root session log modified in the window contains the marker${describe(excluded)}`);
+  throw new Error(
+    found.length > 1
+      ? `${found.length} root session logs contain the marker, so this session's log is ambiguous: ${found.map((entry) => entry.file).join(', ')}`
+      : `no root session log modified in the window contains the marker${describe(excluded)}`,
+  );
 }
 
 function describe(excluded) {

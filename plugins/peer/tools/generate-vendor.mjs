@@ -11,7 +11,9 @@ const args = process.argv.slice(2);
 let check = false;
 let cache;
 if (args.length === 1 && ['--help', '-h'].includes(args[0])) {
-  out.info(`usage: ${USAGE}\n\nWithout --check, replaces tools/vendor/node_modules and manifest.json from\ntools/vendor/package-lock.json. --check verifies the current payload offline and\ncompares a fresh regeneration with it, changing nothing.`);
+  out.info(
+    `usage: ${USAGE}\n\nWithout --check, replaces tools/vendor/node_modules and manifest.json from\ntools/vendor/package-lock.json. --check verifies the current payload offline and\ncompares a fresh regeneration with it, changing nothing.`,
+  );
   process.exit(0);
 }
 while (args.length) {
