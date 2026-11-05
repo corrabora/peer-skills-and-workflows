@@ -28,7 +28,7 @@ export function readLayerFile(file, { allowPhases = false } = {}) {
   try {
     data = parseYaml(text.replace(/^\uFEFF/, ''));
   } catch (error) {
-    if (error instanceof YamlError) throw new Error(`${file}: ${error.message}`);
+    if (error instanceof YamlError) throw new Error(`${file}: ${error.message}`, { cause: error });
     throw error;
   }
   return checkLayer(data ?? {}, file, { allowPhases });

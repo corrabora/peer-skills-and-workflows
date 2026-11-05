@@ -5,5 +5,28 @@
   "description": "Peer skills and orchestrated workflows for Claude and Codex, with their Node.js tools; not published.",
   "engines": {
     "node": ">=22"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^22.13 || >=24",
+      "onFail": "error"
+    }
+  },
+  "scripts": {
+    "lint": "node tools/lint.mjs",
+    "verify": "node tools/verify.mjs",
+    "test": "node tools/lint.mjs && node --test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.14.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-n": "18.5.0",
+    "eslint-plugin-prettier": "5.5.7",
+    "prettier": "3.9.10"
+  },
+  "overrides": {
+    "minimatch": "11.0.4"
   }
 }

@@ -884,7 +884,7 @@ function openLinks(text) {
   return text.replace(
     /\[([^\]]*)\]\((?:<([^>\r\n]*)>|([^)\s]*))\)/g,
     (_, label, angleTarget, target) =>
-      `${label} ${(angleTarget ?? target).replace(/[^A-Za-z0-9._~\/%#:-]/gu, (character) =>
+      `${label} ${(angleTarget ?? target).replace(/[^A-Za-z0-9._~/%#:-]/gu, (character) =>
         encodeURIComponent(character).replace(
           /[!'()*]/g,
           (punctuation) => `%${punctuation.charCodeAt(0).toString(16).toUpperCase()}`,

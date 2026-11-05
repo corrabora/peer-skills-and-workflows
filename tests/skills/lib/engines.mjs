@@ -70,6 +70,7 @@ export function codexSessionInstruction(
     }
     throw new Error(
       `cannot read the Codex session instruction at ${file}: ${error?.code ? `${error.code}: ` : ''}${error?.message ?? error}`,
+      { cause: error },
     );
   }
   let decoded;

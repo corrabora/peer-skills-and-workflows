@@ -39,7 +39,9 @@ function locateRevision(spec, name, { repo, stagingDir }) {
   try {
     tree = resolveTree(repository, spec);
   } catch (error) {
-    throw new Error(`--suite '${spec}' is neither a directory nor a tree-ish of ${repository}: ${error.message}`);
+    throw new Error(`--suite '${spec}' is neither a directory nor a tree-ish of ${repository}: ${error.message}`, {
+      cause: error,
+    });
   }
   const prefix = `tests/skills/suites/${name}`;
   const dest = path.join(stagingDir, name);

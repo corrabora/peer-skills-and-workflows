@@ -11,10 +11,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
 import {
-  checkoutFacts,
   compareManifests,
   establishLocalStorage,
-  excludeFile,
   sourceIdentity,
   sourceManifest,
   workflowSourceIdentity,
@@ -25,7 +23,6 @@ import {
   scratch,
   GIT_ENV,
   git,
-  run,
   repository,
   write,
   qualityFixture,

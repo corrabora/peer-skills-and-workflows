@@ -44,7 +44,7 @@ function entry(target) {
     return fs.lstatSync(target);
   } catch (error) {
     if (error.code === 'ENOENT') return null;
-    throw new Error(`cannot inspect ${target}: ${error.code ?? error.message}`);
+    throw new Error(`cannot inspect ${target}: ${error.code ?? error.message}`, { cause: error });
   }
 }
 

@@ -209,7 +209,7 @@ export function checkoutFacts(checkout) {
         error.message,
       )
     ) {
-      throw new Error(`${checkout} is not inside a Git working tree (${error.message})`);
+      throw new Error(`${checkout} is not inside a Git working tree (${error.message})`, { cause: error });
     }
     throw error;
   }
@@ -1048,7 +1048,7 @@ function childPins(root, paths, { exact = false } = {}) {
   const selected = paths.map((item) => `:(top,literal)${item === '.' ? '' : item}`);
   // A literal path includes descendants by default. Ancestor lookups need
   // only the entry itself; subtree readers deliberately retain descendants.
-  if (exact) selected.push(...paths.map((item) => `:(top,exclude,glob)${item.replace(/[\\*?\[\]]/g, '\\$&')}/**`));
+  if (exact) selected.push(...paths.map((item) => `:(top,exclude,glob)${item.replace(/[\\*?[\]]/g, '\\$&')}/**`));
   const listed = gitRecords(gitIn(root)(['ls-files', '-s', '-z', '--', ...selected], { bytes: true }));
   const gitlink = listed.invalid.find((record) => record.subarray(0, 7).toString('latin1') === '160000 ');
   if (gitlink)
@@ -1674,13 +1674,15 @@ export function sourceIdentity(checkout, source) {
       bytes: stat.size,
     };
   } catch (error) {
-    if (owner !== checkout && !(error instanceof SourceAccessError) && error.message.startsWith('git '))
-      error = new SourceAccessError(owner, error);
+    const failure =
+      owner !== checkout && !(error instanceof SourceAccessError) && error.message.startsWith('git ')
+        ? new SourceAccessError(owner, error)
+        : error;
     return {
       ...base,
       ...alias,
       ...(repositories.length ? { repositories } : {}),
-      ...incompleteIdentity(error, checkout),
+      ...incompleteIdentity(failure, checkout),
     };
   }
 }

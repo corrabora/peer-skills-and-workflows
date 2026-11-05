@@ -25,5 +25,7 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Install authoring toolchain
+        run: npm ci --ignore-scripts
       - name: Run repository verification
         run: node tools/verify.mjs

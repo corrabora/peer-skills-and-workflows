@@ -368,7 +368,8 @@ export function captureSources(s, { fromLine, scope } = {}) {
     const retained = segment.entries.filter((v) => v.line >= last.fromLine).slice(0, last.entries.length);
     // Widening exposes additional ancestry, but must preserve original text,
     // identities and locations. Earlier capture blobs remain unchanged.
-    const original = ({ parentId, ancestorInstructionIds, ancestryEnd, ...v }) => v;
+    const lineageKeys = ['parentId', 'ancestorInstructionIds', 'ancestryEnd'];
+    const original = (v) => Object.fromEntries(Object.entries(v).filter(([key]) => !lineageKeys.includes(key)));
     assert(
       JSON.stringify(retained.map(original)) === JSON.stringify(last.entries.map(original)),
       'previous source messages changed',

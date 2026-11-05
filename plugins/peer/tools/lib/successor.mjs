@@ -72,7 +72,7 @@ export function readChain(root) {
   try {
     s = JSON.parse(regular(file));
   } catch (e) {
-    throw new Error(`cannot read ${file}: ${e.message}; preserve and repair the record`);
+    throw new Error(`cannot read ${file}: ${e.message}; preserve and repair the record`, { cause: e });
   }
   assert(object(s) && s.format === FORMAT && s.version === 1, `${file}: unsupported succession format/version`);
   assert(
@@ -226,7 +226,9 @@ function locked(root, action) {
   try {
     fd = fs.openSync(lock, 'wx', 0o600);
   } catch (e) {
-    throw new Error(`${lock}: ${e.code}; another state update may be active; inspect before removing a stale lock`);
+    throw new Error(`${lock}: ${e.code}; another state update may be active; inspect before removing a stale lock`, {
+      cause: e,
+    });
   }
   try {
     fs.writeFileSync(fd, String(process.pid));

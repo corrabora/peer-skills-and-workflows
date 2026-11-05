@@ -1,6 +1,7 @@
 // The vendored tree under tools/vendor is the package's only runtime
-// dependency source, so a host that installs from the root package (as Claude
+// dependency source, so a host that installs from the plugin root (as Claude
 // Code runs `npm ci` there) neither needs the network nor adds a second copy.
+// The repository root's lock describes only the development toolchain.
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -24,11 +25,25 @@ test('runtime dependencies are declared and locked only under tools/vendor', () 
     undefined,
     'package.json at the repository root declares runtime dependencies; move them to tools/vendor/package.json, the only runtime dependency source',
   );
+  const lock = json('package-lock.json');
+  assert.equal(lock.packages[''].dependencies, undefined, 'the root lock records no runtime dependencies');
+  for (const [location, entry] of Object.entries(lock.packages)) {
+    if (location === '') continue;
+    assert.equal(
+      entry.dev,
+      true,
+      `the root lock installs ${location} for runtime use; runtime dependencies belong in tools/vendor/package.json`,
+    );
+  }
   assert.equal(
-    fs.existsSync(path.join(packageRoot, 'package-lock.json')),
+    fs.existsSync(path.join(packageRoot, 'plugins/peer/package-lock.json')),
     false,
-    'unexpected package-lock.json at the repository root, usually left by running npm install there; delete it and do not commit it, because runtime dependencies are vendored under tools/vendor and hosts run npm ci at the root',
+    'the plugin payload ships no lockfile, so a host installing it resolves nothing',
   );
+  const shipped = json('plugins/peer/package.json');
+  for (const field of ['dependencies', 'devDependencies', 'scripts']) {
+    assert.equal(shipped[field], undefined, `the plugin manifest ships no ${field}`);
+  }
 });
 
 test('offline vendor verification detects payload, version, membership and provenance drift', async (t) => {
