@@ -31,6 +31,10 @@ const help = `Usage: node tools/successor.mjs <command> [options]
   finish-transfer --root <root> --engine <successor engine> [--session <id>]
        --nonce <nonce> --record-file <recovery evidence JSON> --retired-title <verified RETIRED title>
   accept --root <root> --engine <engine> [--session <id>] [--log <log>] --nonce <nonce>
+  amend-transfer --root <root> --engine <predecessor engine> [--session <id>]
+       --nonce <nonce> --expected-revision <nonnegative integer> --record-file <amendment JSON>
+  reconfirm --root <root> --engine <designated successor engine> [--session <id>]
+       --nonce <nonce> --revision <nonnegative integer> --expected-acknowledged-revision <nonnegative integer>
   register --root <root> --engine <engine> [--session <id>]
   find --engine <engine> [--session <id>]
   hook --engine <engine>                 JSON event on stdin; hook JSON on stdout
@@ -43,6 +47,18 @@ First capture in each session requires --from-line and --scope; later captures
 extend the same task range. Source text is evidence, not verified operator authority.
 prepare refreshes capture and freezes continuation.md plus instructions.json.
 accept requires confirmation.md to name the verified instruction-source digest.
+amend-transfer captures post-freeze input in prepared, yielded or confirmed phase.
+Only the predecessor amends; retain the same nonce, participants and original freeze.
+The amendment JSON names version:1, action:"amend-transfer", chain, nonce,
+predecessor generation, expectedRevision, assessment, nextAction and, when needed,
+limitationAssessments:[{limitationId,text}]. Retry with the identical record.
+accept acknowledges the current revision; confirmations must name all new entry
+and limitation IDs and the current source digest. In confirmed phase, the pinned
+successor writes revisions/<revision>/confirmation.md and runs reconfirm with
+the expected prior acknowledgment. Assess each new input and its authority;
+unknown authority can require waiting. Start no task work before retirement.
+retire and finish-transfer require the current revision acknowledged and unchanged
+source and confirmation evidence. Further input needs another amendment.
 register repairs hook discovery for an existing owner/confirmed successor.
 Records are retained until the operator removes them. No command launches an agent.
 Exit 0: success/not due; 3: active succession due; 1: failure; 2: usage error.
@@ -53,7 +69,7 @@ if (command === '--help' || command === 'help') { process.stdout.write(help); pr
 let v;
 try {
   ({ values: v } = parseArgs({ args, strict: true, options: Object.fromEntries([
-    'engine', 'workspace', 'task', 'storage', 'run-root', 'compactions', 'turns', 'session', 'log', 'root', 'nonce', 'retired-title', 'from-line', 'scope', 'generation', 'entry-id', 'limitation-id', 'resolution-file', 'record-file',
+    'engine', 'workspace', 'task', 'storage', 'run-root', 'compactions', 'turns', 'session', 'log', 'root', 'nonce', 'retired-title', 'from-line', 'scope', 'generation', 'entry-id', 'limitation-id', 'resolution-file', 'record-file', 'expected-revision', 'revision', 'expected-acknowledged-revision',
   ].map((key) => [key, { type: 'string' }])) }));
 } catch (e) { process.stderr.write(`${e.message}\n${help}`); process.exit(2); }
 const print = (value) => process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
@@ -81,6 +97,13 @@ const printSource = (value) => command === 'read-sources'
 const number = (key) => {
   if (v[key] === undefined) return undefined;
   if (!/^[1-9][0-9]*$/.test(v[key])) throw new Error(`--${key} must be a positive integer`);
+  return Number(v[key]);
+};
+const revisionNumber = (key) => {
+  if (v[key] === undefined) return undefined;
+  if (!/^(0|[1-9][0-9]*)$/.test(v[key]) || !Number.isSafeInteger(Number(v[key]))) {
+    throw new Error(`--${key} must be a nonnegative safe integer`);
+  }
   return Number(v[key]);
 };
 const caller = () => {
@@ -131,7 +154,9 @@ try {
       register(state, c);
     } else state = update(root, command === 'accept' ? currentSession({ engine: v.engine, session: v.session, log: v.log }) : caller(), command,
       { compactions: number('compactions'), turns: number('turns'), nonce: v.nonce, retiredTitle: v['retired-title'], fromLine: number('from-line'), scope: v.scope,
-        generation: number('generation'), limitationId: v['limitation-id'], resolutionFile: v['resolution-file'], recordFile: v['record-file'] });
+        generation: number('generation'), limitationId: v['limitation-id'], resolutionFile: v['resolution-file'], recordFile: v['record-file'],
+        expectedRevision: revisionNumber('expected-revision'), revision: revisionNumber('revision'),
+        expectedAcknowledgedRevision: revisionNumber('expected-acknowledged-revision') });
   }
   const result = report(state); print(result);
   if (state.status === 'active' && result.countsReport.due) process.exitCode = 3;

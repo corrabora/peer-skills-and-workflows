@@ -16,9 +16,11 @@ task files unchanged.
 
 | Recorded phase | Permitted recovery caller and action |
 | --- | --- |
+| New input in `prepared` or `yielded`, predecessor live | Predecessor uses `amend-transfer`; yield if still prepared, then successor accepts the current revision |
+| New input in `confirmed`, predecessor live | Predecessor uses `amend-transfer`; designated successor uses `reconfirm`; predecessor retires after current acknowledgment and runtime/UI verification |
 | `prepared` or `yielded` | Recorded predecessor may `cancel-transfer` after verified non-launch or exact successor exit, or an explicit operator decision settling a live/uncertain successor |
 | `cancelled` | Same predecessor reconciles UI and runs `resume-cancelled`; the old nonce already rejects acceptance |
-| `confirmed` | Only the designated successor may `finish-transfer`, after an explicit operator decision and verification below |
+| `confirmed`, predecessor disappeared | Only the designated successor may `finish-transfer`, after an explicit operator decision and verification below; unamended predecessor input remains a blocker |
 | Already committed retirement | Retry the original `retire`, or the original `finish-transfer` by its designated successor, to repair the derived receipt; do not increment generation again |
 
 Policy authorization to use this skill is not the decision for a particular
@@ -30,13 +32,32 @@ resumes. A cancelled nonce fences the helper, not direct task-file writes.
 If a launch's handle is unknown, investigate its retained request/receipt until
 the exact participant or positive non-launch is established; do not invent one.
 
-For either recovery path on a coordinator chain, load
+For recovery on a coordinator chain, load
 [coordinator transfer](coordinator.md). Before `resume-cancelled` or
 `finish-transfer`, reconcile the Run's actual owner, consumer generation and
 pending deliveries through that runtime. The owner must be the predecessor
 for cancellation recovery, or the designated successor for completion. Retain
 the runtime evidence in the record below. A helper record alone does not
 transfer or reclaim a Run; unresolved runtime ownership blocks coordination.
+
+## New input with a live predecessor
+
+Use [the amendment procedure](mechanics.md#amend-a-frozen-transfer), retaining
+the existing successor and nonce. Routine delivery does not require an operator
+decision; ambiguous authority may still require clarification before task work.
+Only the predecessor captures a transfer amendment. Neither participant rewrites
+the freeze or treats the old acknowledgment as covering the extension.
+
+For example, a successor has accepted revision 0 and acquired the same Run when
+a mailbox wake reaches the predecessor. The predecessor records the wake and
+runs `amend-transfer --expected-revision 0`, retaining revision 1. The successor
+reads revision 1, reconciles the actual pending deliveries, records their
+dispositions in `revisions/1/confirmation.md`, and runs
+`reconfirm --revision 1 --expected-acknowledged-revision 0`. Both commands also
+take the existing root, nonce and caller identity shown in mechanics. The
+predecessor then verifies the actual Run owner and RETIRED title and runs
+`retire`. If more input arrives, repeat amendment and acknowledgment; do not
+launch another successor or increment ownership by hand.
 
 ## Cancel, then resume the predecessor
 
@@ -78,7 +99,8 @@ state for an operator disposition; do not cancel a confirmed transfer.
 The designated successor retains an explicit operator decision assigning this
 same transfer to it. Establish current runtime facts and both actual handles;
 record the predecessor as exited or unverifiable, never infer death from
-silence. A known-live predecessor must be reconciled first. Verify the original
+silence. A known-live predecessor uses the amendment/retirement path above,
+not `finish-transfer`. Verify the original
 confirmation, source evidence, actual workspace and next permitted action.
 Apply and inspect the predecessor's exact `titles.retired` RETIRED marker and the
 successor's STARTING title before committing. An unavailable predecessor UI

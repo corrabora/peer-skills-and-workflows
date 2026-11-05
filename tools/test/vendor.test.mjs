@@ -19,8 +19,10 @@ test('runtime dependencies are declared and locked only under tools/vendor', () 
   const vendor = json('tools/vendor/package.json');
   assert.deepEqual(Object.keys(vendor.dependencies).sort(), ['ajv', 'yaml']);
   const root = json('package.json');
-  assert.equal(root.dependencies, undefined, 'the root package declares no runtime dependencies');
-  assert.equal(fs.existsSync(path.join(packageRoot, 'package-lock.json')), false, 'the root package has no lockfile for a host to install from');
+  assert.equal(root.dependencies, undefined,
+    'package.json at the repository root declares runtime dependencies; move them to tools/vendor/package.json, the only runtime dependency source');
+  assert.equal(fs.existsSync(path.join(packageRoot, 'package-lock.json')), false,
+    'unexpected package-lock.json at the repository root, usually left by running npm install there; delete it and do not commit it, because runtime dependencies are vendored under tools/vendor and hosts run npm ci at the root');
 });
 
 test('offline vendor verification detects payload, version, membership and provenance drift', async (t) => {

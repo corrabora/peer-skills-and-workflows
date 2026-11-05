@@ -155,6 +155,8 @@ function validate(s, packet) {
     assert(segment?.limitations.some((v) => v.id === r.limitationId) && nonempty(r.text) && nonempty(r.at)
       && reporter?.session === r.reporter?.session && reporter.engine === r.reporter.engine
       && r.kind === 'agent-assessment' && sha(r.text) === r.textSha256, 'invalid limitation reconciliation');
+    if (r.transfer !== undefined) assert(nonempty(r.transfer.nonce) && integer(r.transfer.revision)
+      && r.reporterGeneration === r.generation, 'invalid transfer limitation reconciliation');
   }
   return packet;
 }
@@ -258,11 +260,104 @@ export function freezeSources(s, dir) {
 
 export function verifyFrozenSources(s) {
   const d = s.transfer?.instructions;
-  assert(d?.file === path.join(path.dirname(s.transfer.handoff), 'instructions.json') && d.sha256 === s.instructionSource?.sha256, 'transfer source identity is missing or inconsistent');
-  const { bytes } = readSources(s);
+  assert(d?.file === path.join(path.dirname(s.transfer.handoff), 'instructions.json'), 'transfer source identity is missing or inconsistent');
+  const original = { ...d, file: path.join(s.root, 'instructions', `${d.sha256}.json`) };
+  const { bytes } = readSources(s, original);
   assert(regular(d.file).equals(bytes) && d.bytes === bytes.length, 'frozen instruction evidence changed');
   assert(sha(regular(s.transfer.handoff)) === s.transfer.handoffSha256, 'frozen handoff text changed');
-  return d;
+  let current = d;
+  const amendments = s.transfer.amendments ?? [];
+  assert((s.transfer.revision ?? 0) === amendments.length, 'invalid transfer revision history');
+  for (const [i, amendment] of amendments.entries()) {
+    const dir = path.join(path.dirname(s.transfer.handoff), 'revisions', String(i + 1));
+    assert(fs.lstatSync(dir).isDirectory() && !fs.lstatSync(dir).isSymbolicLink(), 'revision directory must be plain');
+    assert(amendment.revision === i + 1 && amendment.previousSourceSha256 === current.sha256
+      && amendment.source?.file === path.join(dir, 'instructions.json') && amendment.record?.file === path.join(dir, 'record.json'),
+    'invalid amendment history');
+    for (const descriptor of [amendment.source, amendment.record]) {
+      const retained = regular(descriptor.file);
+      assert(retained.length === descriptor.bytes && sha(retained) === descriptor.sha256, 'amendment evidence changed');
+    }
+    readSources(s, { ...amendment.source, file: path.join(s.root, 'instructions', `${amendment.source.sha256}.json`) });
+    current = amendment.source;
+  }
+  assert(current.sha256 === s.instructionSource?.sha256 && current.bytes === s.instructionSource?.bytes,
+    'transfer source identity is missing or inconsistent');
+  return current;
+}
+
+// An exact retry names a revision that already committed. It returns that
+// revision without recapturing later input; a changed record cannot reuse it.
+export function committedAmendment(s, { expectedRevision, recordFile }) {
+  const amendment = (s.transfer?.amendments ?? [])[expectedRevision];
+  if (!Number.isSafeInteger(expectedRevision) || !amendment) return false;
+  verifyFrozenSources(s);
+  assert(regular(path.resolve(recordFile)).equals(regular(amendment.record.file)),
+    'this revision already committed with a different record; amend the current revision instead');
+  return true;
+}
+
+export function amendTransferSources(s, { expectedRevision, recordFile }) {
+  verifyFrozenSources(s);
+  const revision = s.transfer.revision ?? 0;
+  assert(Number.isSafeInteger(expectedRevision) && expectedRevision === revision, 'expected-revision must match the current transfer revision');
+  const recordBytes = regular(path.resolve(recordFile));
+  const recordText = recordBytes.toString('utf8');
+  assert(Buffer.from(recordText).equals(recordBytes), 'amendment record must be lossless UTF-8');
+  const record = JSON.parse(recordText);
+  assert(record.version === 1 && record.action === 'amend-transfer' && record.chain === s.id
+    && record.nonce === s.transfer.nonce && record.generation === s.generation && record.expectedRevision === revision
+    && nonempty(record.assessment) && nonempty(record.nextAction), 'amendment record must bind this transfer and include assessment and next action');
+  const previous = readSources(s).packet.segments.at(-1);
+  let source = captureSources(s);
+  const packet = readSources(s, source).packet;
+  const current = packet.segments.at(-1);
+  const newEntryIds = current.entries.filter((v) => !previous.entries.some((old) => old.id === v.id)).map((v) => v.id);
+  const assessments = record.limitationAssessments ?? [];
+  assert(Array.isArray(assessments), 'limitation assessments must be a list');
+  const newLimitations = current.limitations.filter((v) => !previous.limitations.some((old) => old.id === v.id));
+  // Non-text input yields a limitation without a text entry; it is still new input.
+  assert(newEntryIds.length || newLimitations.length, 'amendment requires new source input');
+  const seen = new Set();
+  for (const assessment of assessments) {
+    assert(newLimitations.some((v) => v.id === assessment?.limitationId) && !seen.has(assessment.limitationId)
+      && nonempty(assessment.text), 'limitation assessment must name a unique new limitation and nonempty assessment');
+    seen.add(assessment.limitationId);
+    packet.reconciliations = [...(packet.reconciliations ?? []), {
+      generation: s.generation, limitationId: assessment.limitationId, kind: 'agent-assessment',
+      reporter: s.owner, reporterGeneration: s.generation, at: new Date().toISOString(),
+      text: assessment.text, textSha256: sha(assessment.text), transfer: { nonce: s.transfer.nonce, revision: revision + 1 },
+    }];
+  }
+  // Name what needs assessment: the new limitation is not yet in any committed index.
+  const unassessed = packet.segments.flatMap((v) => v.limitations.filter((l) => !(packet.reconciliations ?? [])
+    .some((r) => r.generation === v.generation && r.limitationId === l.id)).map((l) => `generation ${v.generation} line ${l.line} ${l.id}: ${l.reason}`));
+  assert(!unassessed.length, `unsupported or ambiguous input remains; transfer limitation assessment is required for ${unassessed.join('; ')}`);
+  if (assessments.length) source = publishSources(s, packet);
+  const revisions = path.join(path.dirname(s.transfer.handoff), 'revisions');
+  fs.mkdirSync(revisions, { recursive: true });
+  assert(fs.lstatSync(revisions).isDirectory() && !fs.lstatSync(revisions).isSymbolicLink(), 'revisions directory must be plain');
+  const dir = path.join(revisions, String(revision + 1));
+  // Stage the revision, then publish its directory by rename. State is the sole
+  // authority: a directory left by a failed state commit is unreferenced, so it
+  // is retained aside as evidence and never reused as this revision.
+  const staging = path.join(revisions, `.staging-${crypto.randomUUID()}`);
+  fs.mkdirSync(staging, { mode: 0o700 });
+  const stage = (name, bytes) => {
+    fs.writeFileSync(path.join(staging, name), bytes, { flag: 'wx', mode: 0o600 });
+    return { file: path.join(dir, name), sha256: sha(bytes), bytes: bytes.length };
+  };
+  const amendment = { revision: revision + 1, previousSourceSha256: s.instructionSource.sha256,
+    source: stage('instructions.json', regular(source.file)), record: stage('record.json', recordBytes),
+    newEntryIds, newLimitationIds: newLimitations.map((v) => v.id), at: new Date().toISOString() };
+  if (fs.existsSync(dir)) {
+    assert(fs.lstatSync(dir).isDirectory() && !fs.lstatSync(dir).isSymbolicLink(), 'unreferenced revision directory must be plain');
+    fs.renameSync(dir, path.join(revisions, `.unreferenced-${revision + 1}-${crypto.randomUUID()}`));
+  }
+  fs.renameSync(staging, dir);
+  s.instructionSource = source;
+  s.transfer.revision = revision + 1;
+  s.transfer.amendments = [...(s.transfer.amendments ?? []), amendment];
 }
 
 export function verifyCurrentSource(s) {
