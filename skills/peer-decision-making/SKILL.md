@@ -15,8 +15,9 @@ this skill participates without launching another peer.
 Before preparing the companion's brief, both roles read
 [peer-review](../peer-review/SKILL.md). Reuse its instructions for required
 writing skills, Orca setup, engine/model/effort selection, shared source
-snapshots, companion permissions, independent frozen assessments, paired
-discussion rounds, explicit agreement, retained records and worker cleanup.
+snapshots, companion permissions, independent frozen assessments, verification
+of the other peer's claims, paired discussion rounds, explicit agreement, swap
+closure, retained records and worker cleanup.
 That skill owns the peer protocol; this skill owns the decision task below.
 Reading it does not start a separate review or a second companion. Report an
 unavailable dependency and pause only work requiring it.
@@ -68,6 +69,11 @@ bounded experiment or a conditional direction when evidence cannot yet support
 a final choice; state what it would resolve and how its result would affect the
 decision.
 
+When the host finds at a completed paired round that each peer adopted the
+other's prior recommendation and material conditions unchanged, the protocol's
+swap rule closes the question as the host's prior recommendation, reported as
+resolved by swap under operator rule rather than joint agreement.
+
 Use the protocol's limit of three completed paired rounds per disagreement,
 preserving counts and positions across continuations. If disagreement remains,
 return both recommendations, their shared premises and the decisive difference
@@ -76,10 +82,11 @@ that could resolve it. Do not report a host-selected answer as consensus.
 
 ## Deliver the recommendation
 
-Lead with the agreed direction and its decisive reason. Include the main
-trade-off, material assumptions or evidence gaps, and the next action the
-operator can take. Preserve substantive dissent when agreement was not reached;
-link retained discussion detail when needed rather than reproducing the debate.
+Lead with the agreed or swap-resolved direction and its decisive reason.
+Include the main trade-off, material assumptions or evidence gaps, and the next
+action the operator can take. Preserve substantive dissent when agreement was
+not reached; link retained discussion detail when needed rather than
+reproducing the debate.
 
 Peer agreement is a recommendation, not operator acceptance or permission to
 implement. This skill finishes with the recommendation and the peer protocol's
@@ -90,8 +97,9 @@ has delegated the decision itself, state that authority and the resulting
 decision accurately; implementation still follows the calling task's scope.
 
 Preserve the question and source identities, frozen positions, discussion and
-round counts, exact agreed recommendation or remaining disagreement, evidence
-limits, launch settings and companion's final report in the selected records outside
-tracked deliverables. Keep necessary support accessible for the result's useful
-lifetime. Any subsequently requested durable decision record must state its
-reason without relying on disposable debate records.
+round counts, exact agreed or swap-resolved recommendation or remaining
+disagreement, evidence limits, launch settings and companion's final report in
+the selected records outside tracked deliverables. Keep necessary support
+accessible for the result's useful lifetime. Any subsequently requested durable
+decision record must state its reason without relying on disposable debate
+records.

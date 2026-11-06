@@ -17,12 +17,12 @@ skill participates in that pair without launching another peer.
 Before preparing the companion's brief, both roles read
 [peer-review](../peer-review/SKILL.md). Reuse its required writing skills, Orca
 setup, engine/model/effort selection, identifiable source snapshots, independent
-frozen assessments, paired discussion rounds, explicit agreement, retained
-records and cleanup. This skill owns implementation, writing authority, turn
-handoffs, dispute escalation and completion; those rules replace peer-review's
-read-only companion, host-only corrections and review stopping point. Reading
-that source starts no separate review. Report an unavailable dependency and
-pause work requiring it.
+frozen assessments, verification of the other peer's claims, paired discussion
+rounds, explicit agreement, swap closure, retained records and cleanup. This
+skill owns implementation, writing authority, turn handoffs, dispute escalation
+and completion; those rules replace peer-review's read-only companion, host-only
+corrections and review stopping point. Reading that source starts no separate
+review. Report an unavailable dependency and pause work requiring it.
 
 Read the request and governing sources to establish objectives, requirements,
 acceptance evidence, existing work, authorized scope and stop boundary. Use the
@@ -105,8 +105,10 @@ cover the whole implementation.
 A handoff identifies the turn, current work, received check's passing result,
 relevant prior check results, next check and observed failure (or “no next
 check”), unresolved state and next driver. Retain the record before sending it.
-The sender stops editing; the receiver acknowledges the identified state before
-editing. Acknowledgment transfers control, not acceptance of the whole task.
+The sender stops editing. The receiver verifies the identified work state and
+the received check's result itself, by inspection or rerun, then acknowledges
+before editing. Acknowledgment transfers control, not acceptance of the whole
+task.
 
 Keep runtime identities fixed while driving alternates. Use Orca's blocking
 ask/reply to keep the same companion: its handoff uses `ask`, and the host's
@@ -133,6 +135,11 @@ each containing both peers' responses to the same prior positions. Initial
 positions count zero; preserve counts across continuations. Agreement resolves
 the dispute and resumes the same driver's turn. Discussion rounds, escalation
 and operator waits never complete or count as coding turns.
+
+When the host finds at a completed round that each peer adopted the other's
+prior approach or policy reading, conditions unchanged, the protocol's swap
+rule closes the dispute as the host's prior approach or reading, recorded as
+resolved by swap under operator rule, and the same driver's turn resumes.
 
 After three unresolved rounds, **both peers elevate to the human operator**.
 Each states its position, shared facts, decisive difference and requested

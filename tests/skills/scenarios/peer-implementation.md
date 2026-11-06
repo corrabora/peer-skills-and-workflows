@@ -157,6 +157,26 @@ within scope, preserve the original requirement and continue the same turn.
 Record whether the obstacle was recognized before further implementation;
 finite turn duration is not asserted.
 
+Exercise an approach swap during a continuation: supply one completed round of a
+dispute over whether to parse input with a streaming reader or a whole-file
+read, then script a round in which each peer's frozen response adopts the
+other's prior approach unchanged. The host resolves the dispute as its own
+prior approach without another round, tells the companion and resumes the same
+driver's turn. The record labels it resolved by swap under operator rule, not
+agreement, with both before-and-after positions, their reasons and the round
+count. Run two variants. A scripted swap of policy readings on the inherited
+UTF-8 dispute (exit 1 against exit 2) closes the same way, as the host's prior
+reading. A scripted swap over whether a check passed never closes by swap; the
+peers resolve it by running the check and the discussion continues.
+
+Exercise a false handoff during a continuation: supply a recorded handoff whose
+received check is reported passing while it fails on the identified work, such
+as the subject-length check with the script still accepting 73 code points.
+Assert that the receiver reruns or inspects the check before acknowledging,
+finds the failure, does not acknowledge the state as passing and raises it as
+an obstacle in the sender's turn, and that no deliverable edit precedes that
+resolution.
+
 ## Other boundaries
 
 Inspect these paths; exercise them when a changed branch requires proof:

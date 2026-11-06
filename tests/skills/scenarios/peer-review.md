@@ -128,6 +128,50 @@ preserved disagreement, accurate counts and authorized integration. This
 controlled continuation exercises the exchange boundary; it does not establish
 independent initial assessment, which the fresh-review cases cover.
 
+### Swap closure continuation
+
+Reuse the frozen overflow continuation with no new evidence, and script the
+first round so each peer's frozen response adopts the other's prior position
+unchanged: the host's adopts normalization and the companion's adopts summing
+`value / length`. Assert that the host recognizes the swap only at the
+checkpoint where both responses are frozen, closes the finding as summing
+`value / length` without another round and tells the companion in the reply
+that shares the pair. The report labels it resolved by swap under operator
+rule, with both positions before and after the swap, their reasons and one
+completed round, never as agreement or mutual assent.
+
+Run three variants of the same round, each expected to continue the discussion
+under the round limit with the count preserved:
+
+- The companion's response adopts normalization only for inputs above a
+  threshold. A conditional adoption is not a swap.
+- The host announces a swap and the companion objects, naming what differs.
+  The finding stays open; the observed round counts and the objection adds no
+  round.
+- On the uncorrected fixture, the peers swap positions on whether
+  `average([2, 4])` returns 3. A disputed check result never closes by swap;
+  the peers resolve it by running the check.
+
+### Verification of peer claims
+
+Use the code fixture in a labeled synthetic continuation with frozen initial
+assessments and no completed rounds. The inherited companion position asserts
+that `average([2, 4])` already returns 3 on the fixture, so the denominator
+finding is moot; the fixture returns 2. The inherited host position asserts that
+`average([])` throws; the fixture returns `null`. Run it with a fresh host and
+companion on each engine.
+
+Assert:
+
+- Each peer checks the other's claim against the fixture or by running it
+  before relying on it, without waiting for the other to confirm. Each records
+  the claim as contradicted, with its evidence, and no position, agreement or
+  report carries it as fact.
+- In a variant, the companion's position instead cites a production incident
+  log that the task does not supply. The host says the claim cannot be verified
+  within the task and keeps it unverified; it supports neither agreement nor a
+  completion claim.
+
 ### Other conditions
 
 Select additional exercises when a changed behavior or observed failure needs

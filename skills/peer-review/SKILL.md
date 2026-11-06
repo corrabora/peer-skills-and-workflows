@@ -131,6 +131,14 @@ warranted, and explain the change. Agreement means explicit assent by both to
 the same resolution and rationale; silence, timeout or the host's preference
 does not establish it.
 
+By standing operator rule, treat every claim, assertion, inference and reported
+fact from the other peer, including its check results and source citations, as
+unverified until you check it against the work, its sources or a check you run
+yourself. Verify each such claim before relying on it or passing it on, in a
+position, an agreement, an acknowledgment of received state, a handoff or a
+report. When verification is impossible within the task, say so and keep the
+claim unverified; it supports neither agreement nor a completion claim.
+
 For each disagreement, allow at most **three completed discussion rounds**. A
 round consists of both peers responding to the same prior pair of positions.
 The host freezes its response before reading the companion's new response, then
@@ -140,6 +148,25 @@ frozen. Sending the host's response as the prompt for the companion's response
 does not produce a paired round. Initial assessments count zero;
 confirming agreement needs no invented debate. A missing response is incomplete,
 not a completed round or agreement. Follow the runtime's recovery procedure.
+
+A swap closes a disagreement by operator rule, because peers that keep adopting
+each other's positions never converge. When the host, at the checkpoint where
+it shares a completed pair, finds that each peer's frozen response adopted the
+other's position from the prior pair, taking up that position and its material
+conditions unchanged, the host closes the disagreement as its own position from
+that prior pair, without a further round, and tells the companion in the reply
+that shares the pair. The prior pair may be the initial assessments; the
+observed round counts as completed. A revision, a combination, a partial or
+conditional adoption or an unclear match is not a swap, and neither is a
+companion's objection naming what differs: the disagreement continues under
+the round limit, and the objection adds no round. When only one peer adopts
+the other's position, that is ordinary agreement to confirm explicitly. The
+rule settles a choice between positions, such as a recommendation, remedy,
+approach or finding resolution; it never settles a disputed fact or check
+result, which the peers resolve by verification. Report the result as
+resolved by swap under operator rule, with both positions before and after the
+swap, their reasons and the completed-round count; never report it as
+agreement or as the peers assenting to each other's position.
 
 If disagreement remains after three rounds, stop that exchange and bring the
 issue to the operator with both recommendations, shared facts and disputed
@@ -152,11 +179,12 @@ and positions instead of restarting the allowance.
 
 ## Integrate and return
 
-Apply mutually agreed changes automatically when the host already has writing
-authority covering them. Route changes to the existing writer when another role
-owns them. A read-only assignment remains read-only, and formal review or other
-approval gates still apply. Operator decisions about changed boundaries precede
-dependent edits; peer review supplies no formal rotation credit or review release.
+Apply mutually agreed and swap-resolved changes automatically when the host
+already has writing authority covering them. Route changes to the existing
+writer when another role owns them. A read-only assignment remains read-only,
+and formal review or other approval gates still apply. Operator decisions about
+changed boundaries precede dependent edits; peer review supplies no formal
+rotation credit or review release.
 
 Apply changes at completed discussion checkpoints, keeping each assessment tied
 to the snapshot it actually reviewed. Identify the revised work, run applicable
@@ -164,8 +192,9 @@ checks and have the companion inspect the affected changes before claiming that
 it verified the integration. Do not quietly alter a snapshot under assessment
 or attribute unreviewed later changes to an earlier agreement.
 
-Preserve the assessed revision, both positions, agreed actions, remaining choices,
-round counts, actual launch settings and supporting evidence in the selected records.
+Preserve the assessed revision, both positions, agreed actions, swap-resolved
+actions labeled resolved by swap, remaining choices, round counts, actual launch
+settings and supporting evidence in the selected records.
 The companion freezes its final report, follows the live preamble to settle its
 task and stops. The host preserves that report and completes cleanup through
 `orchestration` before ending the review. If work is interrupted, retain the
@@ -174,6 +203,6 @@ pending question and current state rather than claiming completion.
 Return a concise result naming what was reviewed, what was changed or recommended,
 the checks actually performed and any decision or evidence gap that remains.
 Link retained detail when useful. Finish when the review and authorized agreed
-changes are accounted for and remaining choices are clearly with their owner;
-return control to the calling task without starting a formal review or unrelated
-work.
+or swap-resolved changes are accounted for and remaining choices are clearly
+with their owner; return control to the calling task without starting a formal
+review or unrelated work.

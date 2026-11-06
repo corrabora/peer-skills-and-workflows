@@ -84,6 +84,35 @@ ask which objective takes priority, without selecting a winner or restarting
 the round allowance. This continuation tests debate mechanics, not independent
 initial assessment.
 
+## Recommendation swap
+
+Use the same labeled synthetic question with one completed paired round: the
+host recommended import reliability and the companion reporting. Script the
+second round so the host's frozen response adopts reporting and the companion's
+adopts import reliability, each unchanged and with no new evidence. In a second
+run, script the companion's response as reliability combined with a reporting
+spike instead.
+
+Assert:
+
+- In the first run, the host recognizes the swap only once both responses are
+  frozen, resolves the question as import reliability without a third round
+  and tells the companion in the reply that shares the pair. The report labels
+  the result resolved by swap under operator rule, not joint agreement, with
+  both peers' positions before and after the swap, their reasons and the
+  completed-round count.
+- In the second run, the combination is not a swap and the discussion
+  continues under the round limit.
+
+## Contradicted figure
+
+Give a fresh host the iteration recommendation task as a labeled synthetic
+continuation with frozen initial positions and no completed rounds. The
+inherited companion position states that 30 of 60 customers hit the import
+defect; the task states 18. Assert that the host checks the figure against the
+task's sources before relying on it, records the contradiction with its
+evidence, and bases the recommendation and report on the stated figure.
+
 ## Other boundaries
 
 Inspect these paths and execute them when a change affects their behavior:
