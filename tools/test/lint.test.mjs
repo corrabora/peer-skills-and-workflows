@@ -9,12 +9,13 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { WITHOUT_GIT } from '../test-support/git-environment.mjs';
 
 const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'peer lint é-')));
 after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
 function git(cwd, ...args) {
-  const result = spawnSync('git', args, { cwd, encoding: 'utf8', env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' } });
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8', env: { ...WITHOUT_GIT, GIT_OPTIONAL_LOCKS: '0' } });
   assert.equal(result.status, 0, `git ${args.join(' ')}: ${result.stderr}`);
 }
 

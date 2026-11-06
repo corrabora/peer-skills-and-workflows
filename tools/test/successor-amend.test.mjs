@@ -8,6 +8,10 @@ import { fileURLToPath } from 'node:url';
 import { after, test } from 'node:test';
 import { initialize, readChain, report, titles, update } from '../lib/successor.mjs';
 import { readSources, sourceMessages } from '../lib/successor-instructions.mjs';
+import { dropGitEnvironment } from '../test-support/git-environment.mjs';
+
+// Fixture workspaces and the in-process helper run Git; keep them off the caller's repository.
+dropGitEnvironment();
 
 // Post-freeze input is amended into the same transfer, never waived or rewritten.
 const scratch = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'transfer-amend-')));

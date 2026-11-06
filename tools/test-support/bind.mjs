@@ -23,6 +23,7 @@ import path from 'node:path';
 import { after } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { excludeFile } from '../lib/bind.mjs';
+import { WITHOUT_GIT } from './git-environment.mjs';
 
 // Hooks export checkout-specific Git paths. Clear them in this test process
 // so both direct helper calls and subprocesses use the fixture repositories,
@@ -50,7 +51,7 @@ export const scratchFoldsCase = (() => {
 })();
 
 export const GIT_ENV = {
-  ...process.env,
+  ...WITHOUT_GIT,
   GIT_AUTHOR_NAME: 'Test',
   GIT_AUTHOR_EMAIL: 'test@example.com',
   GIT_COMMITTER_NAME: 'Test',

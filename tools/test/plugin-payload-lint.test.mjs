@@ -9,6 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { WITHOUT_GIT } from '../test-support/git-environment.mjs';
 import { LINT_INSTALL } from '../lib/lint.mjs';
 import { PAYLOAD_DIRECTORY, PAYLOAD_PARTS } from '../lib/plugin-payload.mjs';
 
@@ -16,7 +17,7 @@ const root = path.resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'peer payload lint é-')));
 after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
-const env = { ...process.env, GIT_OPTIONAL_LOCKS: '0' };
+const env = { ...WITHOUT_GIT, GIT_OPTIONAL_LOCKS: '0' };
 delete env.NODE_TEST_CONTEXT;
 
 function git(cwd, ...args) {
