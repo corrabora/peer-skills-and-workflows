@@ -1,6 +1,7 @@
 // The vendored tree under tools/vendor is the package's only runtime
-// dependency source, so a host that installs from the root package (as Claude
+// dependency source, so a host that installs from the plugin root (as Claude
 // Code runs `npm ci` there) neither needs the network nor adds a second copy.
+// The repository root's lock describes only the development toolchain.
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -19,10 +20,30 @@ test('runtime dependencies are declared and locked only under tools/vendor', () 
   const vendor = json('tools/vendor/package.json');
   assert.deepEqual(Object.keys(vendor.dependencies).sort(), ['ajv', 'yaml']);
   const root = json('package.json');
-  assert.equal(root.dependencies, undefined,
-    'package.json at the repository root declares runtime dependencies; move them to tools/vendor/package.json, the only runtime dependency source');
-  assert.equal(fs.existsSync(path.join(packageRoot, 'package-lock.json')), false,
-    'unexpected package-lock.json at the repository root, usually left by running npm install there; delete it and do not commit it, because runtime dependencies are vendored under tools/vendor and hosts run npm ci at the root');
+  assert.equal(
+    root.dependencies,
+    undefined,
+    'package.json at the repository root declares runtime dependencies; move them to tools/vendor/package.json, the only runtime dependency source',
+  );
+  const lock = json('package-lock.json');
+  assert.equal(lock.packages[''].dependencies, undefined, 'the root lock records no runtime dependencies');
+  for (const [location, entry] of Object.entries(lock.packages)) {
+    if (location === '') continue;
+    assert.equal(
+      entry.dev,
+      true,
+      `the root lock installs ${location} for runtime use; runtime dependencies belong in tools/vendor/package.json`,
+    );
+  }
+  assert.equal(
+    fs.existsSync(path.join(packageRoot, 'plugins/peer/package-lock.json')),
+    false,
+    'the plugin payload ships no lockfile, so a host installing it resolves nothing',
+  );
+  const shipped = json('plugins/peer/package.json');
+  for (const field of ['dependencies', 'devDependencies', 'scripts']) {
+    assert.equal(shipped[field], undefined, `the plugin manifest ships no ${field}`);
+  }
 });
 
 test('offline vendor verification detects payload, version, membership and provenance drift', async (t) => {
@@ -30,16 +51,30 @@ test('offline vendor verification detects payload, version, membership and prove
   assert.ok(fs.existsSync(verifier), 'the package needs an offline vendor verifier');
   const { checkVendor } = await import(verifier);
   const errors = [];
-  const out = { info() {}, error(message) { errors.push(message); } };
+  const out = {
+    info() {},
+    error(message) {
+      errors.push(message);
+    },
+  };
   assert.equal(checkVendor({ sourceRoot: packageRoot, out }), true, errors.join('\n'));
   const mutations = {
-    edited(root) { fs.appendFileSync(path.join(root, 'tools/vendor/node_modules/yaml/dist/index.js'), '\n// drift\n'); },
-    missing(root) { fs.unlinkSync(path.join(root, 'tools/vendor/node_modules/yaml/LICENSE')); },
-    extra(root) { fs.writeFileSync(path.join(root, 'tools/vendor/node_modules/unexpected.txt'), 'drift'); },
-    inheritedName(root) { fs.writeFileSync(path.join(root, 'tools/vendor/node_modules/constructor'), 'drift'); },
+    edited(root) {
+      fs.appendFileSync(path.join(root, 'tools/vendor/node_modules/yaml/dist/index.js'), '\n// drift\n');
+    },
+    missing(root) {
+      fs.unlinkSync(path.join(root, 'tools/vendor/node_modules/yaml/LICENSE'));
+    },
+    extra(root) {
+      fs.writeFileSync(path.join(root, 'tools/vendor/node_modules/unexpected.txt'), 'drift');
+    },
+    inheritedName(root) {
+      fs.writeFileSync(path.join(root, 'tools/vendor/node_modules/constructor'), 'drift');
+    },
     version(root) {
       const file = path.join(root, 'tools/vendor/node_modules/yaml/package.json');
-      const value = JSON.parse(fs.readFileSync(file, 'utf8')); value.version = '0.0.0';
+      const value = JSON.parse(fs.readFileSync(file, 'utf8'));
+      value.version = '0.0.0';
       fs.writeFileSync(file, JSON.stringify(value));
     },
     provenance(root) {
@@ -79,7 +114,9 @@ test('regeneration checks the current payload and preserves aliased inputs befor
   // Supply a controlled installer in a child process. These checks need neither
   // npm nor a network; the marker proves whether an installer was invoked.
   const preload = path.join(scratch, 'installer.mjs');
-  fs.writeFileSync(preload, `import fs from 'node:fs';
+  fs.writeFileSync(
+    preload,
+    `import fs from 'node:fs';
 import path from 'node:path';
 import childProcess from 'node:child_process';
 import { syncBuiltinESMExports } from 'node:module';
@@ -89,7 +126,8 @@ childProcess.spawnSync = (command, args, options) => {
   return { status: 0, stderr: '' };
 };
 syncBuiltinESMExports();
-`);
+`,
+  );
   const program = `import { generateVendor } from ${JSON.stringify(new URL('../lib/vendor.mjs', import.meta.url).href)};
 try {
   const ok = generateVendor({ sourceRoot: process.argv[1], check: process.argv[2] === 'check', cache: process.argv[3] || undefined, out: { info() {}, error: console.error } });
@@ -105,7 +143,8 @@ try {
       fs.cpSync(path.join(packageRoot, 'tools/vendor'), vendor, { recursive: true });
       const marker = path.join(scratch, `${name}-installer.txt`);
       let cache = '';
-      if (name === 'current-payload') fs.appendFileSync(path.join(vendor, 'node_modules/yaml/dist/index.js'), '\n// drift\n');
+      if (name === 'current-payload')
+        fs.appendFileSync(path.join(vendor, 'node_modules/yaml/dist/index.js'), '\n// drift\n');
       if (name === 'cache-overlap') cache = vendor;
       if (name === 'vendor-symlink') {
         const destination = path.join(scratch, 'linked-vendor');
@@ -118,10 +157,28 @@ try {
         fs.unlinkSync(path.join(vendor, 'manifest.json'));
         fs.linkSync(lock, path.join(vendor, 'manifest.json'));
       }
-      const result = spawnSync(process.execPath, ['--import', preload, '--input-type=module', '-e', program, root, name === 'current-payload' ? 'check' : 'generate', cache], {
-        input: '', encoding: 'utf8',
-        env: { ...process.env, PEER_INSTALL_MARKER: marker, PEER_INSTALL_PAYLOAD: path.join(packageRoot, 'tools/vendor/node_modules') },
-      });
+      const result = spawnSync(
+        process.execPath,
+        [
+          '--import',
+          preload,
+          '--input-type=module',
+          '-e',
+          program,
+          root,
+          name === 'current-payload' ? 'check' : 'generate',
+          cache,
+        ],
+        {
+          input: '',
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            PEER_INSTALL_MARKER: marker,
+            PEER_INSTALL_PAYLOAD: path.join(packageRoot, 'tools/vendor/node_modules'),
+          },
+        },
+      );
       assert.ifError(result.error);
       assert.ok(fs.readFileSync(lock).equals(before), 'regeneration preserves lockfile input bytes');
       if (name !== 'manifest-hardlink') assert.equal(result.status, 1, `${name}: ${result.stderr}`);

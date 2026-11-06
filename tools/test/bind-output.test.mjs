@@ -10,10 +10,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
 import {
-  checkoutFacts, establishLocalStorage, excludeFile, localStorageChild, MANIFEST_VERSION, outputDestinationProblem, readManifest,
+  checkoutFacts,
+  establishLocalStorage,
+  excludeFile,
+  localStorageChild,
+  MANIFEST_VERSION,
+  outputDestinationProblem,
+  readManifest,
 } from '../lib/bind.mjs';
 import {
-  cli, scratch, scratchFoldsCase, GIT_ENV, git, run, repository, write, treeState,
+  cli,
+  scratch,
+  scratchFoldsCase,
+  GIT_ENV,
+  git,
+  run,
+  repository,
+  write,
+  treeState,
 } from '../test-support/bind.mjs';
 
 test('sources --out refuses a destination that resolves to a tracked file and admits permitted exports', () => {
@@ -22,8 +36,17 @@ test('sources --out refuses a destination that resolves to a tracked file and ad
   const readme = fs.readFileSync(path.join(dir, 'README.md'), 'utf8');
   const alias = path.join(scratch, 'alias-of-out-guard');
   fs.symlinkSync(dir, alias, 'dir');
-  for (const out of [path.join(dir, 'README.md'), path.join(alias, 'README.md'), path.join(dir, 'docs', '..', 'README.md'), 'docs/g.md']) {
-    const result = spawnSync(process.execPath, [cli, 'sources', '--repo', dir, '--out', out, 'README.md'], { cwd: dir, encoding: 'utf8', env: GIT_ENV });
+  for (const out of [
+    path.join(dir, 'README.md'),
+    path.join(alias, 'README.md'),
+    path.join(dir, 'docs', '..', 'README.md'),
+    'docs/g.md',
+  ]) {
+    const result = spawnSync(process.execPath, [cli, 'sources', '--repo', dir, '--out', out, 'README.md'], {
+      cwd: dir,
+      encoding: 'utf8',
+      env: GIT_ENV,
+    });
     const json = JSON.parse(result.stdout);
     assert.equal(result.status, 1, out);
     assert.equal(json.written, null);
@@ -34,19 +57,30 @@ test('sources --out refuses a destination that resolves to a tracked file and ad
   }
   assert.equal(fs.readFileSync(path.join(dir, 'README.md'), 'utf8'), readme);
   assert.equal(git(dir, 'status', '--porcelain'), '', 'nothing tracked changed');
-  for (const out of [path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json'), path.join(scratch, 'exports', 'out-guard.json'), path.join(dir, 'notes', 'export.json')]) {
+  for (const out of [
+    path.join(dir, '.peer-skills-and-workflows', 'binding-sources.json'),
+    path.join(scratch, 'exports', 'out-guard.json'),
+    path.join(dir, 'notes', 'export.json'),
+  ]) {
     const result = run('sources', '--repo', dir, '--out', out, 'README.md');
     assert.equal(result.status, 0, out);
     assert.equal(result.json.written, out);
     assert.equal(readManifest(out).manifest.version, MANIFEST_VERSION);
   }
-  assert.equal(git(dir, 'status', '--porcelain').trim(), '?? notes/', 'an untracked destination inside the checkout is the caller\'s choice, not refused');
+  assert.equal(
+    git(dir, 'status', '--porcelain').trim(),
+    '?? notes/',
+    "an untracked destination inside the checkout is the caller's choice, not refused",
+  );
 });
 
 for (const kind of ['nested', 'submodule', 'ignored-nested']) {
   test(`output protection refuses ${kind} tracked/admin paths and admits untracked exports`, () => {
     const origin = repository(`output-${kind}-origin`, { 'POLICY.md': 'committed policy' });
-    const dir = repository(`output-${kind}-parent`, { 'README.md': 'parent', '.gitignore': kind === 'ignored-nested' ? 'child/\n' : '' });
+    const dir = repository(`output-${kind}-parent`, {
+      'README.md': 'parent',
+      '.gitignore': kind === 'ignored-nested' ? 'child/\n' : '',
+    });
     const child = path.join(dir, 'child');
     if (kind === 'submodule') git(dir, '-c', 'protocol.file.allow=always', 'submodule', 'add', '-q', origin, 'child');
     else git(dir, 'clone', '-q', origin, child);
@@ -56,7 +90,13 @@ for (const kind of ['nested', 'submodule', 'ignored-nested']) {
     const originalExclude = fs.readFileSync(exclude);
     const before = treeState(child);
     fs.symlinkSync(child, path.join(dir, 'alias'), 'dir');
-    for (const out of [policy, path.join(dir, 'alias/POLICY.md'), exclude, path.join(child, '.git'), path.join(child, '.git/new-output')]) {
+    for (const out of [
+      policy,
+      path.join(dir, 'alias/POLICY.md'),
+      exclude,
+      path.join(child, '.git'),
+      path.join(child, '.git/new-output'),
+    ]) {
       const result = run('sources', '--repo', dir, '--out', out, 'README.md');
       assert.equal(result.status, 1, result.stderr);
       assert.equal(result.json.written, null);
@@ -86,7 +126,13 @@ test('output protection covers actual linked-worktree Git/common directories and
   fs.symlinkSync(facts.commonDir, path.join(linked, 'admin-alias'), 'dir');
   const exclude = excludeFile(linked);
   const excludeBefore = fs.readFileSync(exclude);
-  for (const out of [exclude, path.join(facts.gitDir, 'new-output'), path.join(facts.commonDir, 'new-output'), path.join(linked, 'admin-alias/info/exclude'), path.join(linked, 'README.md')]) {
+  for (const out of [
+    exclude,
+    path.join(facts.gitDir, 'new-output'),
+    path.join(facts.commonDir, 'new-output'),
+    path.join(linked, 'admin-alias/info/exclude'),
+    path.join(linked, 'README.md'),
+  ]) {
     const result = run('sources', '--repo', linked, '--out', out, 'README.md');
     assert.equal(result.status, 1, result.stderr);
     assert.equal(result.json.written, null);
@@ -96,7 +142,11 @@ test('output protection covers actual linked-worktree Git/common directories and
   assert.equal(fs.existsSync(path.join(facts.gitDir, 'new-output')), false);
   const unrelated = repository('output-external', { 'export.json': 'caller selected external export' });
   const out = path.join(unrelated, 'export.json');
-  assert.equal(run('sources', '--repo', linked, '--out', out, 'README.md').status, 0, 'unrelated external repository protection is outside the contract');
+  assert.equal(
+    run('sources', '--repo', linked, '--out', out, 'README.md').status,
+    0,
+    'unrelated external repository protection is outside the contract',
+  );
   assert.equal(readManifest(out).manifest.checkout, fs.realpathSync.native(linked));
 });
 
@@ -124,7 +174,12 @@ test('output protection resolves owning linked-child administration and refuses 
   fs.writeFileSync(marker, original);
   const pin = git(child, 'rev-parse', 'HEAD').trim();
   const input = `160000 ${pin} 1\tchild\n160000 ${pin} 2\tchild\n`;
-  const updated = spawnSync('git', ['update-index', '--index-info'], { cwd: dir, env: GIT_ENV, input, encoding: 'utf8' });
+  const updated = spawnSync('git', ['update-index', '--index-info'], {
+    cwd: dir,
+    env: GIT_ENV,
+    input,
+    encoding: 'utf8',
+  });
   assert.equal(updated.status, 0, updated.stderr);
   const unmerged = run('sources', '--repo', dir, '--out', path.join(child, 'untracked.json'), 'README.md');
   assert.equal(unmerged.status, 1);
@@ -150,7 +205,11 @@ test('sources reserves resolved local binding.md while retaining factual manifes
     assert.match(result.json.refused.reason, /binding-sources\.json/);
     assert.equal(fs.readFileSync(binding, 'utf8'), content);
   }
-  for (const out of [path.join(dir, '.peer-skills-and-workflows/binding-sources.json'), path.join(dir, 'export.json'), path.join(scratch, 'reserved-export.json')]) {
+  for (const out of [
+    path.join(dir, '.peer-skills-and-workflows/binding-sources.json'),
+    path.join(dir, 'export.json'),
+    path.join(scratch, 'reserved-export.json'),
+  ]) {
     const result = run('sources', '--repo', dir, '--out', out, 'README.md');
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.json.written, out);
@@ -185,7 +244,10 @@ test('occupied named storage refuses both exports before writes and preserves pe
   assert.equal(fs.readFileSync(path.join(outside, 'binding-sources.json'), 'utf8'), 'original manifest');
   assert.equal(fs.existsSync(path.join(outside, 'new')), false);
   assert.equal(fs.readlinkSync(local), outside);
-  for (const out of [path.join(scratch, 'occupied-output-external.json'), path.join(dir, '.peer-skills-and-workflows-neighbor/out.json')]) {
+  for (const out of [
+    path.join(scratch, 'occupied-output-external.json'),
+    path.join(dir, '.peer-skills-and-workflows-neighbor/out.json'),
+  ]) {
     assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md').status, 0);
   }
   fs.unlinkSync(local);
@@ -207,7 +269,11 @@ test('occupied named storage refuses both exports before writes and preserves pe
   }
   for (const name of ['binding-sources.json', 'other.json']) {
     const out = path.join(local, name);
-    assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md').status, 0, 'absent and ordinary directory storage permit manifests');
+    assert.equal(
+      run('sources', '--repo', dir, '--out', out, 'README.md').status,
+      0,
+      'absent and ordinary directory storage permit manifests',
+    );
   }
 });
 
@@ -237,11 +303,19 @@ test('occupied named storage refuses every alias spelling of the checkout before
   fs.symlinkSync(outside, local, 'dir');
   // Canonical and alias repository arguments, each with every output spelling;
   // both binding children, a nested destination and the entry itself.
-  for (const base of spellings.slice(1)) for (const name of ['binding.md', 'new/manifest.json']) refusedBy('link', dir, path.join(base, '.peer-skills-and-workflows', name));
-  for (const base of spellings) for (const name of ['binding-sources.json', '']) refusedBy('link', aliasRepo, path.join(base, '.peer-skills-and-workflows', name));
+  for (const base of spellings.slice(1))
+    for (const name of ['binding.md', 'new/manifest.json'])
+      refusedBy('link', dir, path.join(base, '.peer-skills-and-workflows', name));
+  for (const base of spellings)
+    for (const name of ['binding-sources.json', ''])
+      refusedBy('link', aliasRepo, path.join(base, '.peer-skills-and-workflows', name));
   unchanged();
   assert.equal(fs.readlinkSync(local), outside);
-  for (const out of [path.join(scratch, 'occupied-alias-external.json'), path.join(aliasRepo, '.peer-skills-and-workflows-neighbor/out.json'), path.join(aliasRepo, 'export/.peer-skills-and-workflows-x.json')]) {
+  for (const out of [
+    path.join(scratch, 'occupied-alias-external.json'),
+    path.join(aliasRepo, '.peer-skills-and-workflows-neighbor/out.json'),
+    path.join(aliasRepo, 'export/.peer-skills-and-workflows-x.json'),
+  ]) {
     const result = run('sources', '--repo', aliasRepo, '--out', out, 'README.md');
     assert.equal(result.status, 0, `${out}: ${result.stderr}`);
     assert.equal(result.json.written, out);
@@ -250,7 +324,11 @@ test('occupied named storage refuses every alias spelling of the checkout before
   fs.unlinkSync(local);
   for (const target of [local, path.join(scratch, 'occupied-alias-nonexistent')]) {
     fs.symlinkSync(target, local, 'dir');
-    for (const out of [path.join(aliasRepo, '.peer-skills-and-workflows/binding-sources.json'), path.join(dir, 'self/.peer-skills-and-workflows/binding.md')]) refusedBy('link', dir, out);
+    for (const out of [
+      path.join(aliasRepo, '.peer-skills-and-workflows/binding-sources.json'),
+      path.join(dir, 'self/.peer-skills-and-workflows/binding.md'),
+    ])
+      refusedBy('link', dir, out);
     assert.equal(fs.readlinkSync(local), target, 'loops and dangling links stay unchanged');
     fs.unlinkSync(local);
   }
@@ -259,16 +337,38 @@ test('occupied named storage refuses every alias spelling of the checkout before
   refusedBy('file', dir, path.join(aliasRepo, '.peer-skills-and-workflows/binding-sources.json'));
   assert.equal(fs.readFileSync(local, 'utf8'), 'occupied file');
   fs.unlinkSync(local);
-  const absent = run('sources', '--repo', dir, '--out', path.join(aliasRepo, '.peer-skills-and-workflows/binding-sources.json'), 'README.md');
+  const absent = run(
+    'sources',
+    '--repo',
+    dir,
+    '--out',
+    path.join(aliasRepo, '.peer-skills-and-workflows/binding-sources.json'),
+    'README.md',
+  );
   assert.equal(absent.status, 0, absent.stderr);
-  assert.equal(absent.json.resolved, path.join(local, 'binding-sources.json'), 'absent storage admits the manifest through an alias');
+  assert.equal(
+    absent.json.resolved,
+    path.join(local, 'binding-sources.json'),
+    'absent storage admits the manifest through an alias',
+  );
   for (const base of spellings.slice(1)) {
     const out = path.join(base, '.peer-skills-and-workflows/other.json');
     const ordinary = run('sources', '--repo', aliasRepo, '--out', out, 'README.md');
     assert.equal(ordinary.status, 0, ordinary.stderr);
     assert.equal(ordinary.json.written, out);
-    assert.equal(ordinary.json.resolved, path.join(local, 'other.json'), 'ordinary directory storage remains a permitted export');
-    const reserved = run('sources', '--repo', aliasRepo, '--out', path.join(base, '.peer-skills-and-workflows/binding.md'), 'README.md');
+    assert.equal(
+      ordinary.json.resolved,
+      path.join(local, 'other.json'),
+      'ordinary directory storage remains a permitted export',
+    );
+    const reserved = run(
+      'sources',
+      '--repo',
+      aliasRepo,
+      '--out',
+      path.join(base, '.peer-skills-and-workflows/binding.md'),
+      'README.md',
+    );
     assert.equal(reserved.status, 1);
     assert.match(reserved.json.refused.reason, /binding-sources\.json/);
   }
@@ -307,7 +407,10 @@ test('sources reports named and resolved permitted exports while refusing a trac
 });
 
 test('filesystem-equivalent storage and binding names refuse or reserve before any write; ordinary exports stay permitted', (t) => {
-  if (!scratchFoldsCase) { t.skip('needs a case-insensitive filesystem; distinct case-sensitive names are covered by the next test'); return; }
+  if (!scratchFoldsCase) {
+    t.skip('needs a case-insensitive filesystem; distinct case-sensitive names are covered by the next test');
+    return;
+  }
   const dir = repository('equivalent-names/repo', { 'README.md': 'readable' });
   const alias = path.join(scratch, 'equivalent-names-link');
   fs.symlinkSync(path.dirname(dir), alias, 'dir');
@@ -335,8 +438,14 @@ test('filesystem-equivalent storage and binding names refuse or reserve before a
   fs.symlinkSync(outside, local, 'dir');
   // Exact, case-variant and checkout-alias spellings; both children, a nested destination and the entry itself.
   for (const base of [dir, aliasRepo]) {
-    for (const [storage, child] of [['.peer-skills-and-workflows', 'binding.md'], ['.PEER-SKILLS-AND-WORKFLOWS', 'binding.md'], ['.Peer-Skills-And-Workflows', 'binding-sources.json'],
-      ['.PEER-SKILLS-AND-WORKFLOWS', 'BINDING-SOURCES.JSON'], ['.peer-skills-and-workflowS', 'new/manifest.json'], ['.PEER-SKILLS-AND-WORKFLOWS', '']]) {
+    for (const [storage, child] of [
+      ['.peer-skills-and-workflows', 'binding.md'],
+      ['.PEER-SKILLS-AND-WORKFLOWS', 'binding.md'],
+      ['.Peer-Skills-And-Workflows', 'binding-sources.json'],
+      ['.PEER-SKILLS-AND-WORKFLOWS', 'BINDING-SOURCES.JSON'],
+      ['.peer-skills-and-workflowS', 'new/manifest.json'],
+      ['.PEER-SKILLS-AND-WORKFLOWS', ''],
+    ]) {
       refused(path.join(base, storage, child), occupied);
     }
   }
@@ -346,7 +455,10 @@ test('filesystem-equivalent storage and binding names refuse or reserve before a
   fs.mkdirSync(local);
   // A linked binding child is refused under a variant child name, too.
   fs.symlinkSync(path.join(outside, 'binding-sources.json'), path.join(local, 'binding-sources.json'));
-  for (const out of [path.join(local, 'BINDING-SOURCES.JSON'), path.join(aliasRepo, '.PEER-SKILLS-AND-WORKFLOWS/Binding-Sources.json')]) {
+  for (const out of [
+    path.join(local, 'BINDING-SOURCES.JSON'),
+    path.join(aliasRepo, '.PEER-SKILLS-AND-WORKFLOWS/Binding-Sources.json'),
+  ]) {
     refused(out, (refusal) => {
       assert.match(refusal.reason, /binding output child must be a plain file/);
       assert.equal(refusal.state.kind, 'link');
@@ -355,17 +467,31 @@ test('filesystem-equivalent storage and binding names refuse or reserve before a
   unchanged();
   fs.unlinkSync(path.join(local, 'binding-sources.json'));
   // The binding file is reserved under every equivalent name before it exists, in ordinary and in absent storage.
-  for (const out of [path.join(local, 'Binding.md'), path.join(aliasRepo, '.peer-skills-and-workflows/BINDING.MD'), path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/binding.md')]) refused(out, reserved);
+  for (const out of [
+    path.join(local, 'Binding.md'),
+    path.join(aliasRepo, '.peer-skills-and-workflows/BINDING.MD'),
+    path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/binding.md'),
+  ])
+    refused(out, reserved);
   assert.deepEqual(fs.readdirSync(local), []);
   fs.rmdirSync(local);
-  for (const out of [path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/Binding.md'), path.join(aliasRepo, '.Peer-Skills-And-Workflows/binding.md')]) refused(out, reserved);
+  for (const out of [
+    path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/Binding.md'),
+    path.join(aliasRepo, '.Peer-Skills-And-Workflows/binding.md'),
+  ])
+    refused(out, reserved);
   assert.equal(fs.existsSync(local), false, 'nothing was created for a refused reservation');
   fs.mkdirSync(local);
   fs.writeFileSync(path.join(local, 'binding.md'), 'existing choices');
   refused(path.join(local, 'BINDING.md'), reserved);
   assert.equal(fs.readFileSync(path.join(local, 'binding.md'), 'utf8'), 'existing choices');
-  for (const out of [path.join(local, 'binding-sources.json'), path.join(aliasRepo, '.PEER-SKILLS-AND-WORKFLOWS/other.json'), path.join(dir, '.peer-skills-and-workflows-neighbor/out.json'),
-    path.join(dir, '.peer-skills-and-workflowsx'), path.join(scratch, 'equivalent-names-external.json')]) {
+  for (const out of [
+    path.join(local, 'binding-sources.json'),
+    path.join(aliasRepo, '.PEER-SKILLS-AND-WORKFLOWS/other.json'),
+    path.join(dir, '.peer-skills-and-workflows-neighbor/out.json'),
+    path.join(dir, '.peer-skills-and-workflowsx'),
+    path.join(scratch, 'equivalent-names-external.json'),
+  ]) {
     const result = run('sources', '--repo', dir, '--out', out, 'README.md');
     assert.equal(result.status, 0, `${out}: ${result.stderr}`);
     assert.equal(result.json.written, out);
@@ -390,10 +516,21 @@ test('differently cased storage and binding names stay distinct neighbors where 
       assert.equal(result.json.written, out);
     }
     assert.deepEqual(fs.readdirSync(local).sort(), ['Binding.md']);
-    assert.equal(run('sources', '--repo', dir, '--out', path.join(local, 'binding.md'), 'README.md').status, 1, 'the exact name stays reserved');
+    assert.equal(
+      run('sources', '--repo', dir, '--out', path.join(local, 'binding.md'), 'README.md').status,
+      1,
+      'the exact name stays reserved',
+    );
     fs.rmSync(local, { recursive: true });
     fs.symlinkSync(outside, local, 'dir');
-    const result = run('sources', '--repo', dir, '--out', path.join(dir, '.Peer-Skills-And-Workflows/new.json'), 'README.md');
+    const result = run(
+      'sources',
+      '--repo',
+      dir,
+      '--out',
+      path.join(dir, '.Peer-Skills-And-Workflows/new.json'),
+      'README.md',
+    );
     assert.equal(result.status, 0, 'a distinct neighbor of occupied storage is an ordinary export');
     assert.deepEqual(fs.readdirSync(outside), ['binding.md']);
     return;
@@ -402,25 +539,48 @@ test('differently cased storage and binding names stay distinct neighbors where 
   // name with an uppercase letter is a different, absent entry. Nothing is written.
   const native = fs.lstatSync;
   t.mock.method(fs, 'lstatSync', (file, ...args) => {
-    if (/[A-Z]/.test(path.basename(String(file)))) throw Object.assign(new Error(`ENOENT: simulated case-sensitive lookup '${file}'`), { code: 'ENOENT' });
+    if (/[A-Z]/.test(path.basename(String(file))))
+      throw Object.assign(new Error(`ENOENT: simulated case-sensitive lookup '${file}'`), { code: 'ENOENT' });
     return native(file, ...args);
   });
-  assert.equal(outputDestinationProblem(facts, neighbors[0]), null, 'absent storage: a cased neighbor is not local storage');
+  assert.equal(
+    outputDestinationProblem(facts, neighbors[0]),
+    null,
+    'absent storage: a cased neighbor is not local storage',
+  );
   fs.mkdirSync(local);
-  assert.equal(outputDestinationProblem(facts, neighbors[1]), null, 'ordinary storage: a cased neighbor is not the binding file');
+  assert.equal(
+    outputDestinationProblem(facts, neighbors[1]),
+    null,
+    'ordinary storage: a cased neighbor is not the binding file',
+  );
   assert.equal(localStorageChild(dir, path.join(local, 'Binding-Sources.json')), null);
-  assert.equal(localStorageChild(dir, path.join(local, 'binding-sources.json')), path.join(local, 'binding-sources.json'));
-  assert.match(outputDestinationProblem(facts, path.join(local, 'binding.md')).reason, /binding-sources\.json/, 'the exact name stays reserved');
+  assert.equal(
+    localStorageChild(dir, path.join(local, 'binding-sources.json')),
+    path.join(local, 'binding-sources.json'),
+  );
+  assert.match(
+    outputDestinationProblem(facts, path.join(local, 'binding.md')).reason,
+    /binding-sources\.json/,
+    'the exact name stays reserved',
+  );
   fs.rmdirSync(local);
   fs.symlinkSync(outside, local, 'dir');
-  assert.equal(outputDestinationProblem(facts, path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/new.json'))?.occupied, undefined, 'a distinct neighbor is not the occupied entry');
+  assert.equal(
+    outputDestinationProblem(facts, path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/new.json'))?.occupied,
+    undefined,
+    'a distinct neighbor is not the occupied entry',
+  );
   assert.equal(outputDestinationProblem(facts, path.join(local, 'new.json')).occupied.kind, 'link');
   t.mock.restoreAll();
   assert.deepEqual(fs.readdirSync(outside), ['binding.md']);
 });
 
 test('reserved entries stored under another spelling are refused under that spelling too; separately listed hard links stay ordinary', (t) => {
-  if (!scratchFoldsCase) { t.skip('needs a case-insensitive filesystem; case-sensitive hard links are covered by the next test'); return; }
+  if (!scratchFoldsCase) {
+    t.skip('needs a case-insensitive filesystem; case-sensitive hard links are covered by the next test');
+    return;
+  }
   const dir = repository('stored-spellings/repo', { 'README.md': 'readable' });
   const facts = checkoutFacts(dir);
   const alias = path.join(scratch, 'stored-spellings-link');
@@ -447,7 +607,12 @@ test('reserved entries stored under another spelling are refused under that spel
   // The binding file stored as Binding.md is reserved under that spelling, every other one and through the checkout alias.
   fs.mkdirSync(local);
   fs.writeFileSync(path.join(local, 'Binding.md'), 'operator choices');
-  for (const out of [path.join(local, 'Binding.md'), path.join(local, 'binding.md'), path.join(aliasRepo, '.peer-skills-and-workflows/Binding.md'), path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/BINDING.MD')]) {
+  for (const out of [
+    path.join(local, 'Binding.md'),
+    path.join(local, 'binding.md'),
+    path.join(aliasRepo, '.peer-skills-and-workflows/Binding.md'),
+    path.join(dir, '.PEER-SKILLS-AND-WORKFLOWS/BINDING.MD'),
+  ]) {
     refused(out, /binding-sources\.json/);
   }
   assert.equal(compared(path.join(local, 'Binding.md')).usable, false, 'operator choices are not a manifest');
@@ -462,7 +627,11 @@ test('reserved entries stored under another spelling are refused under that spel
       assert.equal(outputDestinationProblem(facts, out), null, `${stored}: ${out}`);
       assert.equal(localStorageChild(dir, out), null, `${stored}: ${out}`);
     }
-    assert.match(outputDestinationProblem(facts, path.join(local, 'BINDING.md')).reason, /binding-sources\.json/, stored);
+    assert.match(
+      outputDestinationProblem(facts, path.join(local, 'BINDING.md')).reason,
+      /binding-sources\.json/,
+      stored,
+    );
     assert.equal(localStorageChild(dir, path.join(local, stored)), path.join(local, 'binding.md'));
     fs.unlinkSync(path.join(local, 'choices-copy.md'));
   }
@@ -471,14 +640,29 @@ test('reserved entries stored under another spelling are refused under that spel
 
   // Local storage stored as a .Peer-Skills-And-Workflows link is occupied under its stored spelling: neither written through nor read.
   fs.symlinkSync(outside, path.join(dir, '.Peer-Skills-And-Workflows'), 'dir');
-  for (const out of [path.join(dir, '.Peer-Skills-And-Workflows/binding-sources.json'), path.join(dir, '.Peer-Skills-And-Workflows/new.json'), path.join(aliasRepo, '.Peer-Skills-And-Workflows/binding-sources.json'),
-    path.join(local, 'binding-sources.json')]) {
+  for (const out of [
+    path.join(dir, '.Peer-Skills-And-Workflows/binding-sources.json'),
+    path.join(dir, '.Peer-Skills-And-Workflows/new.json'),
+    path.join(aliasRepo, '.Peer-Skills-And-Workflows/binding-sources.json'),
+    path.join(local, 'binding-sources.json'),
+  ]) {
     const refusal = refused(out, /^local storage path occupied$/);
-    assert.deepEqual([refusal.occupied.path, refusal.occupied.kind, refusal.occupied.target], [local, 'link', outside], out);
+    assert.deepEqual(
+      [refusal.occupied.path, refusal.occupied.kind, refusal.occupied.target],
+      [local, 'link', outside],
+      out,
+    );
   }
-  for (const file of [path.join(dir, '.Peer-Skills-And-Workflows/binding-sources.json'), path.join(aliasRepo, '.Peer-Skills-And-Workflows/binding-sources.json')]) {
+  for (const file of [
+    path.join(dir, '.Peer-Skills-And-Workflows/binding-sources.json'),
+    path.join(aliasRepo, '.Peer-Skills-And-Workflows/binding-sources.json'),
+  ]) {
     const comparison = compared(file);
-    assert.deepEqual([comparison.usable, comparison.reason, comparison.occupied.kind], [false, 'local storage path occupied', 'link'], `${file} is not read through the occupant`);
+    assert.deepEqual(
+      [comparison.usable, comparison.reason, comparison.occupied.kind],
+      [false, 'local storage path occupied', 'link'],
+      `${file} is not read through the occupant`,
+    );
   }
   unchanged();
   assert.equal(fs.readlinkSync(path.join(dir, '.Peer-Skills-And-Workflows')), outside);
@@ -487,7 +671,11 @@ test('reserved entries stored under another spelling are refused under that spel
   // A manifest stored as a Binding-Sources.json link is refused under its stored spelling; a hard link beside it is ordinary.
   fs.mkdirSync(local);
   fs.symlinkSync(path.join(outside, 'binding-sources.json'), path.join(local, 'Binding-Sources.json'));
-  for (const out of [path.join(local, 'Binding-Sources.json'), path.join(local, 'binding-sources.json'), path.join(aliasRepo, '.peer-skills-and-workflows/Binding-Sources.json')]) {
+  for (const out of [
+    path.join(local, 'Binding-Sources.json'),
+    path.join(local, 'binding-sources.json'),
+    path.join(aliasRepo, '.peer-skills-and-workflows/Binding-Sources.json'),
+  ]) {
     assert.equal(refused(out, /binding output child must be a plain file/).state.kind, 'link', out);
   }
   assert.match(compared(path.join(local, 'Binding-Sources.json')).reason, /^linked manifest is a conflict/);
@@ -496,9 +684,20 @@ test('reserved entries stored under another spelling are refused under that spel
   fs.writeFileSync(path.join(local, 'Binding-Sources.json'), manifest);
   fs.linkSync(path.join(local, 'Binding-Sources.json'), path.join(local, 'manifest-copy.json'));
   assert.equal(localStorageChild(dir, path.join(local, 'manifest-copy.json')), null);
-  assert.equal(localStorageChild(dir, path.join(local, 'BINDING-SOURCES.json')), path.join(local, 'binding-sources.json'));
-  assert.equal(compared(path.join(local, 'Binding-Sources.json')).usable, true, 'a plain stored-variant manifest is compared');
-  for (const out of [path.join(local, 'Binding-Sources.json'), path.join(local, 'other.json'), path.join(dir, '.peer-skills-and-workflows-neighbor/out.json')]) {
+  assert.equal(
+    localStorageChild(dir, path.join(local, 'BINDING-SOURCES.json')),
+    path.join(local, 'binding-sources.json'),
+  );
+  assert.equal(
+    compared(path.join(local, 'Binding-Sources.json')).usable,
+    true,
+    'a plain stored-variant manifest is compared',
+  );
+  for (const out of [
+    path.join(local, 'Binding-Sources.json'),
+    path.join(local, 'other.json'),
+    path.join(dir, '.peer-skills-and-workflows-neighbor/out.json'),
+  ]) {
     const result = exported(out);
     assert.equal(result.status, 0, `${out}: ${result.stderr}`);
     assert.equal(result.json.written, out);
@@ -524,15 +723,31 @@ test('case-sensitive neighbors that are hard links of a reserved entry stay dist
     const nativeLstat = fs.lstatSync;
     const nativeReaddir = fs.readdirSync;
     const nativeRealpath = fs.realpathSync.native;
-    t.mock.method(fs, 'lstatSync', (file, ...args) => nativeLstat(String(file) === neighbor ? path.join(local, 'binding.md') : file, ...args));
-    t.mock.method(fs.realpathSync, 'native', (file, ...args) => (String(file) === neighbor ? neighbor : nativeRealpath(file, ...args)));
-    t.mock.method(fs, 'readdirSync', (file, ...args) => (String(file) === local && !args.length ? ['Binding.md', 'binding.md'] : nativeReaddir(file, ...args)));
+    t.mock.method(fs, 'lstatSync', (file, ...args) =>
+      nativeLstat(String(file) === neighbor ? path.join(local, 'binding.md') : file, ...args),
+    );
+    t.mock.method(fs.realpathSync, 'native', (file, ...args) =>
+      String(file) === neighbor ? neighbor : nativeRealpath(file, ...args),
+    );
+    t.mock.method(fs, 'readdirSync', (file, ...args) =>
+      String(file) === local && !args.length ? ['Binding.md', 'binding.md'] : nativeReaddir(file, ...args),
+    );
   }
-  assert.equal(outputDestinationProblem(facts, neighbor), null, 'a separately listed hard link is not the binding file');
+  assert.equal(
+    outputDestinationProblem(facts, neighbor),
+    null,
+    'a separately listed hard link is not the binding file',
+  );
   assert.equal(localStorageChild(dir, neighbor), null);
-  assert.match(outputDestinationProblem(facts, path.join(local, 'binding.md')).reason, /binding-sources\.json/, 'the binding file stays reserved');
-  assert.equal(localStorageChild(dir, path.join(local, 'binding-sources.json')), path.join(local, 'binding-sources.json'));
+  assert.match(
+    outputDestinationProblem(facts, path.join(local, 'binding.md')).reason,
+    /binding-sources\.json/,
+    'the binding file stays reserved',
+  );
+  assert.equal(
+    localStorageChild(dir, path.join(local, 'binding-sources.json')),
+    path.join(local, 'binding-sources.json'),
+  );
   t.mock.restoreAll();
   assert.equal(fs.readFileSync(path.join(local, 'binding.md'), 'utf8'), 'operator choices');
 });
-

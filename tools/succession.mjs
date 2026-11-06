@@ -24,7 +24,15 @@ import os from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { usage } from './lib/cli.mjs';
-import { assessSuccession, ENGINES, locateLog, mergeObservation, observationFor, readCounts, writeCounts } from './lib/succession.mjs';
+import {
+  assessSuccession,
+  ENGINES,
+  locateLog,
+  mergeObservation,
+  observationFor,
+  readCounts,
+  writeCounts,
+} from './lib/succession.mjs';
 
 const USAGE = [
   'node tools/succession.mjs marker',
@@ -65,7 +73,8 @@ const thresholds = () => {
   const result = {};
   for (const key of ['compaction-threshold', 'turn-threshold']) {
     if (values[key] === undefined) usage(USAGE);
-    if (!/^[0-9]+$/.test(values[key]) || Number(values[key]) < 1) throw new Error(`--${key} must be a positive whole number, not '${values[key]}'`);
+    if (!/^[0-9]+$/.test(values[key]) || Number(values[key]) < 1)
+      throw new Error(`--${key} must be a positive whole number, not '${values[key]}'`);
     result[key] = Number(values[key]);
   }
   return result;
@@ -80,7 +89,11 @@ try {
       const hours = Number(values['since-hours']);
       if (!(hours > 0)) usage(USAGE);
       const found = locateLog({
-        engine: engine(), home: os.homedir(), session: values.session ?? null, marker: values.marker ?? null, since: Date.now() - hours * 3600e3,
+        engine: engine(),
+        home: os.homedir(),
+        session: values.session ?? null,
+        marker: values.marker ?? null,
+        since: Date.now() - hours * 3600e3,
       });
       print({ engine: values.engine, ...found });
       break;
@@ -91,7 +104,10 @@ try {
       const before = readCounts(values.counts);
       const observation = observationFor(engine(), values.log, fs.readFileSync(values.log, 'utf8'), before);
       const counts = mergeObservation(before, {
-        engine: values.engine, log: path.resolve(values.log), observation, lowerBound: values['lower-bound'],
+        engine: values.engine,
+        log: path.resolve(values.log),
+        observation,
+        lowerBound: values['lower-bound'],
       });
       writeCounts(values.counts, counts);
       const report = assessSuccession(counts, limits);

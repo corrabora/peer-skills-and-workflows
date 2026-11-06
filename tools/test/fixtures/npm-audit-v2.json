@@ -1,0 +1,220 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@eslint-community/eslint-utils": {
+      "name": "@eslint-community/eslint-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "eslint",
+        "eslint-plugin-es-x",
+        "eslint-plugin-n"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@eslint-community/eslint-utils"
+      ],
+      "fixAvailable": false
+    },
+    "@eslint/config-array": {
+      "name": "@eslint/config-array",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "minimatch"
+      ],
+      "effects": [
+        "eslint"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@eslint/config-array"
+      ],
+      "fixAvailable": false
+    },
+    "@eslint/js": {
+      "name": "@eslint/js",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint"
+      ],
+      "effects": [],
+      "range": ">=10.0.1",
+      "nodes": [
+        "node_modules/@eslint/js"
+      ],
+      "fixAvailable": {
+        "name": "@eslint/js",
+        "version": "9.39.5",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint": {
+      "name": "eslint",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@eslint-community/eslint-utils",
+        "@eslint/config-array",
+        "minimatch"
+      ],
+      "effects": [
+        "@eslint-community/eslint-utils",
+        "@eslint/js",
+        "eslint-compat-utils",
+        "eslint-config-prettier",
+        "eslint-plugin-es-x",
+        "eslint-plugin-n",
+        "eslint-plugin-prettier"
+      ],
+      "range": "0.7.1 - 2.0.0-rc.1 || >=4.1.0",
+      "nodes": [
+        "node_modules/eslint"
+      ],
+      "fixAvailable": false
+    },
+    "eslint-compat-utils": {
+      "name": "eslint-compat-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "eslint-plugin-es-x"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/eslint-compat-utils"
+      ],
+      "fixAvailable": false
+    },
+    "eslint-config-prettier": {
+      "name": "eslint-config-prettier",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "eslint-plugin-prettier"
+      ],
+      "range": ">=7.0.0",
+      "nodes": [
+        "node_modules/eslint-config-prettier"
+      ],
+      "fixAvailable": {
+        "name": "eslint-config-prettier",
+        "version": "6.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-plugin-es-x": {
+      "name": "eslint-plugin-es-x",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@eslint-community/eslint-utils",
+        "eslint",
+        "eslint-compat-utils"
+      ],
+      "effects": [
+        "eslint-plugin-n"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/eslint-plugin-es-x"
+      ],
+      "fixAvailable": false
+    },
+    "eslint-plugin-n": {
+      "name": "eslint-plugin-n",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@eslint-community/eslint-utils",
+        "eslint",
+        "eslint-plugin-es-x"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/eslint-plugin-n"
+      ],
+      "fixAvailable": false
+    },
+    "eslint-plugin-prettier": {
+      "name": "eslint-plugin-prettier",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint",
+        "eslint-config-prettier"
+      ],
+      "effects": [],
+      "range": ">=3.0.0",
+      "nodes": [
+        "node_modules/eslint-plugin-prettier"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-prettier",
+        "version": "2.7.0",
+        "isSemVerMajor": true
+      }
+    },
+    "minimatch": {
+      "name": "minimatch",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1244012,
+          "name": "minimatch",
+          "dependency": "minimatch",
+          "title": "minimatch has potential denial of service via globparts amplification",
+          "url": "https://github.com/advisories/GHSA-g3hv-75wg-m249",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-405"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<11.0.1"
+        }
+      ],
+      "effects": [
+        "@eslint/config-array",
+        "eslint"
+      ],
+      "range": "<11.0.1",
+      "nodes": [
+        "node_modules/minimatch"
+      ],
+      "fixAvailable": false
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 10,
+      "high": 0,
+      "critical": 0,
+      "total": 10
+    },
+    "dependencies": {
+      "prod": 9,
+      "dev": 105,
+      "optional": 0,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 113
+    }
+  }
+}

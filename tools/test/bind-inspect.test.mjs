@@ -8,11 +8,18 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
+import { checkoutFacts, discoverCandidates, establishLocalStorage, EXCLUDE_RULE, excludeFile } from '../lib/bind.mjs';
 import {
-  checkoutFacts, discoverCandidates, establishLocalStorage, EXCLUDE_RULE, excludeFile,
-} from '../lib/bind.mjs';
-import {
-  packageRoot, cli, scratch, GIT_ENV, git, run, repository, write, qualityFixture, indexOnlyEntry,
+  packageRoot,
+  cli,
+  scratch,
+  GIT_ENV,
+  git,
+  run,
+  repository,
+  write,
+  qualityFixture,
+  indexOnlyEntry,
 } from '../test-support/bind.mjs';
 
 test('inspect discovers quality selection, extensions and scoped guidance in a fresh repository', () => {
@@ -53,7 +60,10 @@ test('newly added, uncommitted guidance is found by discovery; ignored files are
   const { candidates: found, complete, errors } = discoverCandidates(dir);
   assert.equal(complete, true);
   assert.deepEqual(errors, []);
-  assert.deepEqual(found.filter((c) => !c.tracked).map((c) => c.path), ['CLAUDE.md', 'docs/new-policy.md']);
+  assert.deepEqual(
+    found.filter((c) => !c.tracked).map((c) => c.path),
+    ['CLAUDE.md', 'docs/new-policy.md'],
+  );
   assert.ok(!found.some((c) => c.path === 'secret.md'));
 });
 
@@ -66,8 +76,13 @@ test('a repository without commits and a fresh clone are inspected without local
 
   const origin = repository('origin', {
     'README.md': '# P\n',
-    '.quality/config.json': JSON.stringify({ profiles: [{ profileId: 'profile:acme/solo', path: 'profiles/acme-solo' }] }),
-    '.quality/profiles/acme-solo/_manifest/profile.json': JSON.stringify({ profileId: 'profile:acme/solo', version: '1.0.0' }),
+    '.quality/config.json': JSON.stringify({
+      profiles: [{ profileId: 'profile:acme/solo', path: 'profiles/acme-solo' }],
+    }),
+    '.quality/profiles/acme-solo/_manifest/profile.json': JSON.stringify({
+      profileId: 'profile:acme/solo',
+      version: '1.0.0',
+    }),
   });
   fs.mkdirSync(path.join(origin, '.peer-skills-and-workflows'));
   fs.writeFileSync(path.join(origin, '.peer-skills-and-workflows', 'binding.md'), 'local only\n');
@@ -85,9 +100,17 @@ test('a repository without commits and a fresh clone are inspected without local
   assert.equal(inspected.json.localStorage.rulePresent, false);
   assert.equal(fs.existsSync(path.join(clone, '.peer-skills-and-workflows')), false, 'inspect creates nothing');
   assert.equal(inspected.json.quality.present, true);
-  assert.deepEqual(inspected.json.quality.profiles, [{
-    profileId: 'profile:acme/solo', path: '.quality/profiles/acme-solo', selectedBy: 'config', present: true, version: '1.0.0', inherits: [], requires: [],
-  }]);
+  assert.deepEqual(inspected.json.quality.profiles, [
+    {
+      profileId: 'profile:acme/solo',
+      path: '.quality/profiles/acme-solo',
+      selectedBy: 'config',
+      present: true,
+      version: '1.0.0',
+      inherits: [],
+      requires: [],
+    },
+  ]);
 });
 
 test('usage and checkout errors', () => {
@@ -108,8 +131,14 @@ test('usage and checkout errors', () => {
 });
 
 test('discovery denial fails a file-only CHECK with surviving facts and restores filtered candidates', (t) => {
-  if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
-  const dir = repository('discovery-denial', { 'README.md': 'readable', '.gitignore': '/.peer-skills-and-workflows/\n' });
+  if (process.platform === 'win32' || process.getuid?.() === 0) {
+    t.skip('needs POSIX permissions enforced');
+    return;
+  }
+  const dir = repository('discovery-denial', {
+    'README.md': 'readable',
+    '.gitignore': '/.peer-skills-and-workflows/\n',
+  });
   establishLocalStorage(dir);
   const out = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md').status, 0);
@@ -129,11 +158,20 @@ test('discovery denial fails a file-only CHECK with surviving facts and restores
     assert.equal(denied.status, 1, denied.stderr);
     assert.equal(denied.json.discovery.complete, false);
     assert.ok(denied.json.discovery.errors.some((e) => e.path === exclude && /Permission denied/.test(e.error)));
-    assert.equal(denied.json.binding.comparison.current, true, `file-only recorded currentness is independent; comparison: ${JSON.stringify(denied.json.binding.comparison)}`);
+    assert.equal(
+      denied.json.binding.comparison.current,
+      true,
+      `file-only recorded currentness is independent; comparison: ${JSON.stringify(denied.json.binding.comparison)}`,
+    );
     assert.equal(denied.json.localStorage.ignored, true);
     assert.equal(denied.json.localStorage.rulePresent, null);
-    assert.ok(denied.json.candidates.some((c) => c.path === 'docs/private-notes.md'), 'unverified candidates remain diagnostic only');
-  } finally { fs.chmodSync(exclude, 0o644); }
+    assert.ok(
+      denied.json.candidates.some((c) => c.path === 'docs/private-notes.md'),
+      'unverified candidates remain diagnostic only',
+    );
+  } finally {
+    fs.chmodSync(exclude, 0o644);
+  }
   const restored = run('inspect', '--repo', dir);
   assert.equal(restored.status, 0, restored.stderr);
   assert.deepEqual(restored.json.discovery, readable.json.discovery);
@@ -142,8 +180,15 @@ test('discovery denial fails a file-only CHECK with surviving facts and restores
 });
 
 test('a denied directory names its own path in discovery errors and an unknown warning has no path', (t) => {
-  if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
-  const dir = repository('discovery-directory-denial', { 'README.md': 'readable', 'docs/private/notes.md': 'notes', '.gitignore': '/.peer-skills-and-workflows/\n' });
+  if (process.platform === 'win32' || process.getuid?.() === 0) {
+    t.skip('needs POSIX permissions enforced');
+    return;
+  }
+  const dir = repository('discovery-directory-denial', {
+    'README.md': 'readable',
+    'docs/private/notes.md': 'notes',
+    '.gitignore': '/.peer-skills-and-workflows/\n',
+  });
   establishLocalStorage(dir);
   const out = path.join(dir, '.peer-skills-and-workflows/binding-sources.json');
   assert.equal(run('sources', '--repo', dir, '--out', out, 'README.md').status, 0);
@@ -159,18 +204,32 @@ test('a denied directory names its own path in discovery errors and an unknown w
     assert.equal(result.status, 1, result.stderr);
     assert.deepEqual(result.json.discovery, {
       complete: false,
-      errors: [{ path: denied, error: 'Permission denied', message: "warning: could not open directory 'docs/private/': Permission denied" }],
+      errors: [
+        {
+          path: denied,
+          error: 'Permission denied',
+          message: "warning: could not open directory 'docs/private/': Permission denied",
+        },
+      ],
     });
-    assert.equal(result.json.binding.comparison.current, true, `file-only recorded currentness is independent; comparison: ${JSON.stringify(result.json.binding.comparison)}`);
+    assert.equal(
+      result.json.binding.comparison.current,
+      true,
+      `file-only recorded currentness is independent; comparison: ${JSON.stringify(result.json.binding.comparison)}`,
+    );
     assert.equal(result.json.localStorage.ignored, true);
-  } finally { fs.chmodSync(denied, 0o755); }
+  } finally {
+    fs.chmodSync(denied, 0o755);
+  }
   const restored = run('inspect', '--repo', dir);
   assert.equal(restored.status, 0, restored.stderr);
   assert.deepEqual(restored.json.discovery, readable.json.discovery);
   assert.deepEqual(restored.json.candidates, readable.json.candidates);
   const observer = path.join(scratch, 'unknown-discovery-warning.mjs');
   // Deterministic message-boundary substitute: a warning form this parser does not know.
-  fs.writeFileSync(observer, `import cp from 'node:child_process';
+  fs.writeFileSync(
+    observer,
+    `import cp from 'node:child_process';
     import { syncBuiltinESMExports } from 'node:module';
     const native = cp.spawnSync;
     cp.spawnSync = (command, args, options) => {
@@ -178,12 +237,23 @@ test('a denied directory names its own path in discovery errors and an unknown w
       if (command === 'git' && args[0] === 'ls-files' && args.includes('--others') && args.length === 5) return { ...result, stderr: 'warning: an unrecognized enumeration problem\\n' };
       return result;
     };
-    syncBuiltinESMExports();`);
-  const unknown = spawnSync(process.execPath, ['--import', observer, cli, 'inspect', '--repo', dir], { encoding: 'utf8', env: GIT_ENV });
+    syncBuiltinESMExports();`,
+  );
+  const unknown = spawnSync(process.execPath, ['--import', observer, cli, 'inspect', '--repo', dir], {
+    encoding: 'utf8',
+    env: GIT_ENV,
+  });
   assert.equal(unknown.status, 1, unknown.stderr);
   const json = JSON.parse(unknown.stdout);
   assert.deepEqual(json.discovery, {
-    complete: false, errors: [{ path: null, error: 'warning: an unrecognized enumeration problem', message: 'warning: an unrecognized enumeration problem' }],
+    complete: false,
+    errors: [
+      {
+        path: null,
+        error: 'warning: an unrecognized enumeration problem',
+        message: 'warning: an unrecognized enumeration problem',
+      },
+    ],
   });
   assert.equal(json.binding.comparison.current, true, `comparison: ${JSON.stringify(json.binding.comparison)}`);
 });
@@ -195,17 +265,33 @@ test('discovery reports a Git path name that is not UTF-8 as an enumeration erro
   write(dir, { 'docs/caf\uFFFD.md': 'r\n' });
   const before = discoverCandidates(dir);
   assert.equal(before.complete, true);
-  assert.deepEqual(before.candidates.find((entry) => entry.path === 'docs/caf\uFFFD.md'), { path: 'docs/caf\uFFFD.md', category: 'guidance', tracked: false });
+  assert.deepEqual(
+    before.candidates.find((entry) => entry.path === 'docs/caf\uFFFD.md'),
+    { path: 'docs/caf\uFFFD.md', category: 'guidance', tracked: false },
+  );
 
   const invalid = Buffer.concat([Buffer.from('docs/caf'), Buffer.from([0xff]), Buffer.from('.md')]);
   indexOnlyEntry(dir, '100644', git(dir, 'rev-parse', 'HEAD:AGENTS.md').trim(), invalid);
-  const error = { path: dir, name: 'docs/caf\\xff.md', error: unsupported, message: `git ls-files listed docs/caf\\xff.md: ${unsupported}` };
+  const error = {
+    path: dir,
+    name: 'docs/caf\\xff.md',
+    error: unsupported,
+    message: `git ls-files listed docs/caf\\xff.md: ${unsupported}`,
+  };
   const after = discoverCandidates(dir);
   assert.deepEqual([after.complete, after.errors], [false, [error]]);
-  assert.deepEqual(after.candidates, before.candidates, 'the valid untracked candidate is not taken for the tracked invalid name');
+  assert.deepEqual(
+    after.candidates,
+    before.candidates,
+    'the valid untracked candidate is not taken for the tracked invalid name',
+  );
   const inspect = run('inspect', '--repo', dir);
   assert.equal(inspect.status, 1, inspect.stderr);
-  assert.deepEqual([inspect.json.discovery, inspect.json.checkout, inspect.json.candidates], [{ complete: false, errors: [error] }, dir, before.candidates], 'a failed partial check keeps independent facts');
+  assert.deepEqual(
+    [inspect.json.discovery, inspect.json.checkout, inspect.json.candidates],
+    [{ complete: false, errors: [error] }, dir, before.candidates],
+    'a failed partial check keeps independent facts',
+  );
 
   const head = git(dir, 'rev-parse', 'HEAD').trim();
   indexOnlyEntry(dir, '0', '0'.repeat(head.length), invalid);

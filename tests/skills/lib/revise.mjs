@@ -26,10 +26,12 @@ export const REVISED_SUITES_DIR = 'suites-revised';
 function locateRevision(spec, name, { repo, stagingDir }) {
   const dir = canonical(spec);
   if (dir && fs.existsSync(path.join(dir, 'suite.json'))) {
-    if (path.basename(dir) !== name) throw new Error(`revised suite at ${dir} is named '${path.basename(dir)}', the run's suite is '${name}'`);
+    if (path.basename(dir) !== name)
+      throw new Error(`revised suite at ${dir} is named '${path.basename(dir)}', the run's suite is '${name}'`);
     return { kind: 'directory', suitesRoot: path.dirname(dir), source: { kind: 'directory', path: dir } };
   }
-  if (dir && fs.existsSync(path.join(dir, name, 'suite.json'))) return { kind: 'directory', suitesRoot: dir, source: { kind: 'directory', path: path.join(dir, name) } };
+  if (dir && fs.existsSync(path.join(dir, name, 'suite.json')))
+    return { kind: 'directory', suitesRoot: dir, source: { kind: 'directory', path: path.join(dir, name) } };
   if (dir) throw new Error(`${dir} holds neither suite.json nor ${name}/suite.json`);
   const repository = canonical(repo ?? packageRoot);
   if (!repository) throw new Error(`repository ${repo} does not exist`);
@@ -37,7 +39,9 @@ function locateRevision(spec, name, { repo, stagingDir }) {
   try {
     tree = resolveTree(repository, spec);
   } catch (error) {
-    throw new Error(`--suite '${spec}' is neither a directory nor a tree-ish of ${repository}: ${error.message}`);
+    throw new Error(`--suite '${spec}' is neither a directory nor a tree-ish of ${repository}: ${error.message}`, {
+      cause: error,
+    });
   }
   const prefix = `tests/skills/suites/${name}`;
   const dest = path.join(stagingDir, name);
@@ -48,7 +52,11 @@ function locateRevision(spec, name, { repo, stagingDir }) {
 
 function canonicalJson(value) {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
-  if (value && typeof value === 'object') return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+  if (value && typeof value === 'object')
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`)
+      .join(',')}}`;
   return JSON.stringify(value);
 }
 
@@ -60,30 +68,40 @@ function canonicalJson(value) {
  */
 export function compareSuites(recorded, revised) {
   const problems = [];
-  if (recorded.skill !== revised.skill) problems.push(`skill under test: recorded ${recorded.skill}, revised ${revised.skill}`);
-  if (canonicalJson(recorded.skills) !== canonicalJson(revised.skills)) problems.push(`installed skills: recorded ${recorded.skills.join(', ')}, revised ${revised.skills.join(', ')}`);
+  if (recorded.skill !== revised.skill)
+    problems.push(`skill under test: recorded ${recorded.skill}, revised ${revised.skill}`);
+  if (canonicalJson(recorded.skills) !== canonicalJson(revised.skills))
+    problems.push(`installed skills: recorded ${recorded.skills.join(', ')}, revised ${revised.skills.join(', ')}`);
   const recordedIds = recorded.cases.map((caseDef) => caseDef.id);
   const revisedIds = revised.cases.map((caseDef) => caseDef.id);
-  for (const id of recordedIds) if (!revisedIds.includes(id)) problems.push(`case ${id} missing from the revised suite`);
+  for (const id of recordedIds)
+    if (!revisedIds.includes(id)) problems.push(`case ${id} missing from the revised suite`);
   for (const id of revisedIds) if (!recordedIds.includes(id)) problems.push(`case ${id} added by the revised suite`);
   const diff = [];
   for (const before of recorded.cases) {
     const after = revised.cases.find((caseDef) => caseDef.id === before.id);
     if (!after) continue;
-    if (digestOfManifest(before.fixtureManifest) !== digestOfManifest(after.fixtureManifest)) problems.push(`case ${before.id}: fixture differs`);
+    if (digestOfManifest(before.fixtureManifest) !== digestOfManifest(after.fixtureManifest))
+      problems.push(`case ${before.id}: fixture differs`);
     if (sha256(before.prompt) !== sha256(after.prompt)) problems.push(`case ${before.id}: prompt differs`);
     const semantic = { added: [], removed: [], changed: [] };
     for (const criterion of after.semantic) {
       const earlier = before.semantic.find((candidate) => candidate.id === criterion.id);
       if (!earlier) semantic.added.push(criterion.id);
-      else if (earlier.criterion !== criterion.criterion || (earlier.observe === true) !== (criterion.observe === true)) semantic.changed.push(criterion.id);
+      else if (earlier.criterion !== criterion.criterion || (earlier.observe === true) !== (criterion.observe === true))
+        semantic.changed.push(criterion.id);
     }
-    for (const criterion of before.semantic) if (!after.semantic.some((candidate) => candidate.id === criterion.id)) semantic.removed.push(criterion.id);
+    for (const criterion of before.semantic)
+      if (!after.semantic.some((candidate) => candidate.id === criterion.id)) semantic.removed.push(criterion.id);
     const deterministic = canonicalJson(before.deterministic) !== canonicalJson(after.deterministic);
     const effect = before.effect !== after.effect;
-    if (deterministic || effect || semantic.added.length || semantic.removed.length || semantic.changed.length) diff.push({ case: before.id, effect, deterministic, semantic });
+    if (deterministic || effect || semantic.added.length || semantic.removed.length || semantic.changed.length)
+      diff.push({ case: before.id, effect, deterministic, semantic });
   }
-  if (problems.length) throw new Error(`the revised suite does not match what the run's engines were given; only expectations and criteria may change:\n  ${problems.join('\n  ')}`);
+  if (problems.length)
+    throw new Error(
+      `the revised suite does not match what the run's engines were given; only expectations and criteria may change:\n  ${problems.join('\n  ')}`,
+    );
   return diff;
 }
 
@@ -97,7 +115,10 @@ export function compareSuites(recorded, revised) {
 export function loadRevisedSuite(runDir, existing, spec, { repo = null } = {}) {
   const name = existing.suite.name;
   const recorded = loadSuite(name, path.join(runDir, 'suites'));
-  if (recorded.hash !== existing.suite.hash) throw new Error(`the run's suite snapshot no longer matches its recorded hash ${existing.suite.hash}; the run directory was altered`);
+  if (recorded.hash !== existing.suite.hash)
+    throw new Error(
+      `the run's suite snapshot no longer matches its recorded hash ${existing.suite.hash}; the run directory was altered`,
+    );
   const revisedRoot = path.join(runDir, REVISED_SUITES_DIR);
   fs.mkdirSync(revisedRoot, { recursive: true });
   const stagingDir = fs.mkdtempSync(path.join(revisedRoot, 'incoming-'));
@@ -112,7 +133,10 @@ export function loadRevisedSuite(runDir, existing, spec, { repo = null } = {}) {
       else fs.cpSync(candidate.dir, retained, { recursive: true, errorOnExist: true, force: false });
     }
     const suite = loadSuite(name, path.dirname(retained));
-    if (suite.hash !== candidate.hash) throw new Error(`the retained copy of the revised suite at ${retained} does not hash as the revision (${suite.hash} vs ${candidate.hash})`);
+    if (suite.hash !== candidate.hash)
+      throw new Error(
+        `the retained copy of the revised suite at ${retained} does not hash as the revision (${suite.hash} vs ${candidate.hash})`,
+      );
     return { suite, hash: suite.hash, source: located.source, retained, diff, recordedHash: recorded.hash };
   } finally {
     fs.rmSync(stagingDir, { recursive: true, force: true });

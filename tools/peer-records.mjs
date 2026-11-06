@@ -4,7 +4,8 @@ import { parseArgs } from 'node:util';
 import { usage } from './lib/cli.mjs';
 import { resolvePeerRecords } from './lib/peer-records.mjs';
 
-const USAGE = 'node tools/peer-records.mjs --workspace <checkout-or-folder> --run <id> --task <id> [--storage local|external]';
+const USAGE =
+  'node tools/peer-records.mjs --workspace <checkout-or-folder> --run <id> --task <id> [--storage local|external]';
 const HELP = `${USAGE}
 
 Without \`--storage\`: external records and scratch, plus a local candidate only when binding
@@ -29,18 +30,29 @@ Failures exit 1 with JSON diagnostics; invalid command syntax exits 2.
 `;
 let values;
 try {
-  ({ values } = parseArgs({ options: {
-    workspace: { type: 'string' }, run: { type: 'string' }, task: { type: 'string' },
-    storage: { type: 'string' }, help: { type: 'boolean' },
-  }, strict: true }));
-} catch (error) { usage(`${error.message}\n${USAGE}`); }
-if (values.help) { process.stdout.write(HELP); }
-else {
+  ({ values } = parseArgs({
+    options: {
+      workspace: { type: 'string' },
+      run: { type: 'string' },
+      task: { type: 'string' },
+      storage: { type: 'string' },
+      help: { type: 'boolean' },
+    },
+    strict: true,
+  }));
+} catch (error) {
+  usage(`${error.message}\n${USAGE}`);
+}
+if (values.help) {
+  process.stdout.write(HELP);
+} else {
   if (!values.workspace || values.run === undefined || values.task === undefined) usage(USAGE);
   try {
     process.stdout.write(`${JSON.stringify(resolvePeerRecords(values), null, 2)}\n`);
   } catch (error) {
-    process.stderr.write(`${JSON.stringify({ error: error.message, ...(error.binding ? { binding: error.binding } : {}), ...(error.inspection ? { inspection: error.inspection } : {}) }, null, 2)}\n`);
+    process.stderr.write(
+      `${JSON.stringify({ error: error.message, ...(error.binding ? { binding: error.binding } : {}), ...(error.inspection ? { inspection: error.inspection } : {}) }, null, 2)}\n`,
+    );
     process.exitCode = 1;
   }
 }

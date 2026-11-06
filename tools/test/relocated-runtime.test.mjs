@@ -23,12 +23,14 @@ test('a relocated copy without .git or root node_modules runs YAML and Ajv opera
   const copy = path.join(scratch, 'installed');
   fs.cpSync(packageRoot, copy, {
     recursive: true,
-    filter: (source) => !['.git', 'node_modules'].includes(path.basename(source)) || path.dirname(source) !== packageRoot,
+    filter: (source) =>
+      !['.git', 'node_modules'].includes(path.basename(source)) || path.dirname(source) !== packageRoot,
   });
   const target = path.join(scratch, 'target');
   fs.mkdirSync(target);
   assert.equal(spawnSync('git', ['init', '-q', target], { env }).status, 0);
-  const run = (script, args) => spawnSync(process.execPath, [path.join(copy, 'tools', script), ...args], { cwd: target, env, encoding: 'utf8' });
+  const run = (script, args) =>
+    spawnSync(process.execPath, [path.join(copy, 'tools', script), ...args], { cwd: target, env, encoding: 'utf8' });
   const resolve = run('resolve.mjs', ['--repo', target]);
   assert.equal(resolve.status, 0, resolve.stderr);
   assert.equal(JSON.parse(resolve.stdout).workflowSource, copy);

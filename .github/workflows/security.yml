@@ -1,0 +1,58 @@
+name: Dependency security
+
+# Network-dependent review of both dependency graphs: the development toolchain
+# (the root package) and the shipped runtime (tools/vendor). It stays out of the
+# offline gate and the commit hook. The weekly run catches advisories published
+# after a lockfile last changed.
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - package.json
+      - package-lock.json
+      - .npmrc
+      - tools/vendor/package.json
+      - tools/vendor/package-lock.json
+      - tools/vendor/manifest.json
+      - tools/security-review.mjs
+      - tools/lib/security-*.mjs
+      # Shared modules the security command loads.
+      - tools/lib/cli.mjs
+      - tools/lib/git.mjs
+      - tools/lib/lint.mjs
+      - tools/lib/paths.mjs
+      - tools/lib/plugin-payload.mjs
+      - tools/lib/vendor.mjs
+      - tools/test/security-*.test.mjs
+      - tools/test/fixtures/npm-*.json
+      - .github/workflows/security.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security:
+    name: security
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      # The scanner's flags and report shapes were verified against npm 11.16.0.
+      - name: Pin npm
+        run: npm install --global npm@11.16.0 --ignore-scripts --no-audit --no-fund
+      - name: Install authoring toolchain
+        run: npm ci --ignore-scripts
+      - name: Review dependency security
+        run: node tools/security-review.mjs

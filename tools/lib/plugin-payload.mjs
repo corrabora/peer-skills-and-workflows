@@ -4,17 +4,28 @@
 // authoring checkout's Git metadata, tests or authoring-only tools.
 import fs from 'node:fs';
 import path from 'node:path';
+import { lintTargets } from './lint.mjs';
 
 /** Payload directory, relative to the authoring checkout; both catalogs select it. */
 export const PAYLOAD_DIRECTORY = 'plugins/peer';
 
 /** Authoring paths copied into the payload, with their relative layout preserved. */
 export const PAYLOAD_PARTS = [
-  'LICENSE', 'README.md', 'package.json', 'defaults.yaml',
-  '.claude-plugin/plugin.json', '.codex-plugin/plugin.json', 'hooks',
-  'skills', 'workflow', 'tools',
-  'docs/installation.md', 'docs/writing-guidance.md', 'docs/guidance/adr-format.md',
-  'docs/guidance/glossary-format.md', 'docs/guidance/record-format-adoption.md',
+  'LICENSE',
+  'README.md',
+  'package.json',
+  'defaults.yaml',
+  '.claude-plugin/plugin.json',
+  '.codex-plugin/plugin.json',
+  'hooks',
+  'skills',
+  'workflow',
+  'tools',
+  'docs/installation.md',
+  'docs/writing-guidance.md',
+  'docs/guidance/adr-format.md',
+  'docs/guidance/glossary-format.md',
+  'docs/guidance/record-format-adoption.md',
 ];
 
 /**
@@ -23,12 +34,41 @@ export const PAYLOAD_PARTS = [
  * must not copy itself into its own output.
  */
 export const PAYLOAD_EXCLUSIONS = [
-  'tools/test', 'tools/test-support', 'tools/verify.mjs', 'tools/commit-verify.mjs',
-  'tools/install-hooks.mjs', 'tools/generate-plugin.mjs', 'tools/lib/plugin-package.mjs',
+  'tools/lint.mjs',
+  'tools/security-review.mjs',
+  'tools/lib/lint.mjs',
+  'tools/lib/security-review.mjs',
+  'tools/lib/security-vendor.mjs',
+  'tools/lib/security-repository.mjs',
+  'tools/test',
+  'tools/test-support',
+  'tools/verify.mjs',
+  'tools/commit-verify.mjs',
+  'tools/install-hooks.mjs',
+  'tools/generate-plugin.mjs',
+  'tools/lib/plugin-package.mjs',
   'tools/lib/plugin-payload.mjs',
 ];
 
 const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const RUNTIME_MANIFEST_FIELDS = new Set(['name', 'private', 'license', 'description', 'engines']);
+const DEVELOPMENT_MANIFEST_FIELDS = new Set(['devEngines', 'scripts', 'devDependencies', 'overrides']);
+
+/** Derive the runtime manifest, refusing fields whose shipping policy is not classified. */
+function runtimeManifestBytes(sourceRoot) {
+  const manifest = JSON.parse(fs.readFileSync(path.join(sourceRoot, 'package.json'), 'utf8'));
+  if (manifest === null || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    throw new Error('package.json must contain a manifest object');
+  }
+  const runtime = {};
+  for (const [field, value] of Object.entries(manifest)) {
+    if (RUNTIME_MANIFEST_FIELDS.has(field)) runtime[field] = value;
+    else if (!DEVELOPMENT_MANIFEST_FIELDS.has(field)) {
+      throw new Error(`package.json contains an unclassified manifest field: ${field}`);
+    }
+  }
+  return Buffer.from(`${JSON.stringify(runtime, null, 2)}\n`);
+}
 
 /**
  * Throw unless each component of the POSIX path `relative` below `root` is a
@@ -46,7 +86,10 @@ function requireRealDirectories(root, relative, { allowMissing = false } = {}) {
       if (allowMissing && error.code === 'ENOENT') return;
       throw error;
     }
-    if (!stat.isDirectory()) throw new Error(`${path.relative(root, current)} is a link or not a directory; the plugin payload neither follows nor replaces links`);
+    if (!stat.isDirectory())
+      throw new Error(
+        `${path.relative(root, current)} is a link or not a directory; the plugin payload neither follows nor replaces links`,
+      );
   }
 }
 
@@ -62,7 +105,10 @@ function requireUnlinkedOutput(sourceRoot) {
     for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
       const full = path.join(directory, entry.name);
       if (entry.isDirectory()) visit(full);
-      else if (!entry.isFile()) throw new Error(`${path.relative(sourceRoot, full)} is not a regular file or directory; the plugin payload neither follows nor replaces links`);
+      else if (!entry.isFile())
+        throw new Error(
+          `${path.relative(sourceRoot, full)} is not a regular file or directory; the plugin payload neither follows nor replaces links`,
+        );
     }
   };
   visit(target);
@@ -84,7 +130,9 @@ export function payloadFiles(sourceRoot) {
     } else if (stat.isFile()) {
       files.push(relative);
     } else {
-      throw new Error(`${relative} is not a regular file or directory; the plugin payload copies neither links nor special files`);
+      throw new Error(
+        `${relative} is not a regular file or directory; the plugin payload copies neither links nor special files`,
+      );
     }
   };
   for (const part of PAYLOAD_PARTS) {
@@ -95,12 +143,37 @@ export function payloadFiles(sourceRoot) {
   return files.sort(byCodeUnit);
 }
 
+/** Authored JavaScript copied into the plugin; upstream node_modules bytes are manifest-pinned. */
+export function payloadJavaScript(sourceRoot) {
+  return payloadFiles(sourceRoot).filter(
+    (file) => /\.[cm]?js$/.test(file) && !file.split('/').includes('node_modules'),
+  );
+}
+
+/** Prove the gate's lint target set covers every authored JavaScript payload source. */
+export function checkPayloadLintCoverage({ sourceRoot, out }) {
+  try {
+    const targets = new Set(lintTargets(sourceRoot));
+    const uncovered = payloadJavaScript(sourceRoot).filter((file) => !targets.has(file));
+    if (uncovered.length) {
+      for (const file of uncovered) out.error(`FAIL    payload JavaScript is not a lint target: ${file}`);
+      return false;
+    }
+    out.info('ok      every authored payload JavaScript source is a lint target');
+    return true;
+  } catch (error) {
+    out.error(`FAIL    payload lint coverage: ${error.message}`);
+    return false;
+  }
+}
+
 /**
  * Replace the payload directory with a fresh copy of the selected files.
  * Links among the selected sources or the existing output throw before any write.
  */
 export function generatePluginPayload(sourceRoot) {
   const files = payloadFiles(sourceRoot);
+  const manifest = runtimeManifestBytes(sourceRoot);
   requireUnlinkedOutput(sourceRoot);
   const target = path.join(sourceRoot, ...PAYLOAD_DIRECTORY.split('/'));
   fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -110,6 +183,7 @@ export function generatePluginPayload(sourceRoot) {
       const destination = path.join(staging, ...relative.split('/'));
       fs.mkdirSync(path.dirname(destination), { recursive: true });
       fs.copyFileSync(path.join(sourceRoot, ...relative.split('/')), destination);
+      if (relative === 'package.json') fs.writeFileSync(destination, manifest);
     }
     fs.rmSync(target, { recursive: true, force: true });
     fs.renameSync(staging, target);
@@ -120,10 +194,11 @@ export function generatePluginPayload(sourceRoot) {
   return files;
 }
 
-/** Read-only byte, membership and executable-mode parity with the authoring sources. */
+/** Read-only source parity, with the package manifest compared to its runtime derivation. */
 export function checkPluginPayload({ sourceRoot, out }) {
   try {
     const expected = payloadFiles(sourceRoot);
+    const manifest = runtimeManifestBytes(sourceRoot);
     requireUnlinkedOutput(sourceRoot);
     const target = path.join(sourceRoot, ...PAYLOAD_DIRECTORY.split('/'));
     const directories = new Set(['']);
@@ -152,7 +227,8 @@ export function checkPluginPayload({ sourceRoot, out }) {
       if (!actualSet.has(file)) throw new Error(`missing file ${file}`);
       const original = path.join(sourceRoot, file);
       const copy = path.join(target, file);
-      if (!fs.readFileSync(original).equals(fs.readFileSync(copy))) throw new Error(`content differs: ${file}`);
+      const bytes = file === 'package.json' ? manifest : fs.readFileSync(original);
+      if (!bytes.equals(fs.readFileSync(copy))) throw new Error(`content differs: ${file}`);
       if ((fs.statSync(original).mode & 0o111) !== (fs.statSync(copy).mode & 0o111)) {
         throw new Error(`executable mode differs: ${file}`);
       }

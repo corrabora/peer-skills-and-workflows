@@ -9,7 +9,16 @@ import os from 'node:os';
 import path from 'node:path';
 import { digestOfManifest, manifestOf, sha256, writeJson } from './common.mjs';
 
-const GIT_IDENTITY = ['-c', 'user.name=skill-suite', '-c', 'user.email=skill-suite@localhost', '-c', 'commit.gpgsign=false', '-c', `core.hooksPath=${os.devNull}`];
+const GIT_IDENTITY = [
+  '-c',
+  'user.name=skill-suite',
+  '-c',
+  'user.email=skill-suite@localhost',
+  '-c',
+  'commit.gpgsign=false',
+  '-c',
+  `core.hooksPath=${os.devNull}`,
+];
 
 /** Git with the caller's checkout-specific variables and personal configuration out of the way. */
 export function git(args, cwd, { input } = {}) {
@@ -20,13 +29,16 @@ export function git(args, cwd, { input } = {}) {
   env.GIT_OPTIONAL_LOCKS = '0';
   const result = spawnSync('git', args, { cwd, env, input, encoding: 'buffer', maxBuffer: 256 * 1024 * 1024 });
   if (result.error) throw new Error(`cannot run git ${args[0]}: ${result.error.message}`);
-  if (result.status !== 0) throw new Error(`git ${args.join(' ')} failed (${result.status}): ${result.stderr.toString('utf8').trim()}`);
+  if (result.status !== 0)
+    throw new Error(`git ${args.join(' ')} failed (${result.status}): ${result.stderr.toString('utf8').trim()}`);
   return result.stdout;
 }
 
 /** The tree id that `treeish` names in `repo`, or a thrown error. */
 export function resolveTree(repo, treeish) {
-  return git(['rev-parse', '--verify', `${treeish}^{tree}`], repo).toString('utf8').trim();
+  return git(['rev-parse', '--verify', `${treeish}^{tree}`], repo)
+    .toString('utf8')
+    .trim();
 }
 
 /**
@@ -60,7 +72,13 @@ export function materializeTree(repo, tree, dest, prefix = null) {
 /** Copy an already materialized directory (for example a working tree) into `dest`, byte for byte. */
 export function materializeDirectory(source, dest) {
   if (fs.existsSync(dest)) throw new Error(`source destination ${dest} already exists`);
-  fs.cpSync(source, dest, { recursive: true, errorOnExist: true, force: false, verbatimSymlinks: true, filter: (item) => path.basename(item) !== '.git' && path.basename(item) !== 'node_modules' });
+  fs.cpSync(source, dest, {
+    recursive: true,
+    errorOnExist: true,
+    force: false,
+    verbatimSymlinks: true,
+    filter: (item) => path.basename(item) !== '.git' && path.basename(item) !== 'node_modules',
+  });
   return manifestOf(dest);
 }
 
@@ -97,7 +115,8 @@ export function installSkillLinks(workspace, sourceRoot, skills, platform = proc
     fs.mkdirSync(dir, { recursive: true });
     for (const skill of skills) {
       const target = path.join(sourceRoot, 'skills', skill);
-      if (!fs.existsSync(path.join(target, 'SKILL.md'))) throw new Error(`skill '${skill}' has no SKILL.md in the source tree at ${target}`);
+      if (!fs.existsSync(path.join(target, 'SKILL.md')))
+        throw new Error(`skill '${skill}' has no SKILL.md in the source tree at ${target}`);
       const dest = path.join(dir, skill);
       fs.symlinkSync(target, dest, type);
       links.push({ link: path.relative(workspace, dest).split(path.sep).join('/'), target });

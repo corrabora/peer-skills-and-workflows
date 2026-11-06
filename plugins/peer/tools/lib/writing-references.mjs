@@ -27,10 +27,15 @@ const REWRITES = {
     'adr-format.md': '../../record-decision/references/adr-format.md',
   },
 };
-export const WRITING_REFERENCES = Object.entries(LAYOUT).flatMap(([skill, names]) => names.map((name) => ({
-  skill, name, source: OWNERS[name], file: `skills/${skill}/references/${name}`,
-  rewrites: REWRITES[`${skill}/${name}`] ?? {},
-})));
+export const WRITING_REFERENCES = Object.entries(LAYOUT).flatMap(([skill, names]) =>
+  names.map((name) => ({
+    skill,
+    name,
+    source: OWNERS[name],
+    file: `skills/${skill}/references/${name}`,
+    rewrites: REWRITES[`${skill}/${name}`] ?? {},
+  })),
+);
 
 function ownerBody(root, reference) {
   const file = path.join(root, reference.source);
@@ -54,7 +59,8 @@ export function referenceProblem(root, reference, file = path.join(root, referen
     const expected = renderReference(root, reference);
     const header = Buffer.from(expected.header, 'utf8');
     if (!actual.subarray(0, header.length).equals(header)) return `generated-from header must name ${reference.source}`;
-    if (!actual.subarray(header.length).equals(Buffer.from(expected.body, 'utf8'))) return `body differs from ${reference.source} after its registered link rewrites`;
+    if (!actual.subarray(header.length).equals(Buffer.from(expected.body, 'utf8')))
+      return `body differs from ${reference.source} after its registered link rewrites`;
     return null;
   } catch (error) {
     return `${error.code ?? 'error'}: ${error.message}`;
@@ -65,14 +71,22 @@ export function checkWritingReferences({ sourceRoot, out }) {
   let ok = true;
   for (const reference of WRITING_REFERENCES) {
     const problem = referenceProblem(sourceRoot, reference);
-    if (problem) { out.error(`FAIL    ${reference.file}: ${problem}; run ${REGENERATE_REFERENCES}`); ok = false; }
+    if (problem) {
+      out.error(`FAIL    ${reference.file}: ${problem}; run ${REGENERATE_REFERENCES}`);
+      ok = false;
+    }
   }
   if (ok) out.info('ok      generated writing references match their owners');
   return ok;
 }
 
 function optionalStat(file) {
-  try { return fs.lstatSync(file, { bigint: true }); } catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+  try {
+    return fs.lstatSync(file, { bigint: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 const identity = (stat) => `${stat.dev}:${stat.ino}`;
 
@@ -80,14 +94,17 @@ const identity = (stat) => `${stat.dev}:${stat.ino}`;
 export function generateWritingReferences(sourceRoot) {
   const root = fs.realpathSync.native(sourceRoot);
   const planned = WRITING_REFERENCES.map((reference) => ({ reference, ...renderReference(root, reference) }));
-  const ownerIds = new Set(Object.values(OWNERS).map((file) => identity(fs.statSync(path.join(root, file), { bigint: true }))));
+  const ownerIds = new Set(
+    Object.values(OWNERS).map((file) => identity(fs.statSync(path.join(root, file), { bigint: true }))),
+  );
   const outputIds = new Set();
   for (const { reference } of planned) {
     const parts = reference.file.split('/');
     for (let n = 1; n < parts.length; n++) {
       const parent = path.join(root, ...parts.slice(0, n));
       const stat = optionalStat(parent);
-      if (stat && (!stat.isDirectory() || stat.isSymbolicLink())) throw new Error(`${parts.slice(0, n).join('/')} must be a real directory`);
+      if (stat && (!stat.isDirectory() || stat.isSymbolicLink()))
+        throw new Error(`${parts.slice(0, n).join('/')} must be a real directory`);
     }
     const stat = optionalStat(path.join(root, ...parts));
     if (!stat) continue;

@@ -9,7 +9,19 @@ import path from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { generateWritingReferences } from '../lib/writing-references.mjs';
-import { checkLinks, checkReferences, link, PACKAGE_SKILLS, RECORD_FORMATS, removeLink, sameLinkTarget, SKILL_SETS, unlink, WORKFLOW_SKILLS, WRITING_SKILLS } from '../lib/install.mjs';
+import {
+  checkLinks,
+  checkReferences,
+  link,
+  PACKAGE_SKILLS,
+  RECORD_FORMATS,
+  removeLink,
+  sameLinkTarget,
+  SKILL_SETS,
+  unlink,
+  WORKFLOW_SKILLS,
+  WRITING_SKILLS,
+} from '../lib/install.mjs';
 
 const packageRoot = fs.realpathSync.native(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..'));
 const installer = path.join(packageRoot, 'tools', 'install.mjs');
@@ -40,7 +52,10 @@ function trySymlink(t, target, dest, type) {
     fs.symlinkSync(target, dest, type);
     return true;
   } catch (error) {
-    if (error.code === 'EPERM') { t.skip(`symlinks not permitted on this host: ${error.message}`); return false; }
+    if (error.code === 'EPERM') {
+      t.skip(`symlinks not permitted on this host: ${error.message}`);
+      return false;
+    }
     throw error;
   }
 }
@@ -112,7 +127,7 @@ test('repair requires a missing target for the same skill and a usable replaceme
   assert.equal(fs.readlinkSync(dest), wrongSkill);
 });
 
-test('link, check and unlink own only this checkout\'s links', (t) => {
+test("link, check and unlink own only this checkout's links", (t) => {
   const home = path.join(scratch, 'home with space');
   const codex = path.join(home, '.agents', 'skills');
   const claude = path.join(home, '.claude', 'skills');
@@ -138,7 +153,10 @@ test('link, check and unlink own only this checkout\'s links', (t) => {
   assert.match(linked.stderr, /plan-reviewer: a directory, not this checkout's link/);
   assert.ok(linked.stderr.includes(`review-adjudicator: a link to ${elsewhere}, not`), linked.stderr);
   assert.ok(linked.stderr.includes(`a link to ${path.join(scratch, 'missing')}, which does not exist`), linked.stderr);
-  assert.equal((linked.stderr.match(/^help .*remove it yourself.*unlink` from the checkout it links to/gm) ?? []).length, 1);
+  assert.equal(
+    (linked.stderr.match(/^help .*remove it yourself.*unlink` from the checkout it links to/gm) ?? []).length,
+    1,
+  );
 
   const checked = run(home, 'check');
   assert.equal(checked.status, 1, 'check fails while foreign entries occupy skill names');
@@ -163,7 +181,8 @@ test('link, check and unlink own only this checkout\'s links', (t) => {
   for (const skill of ['bind-agent-workflow', 'plan-coordinator', 'plan-responsible-party', 'write-for-humans']) {
     assert.ok(!fs.existsSync(path.join(codex, skill)) && !fs.existsSync(path.join(claude, skill)));
   }
-  for (const skill of PACKAGE_SKILLS) assert.ok(fs.existsSync(path.join(packageRoot, 'skills', skill, 'SKILL.md')), 'source intact');
+  for (const skill of PACKAGE_SKILLS)
+    assert.ok(fs.existsSync(path.join(packageRoot, 'skills', skill, 'SKILL.md')), 'source intact');
 });
 
 test('a set name limits link, check and unlink to that set, and its shared references are checked through the link', () => {
@@ -179,12 +198,18 @@ test('a set name limits link, check and unlink to that set, and its shared refer
     for (const skill of WRITING_SKILLS) {
       const real = fs.realpathSync.native(path.join(dir, skill));
       assert.equal(real, path.join(packageRoot, 'skills', skill));
-      assert.ok(fs.existsSync(path.join(real, '..', '..', 'docs', 'writing-guidance.md')), 'the shared guidance is reachable through the link');
+      assert.ok(
+        fs.existsSync(path.join(real, '..', '..', 'docs', 'writing-guidance.md')),
+        'the shared guidance is reachable through the link',
+      );
     }
   }
   const checked = run(home, 'check', 'writing');
   assert.equal(checked.status, 0, checked.stderr);
-  assert.equal((checked.stdout.match(/SKILL\.md and shared references readable/g) ?? []).length, 2 * WRITING_SKILLS.length);
+  assert.equal(
+    (checked.stdout.match(/SKILL\.md and shared references readable/g) ?? []).length,
+    2 * WRITING_SKILLS.length,
+  );
   assert.doesNotMatch(checked.stderr, /plan-/, 'the workflow set is not checked');
 
   const whole = run(home, 'check');
@@ -202,7 +227,11 @@ test('link, unlink and check name an unknown set, including a name every object 
   for (const name of ['bogus', '__proto__', 'constructor', 'toString']) {
     const message = `unknown skill set '${name}'; the sets are ${Object.keys(SKILL_SETS).join(', ')}`;
     for (const operation of [link, unlink, checkLinks]) {
-      assert.throws(() => operation({ sourceRoot: packageRoot, scopes, sets: [name], out: silent }), { message }, `${operation.name} ${name}`);
+      assert.throws(
+        () => operation({ sourceRoot: packageRoot, scopes, sets: [name], out: silent }),
+        { message },
+        `${operation.name} ${name}`,
+      );
     }
   }
 });
@@ -230,8 +259,12 @@ test('links including writing print the documented Codex setting and preserve ex
       assert.equal(JSON.parse(values[0][1]), instructions);
       assert.ok(linked.stdout.includes(instructionPath));
       assert.equal(fs.readFileSync(config, 'utf8'), existing, 'configuration remains unchanged');
-      assert.deepEqual(fs.readdirSync(path.dirname(config)).sort(), set === 'writing'
-        ? ['config.toml'] : ['.peer-skills-and-workflows-successor-hooks.json', 'config.toml', 'hooks.json']);
+      assert.deepEqual(
+        fs.readdirSync(path.dirname(config)).sort(),
+        set === 'writing'
+          ? ['config.toml']
+          : ['.peer-skills-and-workflows-successor-hooks.json', 'config.toml', 'hooks.json'],
+      );
     }
     for (const command of ['check', 'unlink']) {
       const result = run(home, command, ...selection);
@@ -248,7 +281,8 @@ test('workflow link and check include writing; workflow removal preserves it', (
   // Simulate an installation from before writing became a dependency.
   for (const dir of dirs) {
     fs.mkdirSync(dir, { recursive: true });
-    for (const skill of WORKFLOW_SKILLS) fs.symlinkSync(path.join(packageRoot, 'skills', skill), path.join(dir, skill), 'junction');
+    for (const skill of WORKFLOW_SKILLS)
+      fs.symlinkSync(path.join(packageRoot, 'skills', skill), path.join(dir, skill), 'junction');
   }
   const missing = run(home, 'check', 'workflow');
   assert.equal(missing.status, 1);
@@ -276,7 +310,9 @@ for (const addedSkill of ['peer-review', 'peer-decision-making', 'peer-implement
         fs.symlinkSync(path.join(packageRoot, 'skills', skill), path.join(dir, skill), 'junction');
       }
     }
-    const before = dirs.map((dir) => new Map(fs.readdirSync(dir).map((name) => [name, fs.readlinkSync(path.join(dir, name))])));
+    const before = dirs.map(
+      (dir) => new Map(fs.readdirSync(dir).map((name) => [name, fs.readlinkSync(path.join(dir, name))])),
+    );
     const linked = run(home, 'link', 'workflow');
     assert.equal(linked.status, 0, linked.stderr);
     for (const [index, dir] of dirs.entries()) {
@@ -304,9 +340,13 @@ test('workflow dependency conflicts preserve foreign links and name both sets in
   assert.match(linked.errors.join('\n'), /unlink workflow` and `node tools\/install\.mjs unlink writing`/);
   assert.match(linked.errors.join('\n'), /Then run `node tools\/install\.mjs link workflow` again/);
   const checked = capture();
-  assert.equal(checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: scope }], sets: ['workflow'], out: checked.out }), false);
-  assert.ok(checked.errors.some(line => line.startsWith(`FAIL    ${dest} is not linked`)));
-  for (const skill of WORKFLOW_SKILLS) assert.equal(fs.realpathSync(path.join(scope, skill)), path.join(packageRoot, 'skills', skill));
+  assert.equal(
+    checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: scope }], sets: ['workflow'], out: checked.out }),
+    false,
+  );
+  assert.ok(checked.errors.some((line) => line.startsWith(`FAIL    ${dest} is not linked`)));
+  for (const skill of WORKFLOW_SKILLS)
+    assert.equal(fs.realpathSync(path.join(scope, skill)), path.join(packageRoot, 'skills', skill));
 });
 
 test('a missing or empty Codex instruction stops writing links before filesystem changes', () => {
@@ -376,13 +416,31 @@ test('bare check on a writing-only installation fails for the workflow set and n
   const whole = run(home, 'check');
   assert.equal(whole.status, 1, 'bare check still covers both sets and fails for the absent one');
   assert.equal((whole.stderr.match(/^FAIL .*\(found nothing\)$/gm) ?? []).length, 2 * WORKFLOW_SKILLS.length);
-  assert.equal((whole.stdout.match(/SKILL\.md and shared references readable/g) ?? []).length, 2 * WRITING_SKILLS.length, 'the writing set passes');
+  assert.equal(
+    (whole.stdout.match(/SKILL\.md and shared references readable/g) ?? []).length,
+    2 * WRITING_SKILLS.length,
+    'the writing set passes',
+  );
   const help = whole.stderr.split('\n').filter((line) => line.startsWith('help'));
   assert.equal(help.length, 1, whole.stderr);
-  assert.ok(help[0].startsWith(`help    No skill of the workflow set is installed in ${codex} and ${claude}, where the writing set is. `), help[0]);
+  assert.ok(
+    help[0].startsWith(
+      `help    No skill of the workflow set is installed in ${codex} and ${claude}, where the writing set is. `,
+    ),
+    help[0],
+  );
   assert.ok(help[0].includes('To install it too, run `node tools/install.mjs link workflow`;'), help[0]);
-  assert.ok(help[0].includes('if only the writing set was intended, run `node tools/install.mjs check writing` to check that set alone.'), help[0]);
-  assert.doesNotMatch(help[0], /unlink|never changes entries/, 'nothing occupies the destinations, so no occupied-entry recovery');
+  assert.ok(
+    help[0].includes(
+      'if only the writing set was intended, run `node tools/install.mjs check writing` to check that set alone.',
+    ),
+    help[0],
+  );
+  assert.doesNotMatch(
+    help[0],
+    /unlink|never changes entries/,
+    'nothing occupies the destinations, so no occupied-entry recovery',
+  );
 
   // The help names only the scope in that state: with the Claude scope emptied, its skills fail one by
   // one, while the set help names the Codex scope alone.
@@ -393,9 +451,16 @@ test('bare check on a writing-only installation fails for the workflow set and n
   assert.equal(checkLinks({ sourceRoot: packageRoot, scopes, out }), false);
   let lines = errors.filter((line) => line.startsWith('help'));
   assert.equal(lines.length, 1, errors.join('\n'));
-  assert.ok(lines[0].startsWith(`help    No skill of the workflow set is installed in ${codex}, where the writing set is.`), lines[0]);
+  assert.ok(
+    lines[0].startsWith(`help    No skill of the workflow set is installed in ${codex}, where the writing set is.`),
+    lines[0],
+  );
   assert.ok(!lines[0].includes(claude), lines[0]);
-  assert.equal(errors.filter((line) => line.startsWith('FAIL') && line.startsWith(`FAIL    ${claude}`)).length, ALL, 'the empty scope fails for every skill');
+  assert.equal(
+    errors.filter((line) => line.startsWith('FAIL') && line.startsWith(`FAIL    ${claude}`)).length,
+    ALL,
+    'the empty scope fails for every skill',
+  );
 
   // Wholly absent sets keep their existing diagnostics. A missing-only partial
   // set gets relink advice without being offered as installed.
@@ -405,7 +470,8 @@ test('bare check on a writing-only installation fails for the workflow set and n
   ({ errors, out } = capture());
   assert.equal(checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: claude }], sets: ['writing'], out }), false);
   assert.equal(errors.filter((line) => line.startsWith('help')).length, 0, errors.join('\n'));
-  for (const skill of WORKFLOW_SKILLS.slice(0, 2)) fs.symlinkSync(path.join(packageRoot, 'skills', skill), path.join(codex, skill), 'junction');
+  for (const skill of WORKFLOW_SKILLS.slice(0, 2))
+    fs.symlinkSync(path.join(packageRoot, 'skills', skill), path.join(codex, skill), 'junction');
   ({ errors, out } = capture());
   assert.equal(checkLinks({ sourceRoot: packageRoot, scopes, out }), false);
   lines = errors.filter((line) => line.startsWith('help'));
@@ -428,11 +494,15 @@ test('bare check on a writing-only installation fails for the workflow set and n
   lines = errors.filter((line) => line.startsWith('help'));
   assert.equal(lines.length, 2, errors.join('\n'));
   assert.ok(lines[0].startsWith(`help    No skill of the workflow set is installed in ${codex}, where`), lines[0]);
-  assert.ok(lines[1].includes('never changes entries it does not own') && lines[1].includes('run `node tools/install.mjs unlink` from the checkout'), lines[1]);
+  assert.ok(
+    lines[1].includes('never changes entries it does not own') &&
+      lines[1].includes('run `node tools/install.mjs unlink` from the checkout'),
+    lines[1],
+  );
 
   assert.equal(run(home, 'unlink').status, 0);
   assert.deepEqual(fs.readdirSync(codex), []);
-  assert.deepEqual(fs.readdirSync(claude).sort(), [...WRITING_SKILLS].sort(), 'the other checkout\'s links are kept');
+  assert.deepEqual(fs.readdirSync(claude).sort(), [...WRITING_SKILLS].sort(), "the other checkout's links are kept");
 });
 
 test('set help offers a set as installed only where every one of its skills is linked', (t) => {
@@ -448,13 +518,28 @@ test('set help offers a set as installed only where every one of its skills is l
   // two choices, while every missing skill still fails and the check fails.
   for (const count of [1, WRITING_SKILLS.length - 1]) {
     for (const skill of fs.readdirSync(partial)) fs.unlinkSync(path.join(partial, skill));
-    for (const skill of WRITING_SKILLS.slice(0, count)) fs.symlinkSync(path.join(packageRoot, 'skills', skill), path.join(partial, skill), 'junction');
+    for (const skill of WRITING_SKILLS.slice(0, count))
+      fs.symlinkSync(path.join(packageRoot, 'skills', skill), path.join(partial, skill), 'junction');
     const { errors, out } = capture();
     assert.equal(checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: partial }], out }), false);
     assert.equal(errors.filter((line) => line.startsWith('help')).length, 1, errors.join('\n'));
-    assert.ok(errors.some(line => line.startsWith(`help    The writing set is partly linked in ${partial};`) && line.includes('`node tools/install.mjs link writing`')), errors.join('\n'));
-    assert.ok(!errors.some(line => line.includes('No skill of the workflow set')), 'a partial set is not offered as installed');
-    assert.equal(errors.filter((line) => /^FAIL .*\(found nothing\)$/.test(line)).length, ALL - count, errors.join('\n'));
+    assert.ok(
+      errors.some(
+        (line) =>
+          line.startsWith(`help    The writing set is partly linked in ${partial};`) &&
+          line.includes('`node tools/install.mjs link writing`'),
+      ),
+      errors.join('\n'),
+    );
+    assert.ok(
+      !errors.some((line) => line.includes('No skill of the workflow set')),
+      'a partial set is not offered as installed',
+    );
+    assert.equal(
+      errors.filter((line) => /^FAIL .*\(found nothing\)$/.test(line)).length,
+      ALL - count,
+      errors.join('\n'),
+    );
   }
 
   // A complete scope beside a partial one, the workflow set absent from both: the help names only
@@ -464,34 +549,66 @@ test('set help offers a set as installed only where every one of its skills is l
   const help = errors.filter((line) => line.startsWith('help'));
   assert.equal(help.length, 2, errors.join('\n'));
   assert.ok(help[1].startsWith(`help    The writing set is partly linked in ${partial};`), help[1]);
-  assert.ok(help[0].startsWith(`help    No skill of the workflow set is installed in ${complete}, where the writing set is. `), help[0]);
+  assert.ok(
+    help[0].startsWith(`help    No skill of the workflow set is installed in ${complete}, where the writing set is. `),
+    help[0],
+  );
   assert.ok(!help[0].includes(partial), help[0]);
-  assert.equal(errors.filter((line) => line.startsWith(`FAIL    ${complete}`)).length, WORKFLOW_SKILLS.length, errors.join('\n'));
-  assert.equal(errors.filter((line) => line.startsWith(`FAIL    ${partial}`)).length, WORKFLOW_SKILLS.length + 1, errors.join('\n'));
+  assert.equal(
+    errors.filter((line) => line.startsWith(`FAIL    ${complete}`)).length,
+    WORKFLOW_SKILLS.length,
+    errors.join('\n'),
+  );
+  assert.equal(
+    errors.filter((line) => line.startsWith(`FAIL    ${partial}`)).length,
+    WORKFLOW_SKILLS.length + 1,
+    errors.join('\n'),
+  );
 
   // Completing the partial scope brings it into the same help line.
-  fs.symlinkSync(path.join(packageRoot, 'skills', WRITING_SKILLS.at(-1)), path.join(partial, WRITING_SKILLS.at(-1)), 'junction');
+  fs.symlinkSync(
+    path.join(packageRoot, 'skills', WRITING_SKILLS.at(-1)),
+    path.join(partial, WRITING_SKILLS.at(-1)),
+    'junction',
+  );
   const whole = capture();
-  assert.equal(checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: complete }, { dir: partial }], out: whole.out }), false);
+  assert.equal(
+    checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: complete }, { dir: partial }], out: whole.out }),
+    false,
+  );
   const lines = whole.errors.filter((line) => line.startsWith('help'));
   assert.equal(lines.length, 1, whole.errors.join('\n'));
-  assert.ok(lines[0].startsWith(`help    No skill of the workflow set is installed in ${complete} and ${partial}, where the writing set is. `), lines[0]);
+  assert.ok(
+    lines[0].startsWith(
+      `help    No skill of the workflow set is installed in ${complete} and ${partial}, where the writing set is. `,
+    ),
+    lines[0],
+  );
 });
 
 test('partial-set relink help excludes occupied and wholly absent sets', (t) => {
   const scope = path.join(scratch, 'partial-occupied');
   fs.mkdirSync(scope);
-  if (!trySymlink(t, path.join(packageRoot, 'skills', WRITING_SKILLS[0]), path.join(scope, WRITING_SKILLS[0]), 'junction')) return;
+  if (
+    !trySymlink(t, path.join(packageRoot, 'skills', WRITING_SKILLS[0]), path.join(scope, WRITING_SKILLS[0]), 'junction')
+  )
+    return;
   fs.writeFileSync(path.join(scope, WRITING_SKILLS[1]), 'foreign');
   const occupied = capture();
-  assert.equal(checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: scope }], sets: ['writing'], out: occupied.out }), false);
-  assert.ok(occupied.errors.some(line => line.includes('never changes entries it does not own')));
-  assert.ok(!occupied.errors.some(line => line.includes('partly linked')));
+  assert.equal(
+    checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: scope }], sets: ['writing'], out: occupied.out }),
+    false,
+  );
+  assert.ok(occupied.errors.some((line) => line.includes('never changes entries it does not own')));
+  assert.ok(!occupied.errors.some((line) => line.includes('partly linked')));
   fs.unlinkSync(path.join(scope, WRITING_SKILLS[0]));
   fs.unlinkSync(path.join(scope, WRITING_SKILLS[1]));
   const absent = capture();
-  assert.equal(checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: scope }], sets: ['writing'], out: absent.out }), false);
-  assert.equal(absent.errors.filter(line => line.startsWith('help')).length, 0);
+  assert.equal(
+    checkLinks({ sourceRoot: packageRoot, scopes: [{ dir: scope }], sets: ['writing'], out: absent.out }),
+    false,
+  );
+  assert.equal(absent.errors.filter((line) => line.startsWith('help')).length, 0);
 });
 
 test('check names each shared reference a linked skill cannot reach', (t) => {
@@ -500,7 +617,10 @@ test('check names each shared reference a linked skill cannot reach', (t) => {
     fs.mkdirSync(path.join(root, 'skills', skill), { recursive: true });
     fs.writeFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'skill');
   }
-  for (const parts of [...SKILL_SETS.workflow.references, ...RECORD_FORMATS.map((file) => ['docs', 'guidance', file])]) {
+  for (const parts of [
+    ...SKILL_SETS.workflow.references,
+    ...RECORD_FORMATS.map((file) => ['docs', 'guidance', file]),
+  ]) {
     fs.mkdirSync(path.dirname(path.join(root, ...parts)), { recursive: true });
     fs.writeFileSync(path.join(root, ...parts), 'reference');
   }
@@ -513,21 +633,43 @@ test('check names each shared reference a linked skill cannot reach', (t) => {
     if (!trySymlink(t, path.join(root, 'skills', skill), path.join(scope, skill), 'junction')) return;
   }
   const scopes = [{ dir: scope }];
-  assert.equal(checkLinks({ sourceRoot: root, scopes, sets: ['workflow'], out: silent }), false, 'workflow also needs its writing dependency');
+  assert.equal(
+    checkLinks({ sourceRoot: root, scopes, sets: ['workflow'], out: silent }),
+    false,
+    'workflow also needs its writing dependency',
+  );
   const { errors, out } = capture();
   assert.equal(checkLinks({ sourceRoot: root, scopes, out }), false, 'the writing set lacks its shared guidance');
   assert.equal(errors.length, WRITING_SKILLS.length, errors.join('\n'));
   for (const skill of WRITING_SKILLS) {
     const real = fs.realpathSync.native(path.join(scope, skill));
-    assert.ok(errors.includes(`FAIL    ${path.join(scope, skill)} resolves to ${real}, which cannot reach ${path.join('..', '..', 'docs', 'writing-guidance.md')}`), errors.join('\n'));
+    assert.ok(
+      errors.includes(
+        `FAIL    ${path.join(scope, skill)} resolves to ${real}, which cannot reach ${path.join('..', '..', 'docs', 'writing-guidance.md')}`,
+      ),
+      errors.join('\n'),
+    );
   }
   fs.writeFileSync(path.join(root, 'docs', 'writing-guidance.md'), 'guidance');
-  assert.equal(checkLinks({ sourceRoot: root, scopes, out: silent }), true, 'every set passes once the guidance exists');
+  assert.equal(
+    checkLinks({ sourceRoot: root, scopes, out: silent }),
+    true,
+    'every set passes once the guidance exists',
+  );
   fs.rmSync(path.join(root, 'skills', 'clarify-artifact', 'SKILL.md'));
   const again = capture();
   assert.equal(checkLinks({ sourceRoot: root, scopes, out: again.out }), false);
-  assert.equal(again.errors.length, WRITING_SKILLS.length, 'the missing skill fails itself and the two skills that load it');
-  assert.ok(again.errors.some((line) => line.endsWith(`cannot reach SKILL.md, ${path.join('..', '..', 'skills', 'clarify-artifact', 'SKILL.md')}`)), again.errors.join('\n'));
+  assert.equal(
+    again.errors.length,
+    WRITING_SKILLS.length,
+    'the missing skill fails itself and the two skills that load it',
+  );
+  assert.ok(
+    again.errors.some((line) =>
+      line.endsWith(`cannot reach SKILL.md, ${path.join('..', '..', 'skills', 'clarify-artifact', 'SKILL.md')}`),
+    ),
+    again.errors.join('\n'),
+  );
 });
 
 test('check names each missing record format for every writing skill, since none is optional', (t) => {
@@ -551,7 +693,8 @@ test('record-skill local links cover the checked formats and shared guide', () =
     for (const match of text.matchAll(/\]\(references\/([^)#]+)(?:#[^)]*)?\)/g)) loaded.add(match[1]);
   }
   assert.deepEqual([...loaded].sort(), [...RECORD_FORMATS, 'writing-guidance.md'].sort());
-  for (const file of RECORD_FORMATS) assert.ok(fs.statSync(path.join(packageRoot, 'docs', 'guidance', file)).isFile(), file);
+  for (const file of RECORD_FORMATS)
+    assert.ok(fs.statSync(path.join(packageRoot, 'docs', 'guidance', file)).isFile(), file);
 });
 
 test('installed writing skills require their actual local reference bodies', (t) => {
@@ -601,22 +744,40 @@ test('recovery help names only the selected set, so following it leaves other se
   assert.doesNotMatch(help[0], /unlink` |link` /, 'no unscoped command in set-scoped advice');
   const checked = capture();
   assert.equal(checkLinks({ sourceRoot: root, scopes, sets: ['writing'], out: checked.out }), false);
-  assert.ok(checked.errors.some((line) => line.startsWith('help') && line.includes('unlink writing`') && line.includes('link writing`')), checked.errors.join('\n'));
+  assert.ok(
+    checked.errors.some(
+      (line) => line.startsWith('help') && line.includes('unlink writing`') && line.includes('link writing`'),
+    ),
+    checked.errors.join('\n'),
+  );
   const cli = run(home, 'link', 'writing');
   assert.equal(cli.status, 1);
-  assert.match(cli.stderr, /^help .*`node tools\/install\.mjs unlink writing` from the checkout.*`node tools\/install\.mjs link writing` again\.$/m);
+  assert.match(
+    cli.stderr,
+    /^help .*`node tools\/install\.mjs unlink writing` from the checkout.*`node tools\/install\.mjs link writing` again\.$/m,
+  );
 
   // Following the scoped advice from the other checkout moves the writing links only.
   assert.equal(unlink({ sourceRoot: other, scopes, sets: ['writing'], out: silent }), true);
   assert.equal(link({ sourceRoot: root, scopes, sets: ['writing'], out: silent }), true);
-  for (const skill of WORKFLOW_SKILLS) assert.equal(fs.readlinkSync(path.join(scope, skill)), path.join(other, 'skills', skill), `${skill} still links to the other checkout`);
-  for (const skill of WRITING_SKILLS) assert.equal(fs.readlinkSync(path.join(scope, skill)), path.join(root, 'skills', skill));
+  for (const skill of WORKFLOW_SKILLS)
+    assert.equal(
+      fs.readlinkSync(path.join(scope, skill)),
+      path.join(other, 'skills', skill),
+      `${skill} still links to the other checkout`,
+    );
+  for (const skill of WRITING_SKILLS)
+    assert.equal(fs.readlinkSync(path.join(scope, skill)), path.join(root, 'skills', skill));
 
   // Without a set name the advice stays unscoped, as the command was.
   const all = capture();
   assert.equal(link({ sourceRoot: root, scopes, out: all.out }), false);
   const unscoped = all.errors.find((line) => line.startsWith('help'));
-  assert.ok(unscoped.includes('run `node tools/install.mjs unlink` from the checkout') && unscoped.includes('Then run `node tools/install.mjs link` again.'), unscoped);
+  assert.ok(
+    unscoped.includes('run `node tools/install.mjs unlink` from the checkout') &&
+      unscoped.includes('Then run `node tools/install.mjs link` again.'),
+    unscoped,
+  );
 });
 
 /**
@@ -670,7 +831,8 @@ test('check requires readable regular files through the link, not mere existence
   let { ok, errors } = failures();
   assert.equal(ok, false);
   assert.equal(errors.length, WRITING_SKILLS.length, errors.join('\n'));
-  for (const line of errors) assert.ok(line.endsWith(`, which finds a directory, not a regular file, at ${guidanceName}`), line);
+  for (const line of errors)
+    assert.ok(line.endsWith(`, which finds a directory, not a regular file, at ${guidanceName}`), line);
   assert.equal(failures(['workflow']).ok, false, 'workflow needs readable writing guidance');
   fs.rmdirSync(guidance);
   fs.writeFileSync(guidance, 'guidance');
@@ -684,9 +846,22 @@ test('check requires readable regular files through the link, not mere existence
   ({ ok, errors } = failures());
   assert.equal(ok, false);
   assert.equal(errors.length, WORKFLOW_SKILLS.length + WRITING_SKILLS.length, errors.join('\n'));
-  assert.ok(errors.some((line) => line.includes(', which finds a directory, not a regular file, at SKILL.md;')), errors.join('\n'));
-  assert.ok(errors.some((line) => line.endsWith(`, which finds a directory, not a regular file, at ${path.join('..', '..', 'skills', 'clarify-artifact', 'SKILL.md')}`)), errors.join('\n'));
-  assert.ok(errors.some((line) => line.endsWith(', which cannot reach ../../defaults.yaml'.replace(/\//g, path.sep))), errors.join('\n'));
+  assert.ok(
+    errors.some((line) => line.includes(', which finds a directory, not a regular file, at SKILL.md;')),
+    errors.join('\n'),
+  );
+  assert.ok(
+    errors.some((line) =>
+      line.endsWith(
+        `, which finds a directory, not a regular file, at ${path.join('..', '..', 'skills', 'clarify-artifact', 'SKILL.md')}`,
+      ),
+    ),
+    errors.join('\n'),
+  );
+  assert.ok(
+    errors.some((line) => line.endsWith(', which cannot reach ../../defaults.yaml'.replace(/\//g, path.sep))),
+    errors.join('\n'),
+  );
   fs.rmdirSync(own);
   fs.writeFileSync(own, 'skill');
   fs.writeFileSync(path.join(root, 'defaults.yaml'), 'reference');
@@ -711,7 +886,10 @@ test('check follows a file link to a readable file and names a link loop with it
 });
 
 test('check names a file this process cannot read with the access error the next read would raise', (t) => {
-  if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
+  if (process.platform === 'win32' || process.getuid?.() === 0) {
+    t.skip('needs POSIX permissions enforced');
+    return;
+  }
   const fixture = usableFixture(t, 'usable-denied');
   if (!fixture) return;
   const { guidance, guidanceName, failures } = fixture;
@@ -733,7 +911,11 @@ test('a clean home links and checks successfully', () => {
   fs.mkdirSync(home);
   assert.equal(run(home, 'link').status, 0);
   assert.equal(fs.existsSync(path.join(home, '.codex/hooks.json')), true, 'workflow support hooks are installed');
-  assert.equal(fs.existsSync(path.join(home, '.codex/config.toml')), false, 'Codex session instructions and trust are not configured by the installer');
+  assert.equal(
+    fs.existsSync(path.join(home, '.codex/config.toml')),
+    false,
+    'Codex session instructions and trust are not configured by the installer',
+  );
   const checked = run(home, 'check');
   assert.equal(checked.status, 0, checked.stderr);
   assert.equal(run(home, 'unlink').status, 0);
@@ -744,7 +926,10 @@ test('a clean home links and checks successfully', () => {
 });
 
 test('destinations that cannot be inspected are reported and kept by link and unlink, never taken as absent', (t) => {
-  if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
+  if (process.platform === 'win32' || process.getuid?.() === 0) {
+    t.skip('needs POSIX permissions enforced');
+    return;
+  }
   const home = path.join(scratch, 'denied home');
   const codex = path.join(home, '.agents', 'skills');
   const claude = path.join(home, '.claude', 'skills');
@@ -757,14 +942,20 @@ test('destinations that cannot be inspected are reported and kept by link and un
   try {
     const unlinked = run(home, 'unlink');
     assert.equal(unlinked.status, 0, 'unlink still completes normally');
-    assert.equal((unlinked.stdout.match(/^removed /gm) ?? []).length, ALL - 1, 'owned links in the other scope are removed');
-    for (const skill of PACKAGE_SKILLS) assert.ok(unlinked.stderr.includes(`kept    ${path.join(codex, skill)}: ${unknown}\n`), unlinked.stderr);
+    assert.equal(
+      (unlinked.stdout.match(/^removed /gm) ?? []).length,
+      ALL - 1,
+      'owned links in the other scope are removed',
+    );
+    for (const skill of PACKAGE_SKILLS)
+      assert.ok(unlinked.stderr.includes(`kept    ${path.join(codex, skill)}: ${unknown}\n`), unlinked.stderr);
     assert.match(unlinked.stderr, /^kept .*plan-reviewer: a file, not this checkout's link$/m);
 
     const linked = run(home, 'link');
     assert.equal(linked.status, 1, 'skipped destinations make link fail');
     assert.equal((linked.stdout.match(/^linked /gm) ?? []).length, ALL - 1, 'absent destinations are still linked');
-    for (const skill of PACKAGE_SKILLS) assert.ok(linked.stderr.includes(`skipped ${path.join(codex, skill)}: ${unknown}\n`), linked.stderr);
+    for (const skill of PACKAGE_SKILLS)
+      assert.ok(linked.stderr.includes(`skipped ${path.join(codex, skill)}: ${unknown}\n`), linked.stderr);
     assert.equal((linked.stderr.match(/^help .*restore access to one that cannot be inspected/gm) ?? []).length, 1);
     assert.doesNotMatch(linked.stderr, /Error:|^\s+at /m, 'reported, not thrown');
 
@@ -775,7 +966,11 @@ test('destinations that cannot be inspected are reported and kept by link and un
     fs.chmodSync(codex, 0o755);
   }
   for (const skill of PACKAGE_SKILLS) {
-    assert.equal(fs.readlinkSync(path.join(codex, skill)), path.join(packageRoot, 'skills', skill), `${skill} survives`);
+    assert.equal(
+      fs.readlinkSync(path.join(codex, skill)),
+      path.join(packageRoot, 'skills', skill),
+      `${skill} survives`,
+    );
   }
   assert.equal(fs.readFileSync(path.join(claude, 'plan-reviewer'), 'utf8'), 'foreign file');
   assert.equal(run(home, 'unlink').status, 0);
@@ -792,8 +987,11 @@ test('default reference checks include new documentation families', () => {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'rubric.md'), '[missing evidence](missing.md)\n');
   const errors = [];
-  assert.equal(checkReferences({ sourceRoot: root, out: { info() {}, error: line => errors.push(line) } }), false);
-  assert.ok(errors.some(line => line.includes('missing.md')), errors.join('\n'));
+  assert.equal(checkReferences({ sourceRoot: root, out: { info() {}, error: (line) => errors.push(line) } }), false);
+  assert.ok(
+    errors.some((line) => line.includes('missing.md')),
+    errors.join('\n'),
+  );
 });
 
 function fixturePackage(name, docs) {
@@ -856,7 +1054,14 @@ test('the package itself passes the reference check', () => {
 
 test('a list-item fence closes like any other, so later links are still checked', () => {
   const root = fixturePackage('list-fence', {
-    'README.md': ['- ~~~sh', '  node x', '  ~~~', '[out](../outside.md)', '[gone](workflow/NOPE.md)', '`workflow/ALSO-MISSING.md`'].join('\n'),
+    'README.md': [
+      '- ~~~sh',
+      '  node x',
+      '  ~~~',
+      '[out](../outside.md)',
+      '[gone](workflow/NOPE.md)',
+      '`workflow/ALSO-MISSING.md`',
+    ].join('\n'),
   });
   const { ok, errors } = references(root);
   assert.equal(ok, false);
@@ -876,7 +1081,7 @@ test('a link loop is reported with its cause, not as a missing target', (t) => {
 
 // Windows ownership normalization, checked with Windows path rules on any host.
 // Native junction formats and permissions still need a Windows run.
-test('link ownership compares targets by each platform\'s path rules', () => {
+test("link ownership compares targets by each platform's path rules", () => {
   const expected = 'C:\\src\\pkg\\skills\\plan-reviewer';
   const dir = 'C:\\Users\\a\\.claude\\skills';
   for (const text of [
@@ -887,13 +1092,15 @@ test('link ownership compares targets by each platform\'s path rules', () => {
     '\\\\?\\c:/src/pkg/skills/plan-reviewer/',
     'C:/src/pkg/skills/plan-reviewer',
     '..\\..\\..\\..\\src\\pkg\\skills\\plan-reviewer',
-  ]) assert.ok(sameLinkTarget(dir, text, expected, 'win32'), `owned: ${text}`);
+  ])
+    assert.ok(sameLinkTarget(dir, text, expected, 'win32'), `owned: ${text}`);
   for (const text of [
     'C:\\src\\pkg-old\\skills\\plan-reviewer',
     'C:\\src\\pkg\\skills\\plan-reviewer-x',
     'D:\\src\\pkg\\skills\\plan-reviewer',
     '\\\\server\\share\\pkg\\skills\\plan-reviewer',
-  ]) assert.ok(!sameLinkTarget(dir, text, expected, 'win32'), `foreign: ${text}`);
+  ])
+    assert.ok(!sameLinkTarget(dir, text, expected, 'win32'), `foreign: ${text}`);
   assert.ok(sameLinkTarget('C:\\x', '\\\\?\\C:\\', 'C:\\', 'win32'), 'drive root with and without prefix');
 
   const posix = '/src/pkg/skills/plan-reviewer';
@@ -901,8 +1108,12 @@ test('link ownership compares targets by each platform\'s path rules', () => {
     assert.ok(sameLinkTarget('/home/a/.claude/skills', text, posix, 'linux'), `owned: ${text}`);
   }
   for (const text of [
-    '/SRC/pkg/skills/plan-reviewer', '/src/pkg\\skills\\plan-reviewer', '/src/pkg-old/skills/plan-reviewer',
-    '/src/pkg/skills/plan-reviewer\\', '/src/pkg/skills/plan-reviewer\\\\', '/src/pkg/skills/plan-reviewer/\\',
+    '/SRC/pkg/skills/plan-reviewer',
+    '/src/pkg\\skills\\plan-reviewer',
+    '/src/pkg-old/skills/plan-reviewer',
+    '/src/pkg/skills/plan-reviewer\\',
+    '/src/pkg/skills/plan-reviewer\\\\',
+    '/src/pkg/skills/plan-reviewer/\\',
   ]) {
     assert.ok(!sameLinkTarget('/home/a/.claude/skills', text, posix, 'linux'), `foreign: ${text}`);
   }
@@ -912,11 +1123,19 @@ test('link ownership compares targets by each platform\'s path rules', () => {
 test('link removal falls back to rmdir only for Windows directory-link errors', () => {
   const fake = (unlinkCode, rmdirCode) => {
     const calls = [];
-    const fail = (code) => { throw Object.assign(new Error(code), { code }); };
+    const fail = (code) => {
+      throw Object.assign(new Error(code), { code });
+    };
     return {
       calls,
-      unlinkSync: (dest) => { calls.push(['unlink', dest]); if (unlinkCode) fail(unlinkCode); },
-      rmdirSync: (dest) => { calls.push(['rmdir', dest]); if (rmdirCode) fail(rmdirCode); },
+      unlinkSync: (dest) => {
+        calls.push(['unlink', dest]);
+        if (unlinkCode) fail(unlinkCode);
+      },
+      rmdirSync: (dest) => {
+        calls.push(['rmdir', dest]);
+        if (rmdirCode) fail(rmdirCode);
+      },
     };
   };
   const ok = fake(null);
@@ -925,11 +1144,23 @@ test('link removal falls back to rmdir only for Windows directory-link errors', 
   for (const code of ['EPERM', 'EISDIR']) {
     const ops = fake(code);
     removeLink('L', 'win32', ops);
-    assert.deepEqual(ops.calls, [['unlink', 'L'], ['rmdir', 'L']], code);
+    assert.deepEqual(
+      ops.calls,
+      [
+        ['unlink', 'L'],
+        ['rmdir', 'L'],
+      ],
+      code,
+    );
   }
   const rmdirFails = fake('EPERM', 'ENOTEMPTY');
   assert.throws(() => removeLink('L', 'win32', rmdirFails), { code: 'ENOTEMPTY' });
-  for (const [platform, code] of [['win32', 'EACCES'], ['win32', 'EBUSY'], ['darwin', 'EPERM'], ['linux', 'EISDIR']]) {
+  for (const [platform, code] of [
+    ['win32', 'EACCES'],
+    ['win32', 'EBUSY'],
+    ['darwin', 'EPERM'],
+    ['linux', 'EISDIR'],
+  ]) {
     const ops = fake(code);
     assert.throws(() => removeLink('L', platform, ops), { code }, `${platform} ${code}`);
     assert.deepEqual(ops.calls, [['unlink', 'L']], `${platform} ${code} does not fall back`);
@@ -950,7 +1181,10 @@ function capture() {
 }
 
 test('on POSIX a link to a name ending in a backslash is foreign and is kept with its target', (t) => {
-  if (process.platform === 'win32') { t.skip('a backslash is a path separator on Windows'); return; }
+  if (process.platform === 'win32') {
+    t.skip('a backslash is a path separator on Windows');
+    return;
+  }
   const { root, scopes, scope } = fixtureSource('trailing-backslash');
   const foreign = `${path.join(root, 'skills', 'plan-reviewer')}\\`;
   fs.mkdirSync(foreign);
@@ -960,15 +1194,21 @@ test('on POSIX a link to a name ending in a backslash is foreign and is kept wit
 
   const checked = capture();
   assert.equal(checkLinks({ sourceRoot: root, scopes, out: checked.out }), false);
-  assert.ok(checked.errors.some((line) => line.startsWith(`FAIL    ${dest} is not linked`)), checked.errors.join('\n'));
+  assert.ok(
+    checked.errors.some((line) => line.startsWith(`FAIL    ${dest} is not linked`)),
+    checked.errors.join('\n'),
+  );
   const removed = capture();
   unlink({ sourceRoot: root, scopes, out: removed.out });
-  assert.ok(removed.errors.includes(`kept    ${dest}: a link to ${foreign}, not this checkout's link`), removed.errors.join('\n'));
+  assert.ok(
+    removed.errors.includes(`kept    ${dest}: a link to ${foreign}, not this checkout's link`),
+    removed.errors.join('\n'),
+  );
   assert.equal(fs.readlinkSync(dest), foreign, 'the foreign link survives');
   assert.equal(fs.readFileSync(path.join(foreign, 'foreign.txt'), 'utf8'), 'foreign');
 });
 
-test('check names an owned link\'s missing target and why a foreign link cannot be resolved', (t) => {
+test("check names an owned link's missing target and why a foreign link cannot be resolved", (t) => {
   const { root, scopes, scope } = fixtureSource('diagnostics');
   const missing = path.join(root, 'skills', 'plan-reviewer');
   if (!trySymlink(t, missing, path.join(scope, 'plan-reviewer'), 'junction')) return;
@@ -979,15 +1219,24 @@ test('check names an owned link\'s missing target and why a foreign link cannot 
   const { errors, out } = capture();
   assert.equal(checkLinks({ sourceRoot: root, scopes, out }), false);
   const text = errors.join('\n');
-  assert.ok(errors.includes(`FAIL    ${path.join(scope, 'plan-reviewer')} links to ${missing}, which does not exist`), text);
+  assert.ok(
+    errors.includes(`FAIL    ${path.join(scope, 'plan-reviewer')} links to ${missing}, which does not exist`),
+    text,
+  );
   assert.doesNotMatch(text, /null/);
   assert.ok(text.includes(`(found a link to ${loop}, which cannot be resolved (ELOOP))`), text);
-  assert.ok(text.includes(`${path.join(scope, 'plan-coordinator')} is not linked`), 'later destinations are still checked');
+  assert.ok(
+    text.includes(`${path.join(scope, 'plan-coordinator')} is not linked`),
+    'later destinations are still checked',
+  );
   assert.ok(fs.lstatSync(loop).isSymbolicLink(), 'check changes nothing');
 });
 
 test('entries that cannot be inspected are described with their error code, not as absent', (t) => {
-  if (process.platform === 'win32' || process.getuid?.() === 0) { t.skip('needs POSIX permissions enforced'); return; }
+  if (process.platform === 'win32' || process.getuid?.() === 0) {
+    t.skip('needs POSIX permissions enforced');
+    return;
+  }
   const { root, scopes, scope } = fixtureSource('denied');
   const locked = path.join(scratch, 'denied', 'locked');
   fs.mkdirSync(path.join(locked, 'inner'), { recursive: true });
@@ -1000,8 +1249,12 @@ test('entries that cannot be inspected are described with their error code, not 
   try {
     const checked = capture();
     assert.equal(checkLinks({ sourceRoot: root, scopes, out: checked.out }), false);
-    assert.ok(checked.errors.join('\n').includes(`(found a link to ${path.join(locked, 'inner')}, which cannot be resolved (EACCES))`),
-      checked.errors.join('\n'));
+    assert.ok(
+      checked.errors
+        .join('\n')
+        .includes(`(found a link to ${path.join(locked, 'inner')}, which cannot be resolved (EACCES))`),
+      checked.errors.join('\n'),
+    );
     const unreadable = capture();
     assert.equal(checkLinks({ sourceRoot: root, scopes: [{ dir: hidden }], out: unreadable.out }), false);
     const failures = unreadable.errors.filter((line) => line.startsWith('FAIL'));

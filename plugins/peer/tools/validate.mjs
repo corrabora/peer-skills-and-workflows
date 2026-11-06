@@ -18,10 +18,11 @@ const args = process.argv.slice(2);
 if (args.some((arg) => arg.startsWith('-'))) usage('node tools/validate.mjs [<skill-dir>...]');
 const skills = args.length
   ? args.map((arg) => path.resolve(arg))
-  : fs.readdirSync(path.join(sourceRoot, 'skills'), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join(sourceRoot, 'skills', entry.name))
-    .sort();
+  : fs
+      .readdirSync(path.join(sourceRoot, 'skills'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(sourceRoot, 'skills', entry.name))
+      .sort();
 
 let ok = true;
 try {

@@ -2,6 +2,10 @@
 // Git starts commit hooks at the worktree root. All policy lives in the CLI.
 const { spawnSync } = require('node:child_process');
 const { join } = require('node:path');
-const result = spawnSync(process.execPath, [join(__dirname, '..', 'tools', 'commit-verify.mjs'), ...process.argv.slice(2)], { stdio: 'inherit' });
+const result = spawnSync(
+  process.execPath,
+  [join(__dirname, '..', 'tools', 'commit-verify.mjs'), ...process.argv.slice(2)],
+  { stdio: 'inherit' },
+);
 if (result.error) console.error(`commit-msg: ${result.error.message}`);
 process.exit(result.status ?? 1);

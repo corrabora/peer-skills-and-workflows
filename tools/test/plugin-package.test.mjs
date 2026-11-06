@@ -31,16 +31,24 @@ test('root catalogs select one generated payload with separate native manifests 
     assert.equal(fs.existsSync(path.join(root, base, 'hooks/hooks.json')), false);
   }
   for (const [engine, manifest, variable] of [
-    ['codex', codex, 'PLUGIN_ROOT'], ['claude', claude, 'CLAUDE_PLUGIN_ROOT'],
+    ['codex', codex, 'PLUGIN_ROOT'],
+    ['claude', claude, 'CLAUDE_PLUGIN_ROOT'],
   ]) {
     assert.equal(manifest.hooks, `./hooks/${engine}.json`);
     assert.equal(manifest.version, undefined, 'release identity comes from Git');
     const hooks = read(path.posix.join(payload, manifest.hooks)).hooks;
     assert.deepEqual(Object.keys(hooks).sort(), ['SessionStart', 'Stop', 'UserPromptSubmit']);
     for (const groups of Object.values(hooks)) {
-      assert.deepEqual(groups, [{ hooks: [{
-        type: 'command', command: `node "\${${variable}}/tools/successor.mjs" hook --engine ${engine}`,
-      }] }]);
+      assert.deepEqual(groups, [
+        {
+          hooks: [
+            {
+              type: 'command',
+              command: `node "\${${variable}}/tools/successor.mjs" hook --engine ${engine}`,
+            },
+          ],
+        },
+      ]);
     }
   }
 });
@@ -48,42 +56,80 @@ test('root catalogs select one generated payload with separate native manifests 
 test('the offline gate validates the native package and rejects drift', async (t) => {
   const validator = path.join(root, 'tools/lib/plugin-package.mjs');
   assert.ok(fs.existsSync(validator), 'the package needs an offline plugin package validator');
-  assert.match(fs.readFileSync(path.join(root, 'tools/verify.mjs'), 'utf8'), /checkPluginPackage\(/, 'verify runs the validator');
+  assert.match(
+    fs.readFileSync(path.join(root, 'tools/verify.mjs'), 'utf8'),
+    /checkPluginPackage\(/,
+    'verify runs the validator',
+  );
   const { checkPluginPackage } = await import(validator);
   const errors = [];
-  const out = { info() {}, error(message) { errors.push(message); } };
+  const out = {
+    info() {},
+    error(message) {
+      errors.push(message);
+    },
+  };
   assert.equal(checkPluginPackage({ sourceRoot: root, out }), true, errors.join('\n'));
   const edit = (file, change) => (copy) => {
     const target = path.join(copy, file);
-    const value = JSON.parse(fs.readFileSync(target, 'utf8')); change(value);
+    const value = JSON.parse(fs.readFileSync(target, 'utf8'));
+    change(value);
     fs.writeFileSync(target, JSON.stringify(value));
   };
   const mutations = {
-    name: edit('plugins/peer/.claude-plugin/plugin.json', (v) => { v.name = 'peer2'; }),
-    escapingHooks: edit('plugins/peer/.codex-plugin/plugin.json', (v) => { v.hooks = './../hooks/codex.json'; }),
-    catalogSource: edit('.claude-plugin/marketplace.json', (v) => { v.plugins[0].source = './'; }),
-    catalogField: edit('.agents/plugins/marketplace.json', (v) => { delete v.plugins[0].policy; }),
-    missingComponent: edit('plugins/peer/.codex-plugin/plugin.json', (v) => { v.skills = './missing/'; }),
-    wrongEngine: edit('plugins/peer/hooks/claude.json', (v) => { v.hooks.Stop[0].hooks[0].command = v.hooks.Stop[0].hooks[0].command.replace('--engine claude', '--engine codex'); }),
-    version: edit('plugins/peer/.codex-plugin/plugin.json', (v) => { v.version = '1.0.0'; }),
+    name: edit('plugins/peer/.claude-plugin/plugin.json', (v) => {
+      v.name = 'peer2';
+    }),
+    escapingHooks: edit('plugins/peer/.codex-plugin/plugin.json', (v) => {
+      v.hooks = './../hooks/codex.json';
+    }),
+    catalogSource: edit('.claude-plugin/marketplace.json', (v) => {
+      v.plugins[0].source = './';
+    }),
+    catalogField: edit('.agents/plugins/marketplace.json', (v) => {
+      delete v.plugins[0].policy;
+    }),
+    missingComponent: edit('plugins/peer/.codex-plugin/plugin.json', (v) => {
+      v.skills = './missing/';
+    }),
+    wrongEngine: edit('plugins/peer/hooks/claude.json', (v) => {
+      v.hooks.Stop[0].hooks[0].command = v.hooks.Stop[0].hooks[0].command.replace('--engine claude', '--engine codex');
+    }),
+    version: edit('plugins/peer/.codex-plugin/plugin.json', (v) => {
+      v.version = '1.0.0';
+    }),
     portableManifest: (copy) => fs.writeFileSync(path.join(copy, 'plugins/peer/plugin.json'), '{"name":"peer"}'),
     defaultHooks: (copy) => fs.writeFileSync(path.join(copy, 'plugins/peer/hooks/hooks.json'), '{}'),
     payloadGit: (copy) => fs.mkdirSync(path.join(copy, 'plugins/peer/.git')),
     linkedHooks: (copy) => {
       fs.renameSync(path.join(copy, 'plugins/peer/hooks'), `${copy}-hooks`);
-      fs.symlinkSync(`${copy}-hooks`, path.join(copy, 'plugins/peer/hooks'), process.platform === 'win32' ? 'junction' : 'dir');
+      fs.symlinkSync(
+        `${copy}-hooks`,
+        path.join(copy, 'plugins/peer/hooks'),
+        process.platform === 'win32' ? 'junction' : 'dir',
+      );
     },
-    straySkill: (copy) => { fs.mkdirSync(path.join(copy, 'plugins/peer/skills/stray')); fs.writeFileSync(path.join(copy, 'plugins/peer/skills/stray/SKILL.md'), '---\nname: stray\n---\n'); },
+    straySkill: (copy) => {
+      fs.mkdirSync(path.join(copy, 'plugins/peer/skills/stray'));
+      fs.writeFileSync(path.join(copy, 'plugins/peer/skills/stray/SKILL.md'), '---\nname: stray\n---\n');
+    },
   };
   for (const [name, mutate] of Object.entries(mutations)) {
     await t.test(name, () => {
       const copy = fs.mkdtempSync(path.join(os.tmpdir(), `peer-package-${name}-`));
       try {
         for (const part of ['.claude-plugin', '.agents', 'plugins']) {
-          fs.cpSync(path.join(root, part), path.join(copy, part), { recursive: true, filter: (source) => path.basename(source) !== 'node_modules' });
+          fs.cpSync(path.join(root, part), path.join(copy, part), {
+            recursive: true,
+            filter: (source) => path.basename(source) !== 'node_modules',
+          });
         }
         errors.length = 0;
-        assert.equal(checkPluginPackage({ sourceRoot: copy, out }), true, `unmodified ${name} fixture: ${errors.join('\n')}`);
+        assert.equal(
+          checkPluginPackage({ sourceRoot: copy, out }),
+          true,
+          `unmodified ${name} fixture: ${errors.join('\n')}`,
+        );
         mutate(copy);
         errors.length = 0;
         assert.equal(checkPluginPackage({ sourceRoot: copy, out }), false, `${name} must fail package validation`);

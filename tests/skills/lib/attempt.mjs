@@ -12,7 +12,16 @@ import { ENGINE_DEFAULT_VERBOSITY, engineFor, launchFor } from './engines.mjs';
 import { copyWorkspace, initWorkspaceGit, installSkillLinks, recordManifest } from './materialize.mjs';
 import { inspectAttempt, skillSignatures } from './inspect.mjs';
 
-export const RETAINED_FILES = ['prompt.md', 'fixture-manifest.json', 'command.json', 'trace.jsonl', 'stderr.txt', 'exit.json', 'inspection.json', 'attempt.json'];
+export const RETAINED_FILES = [
+  'prompt.md',
+  'fixture-manifest.json',
+  'command.json',
+  'trace.jsonl',
+  'stderr.txt',
+  'exit.json',
+  'inspection.json',
+  'attempt.json',
+];
 
 /**
  * Describe the launch of one attempt: the paths it will use, the exact
@@ -23,11 +32,33 @@ export const RETAINED_FILES = ['prompt.md', 'fixture-manifest.json', 'command.js
  * `verbosity` is the requested value (null or omitted for the engine
  * default) or the record the run already built.
  */
-export function planAttempt({ attemptDir, sourceRoot, engine, model, effort, verbosity = null, executables, sessionInstruction }) {
+export function planAttempt({
+  attemptDir,
+  sourceRoot,
+  engine,
+  model,
+  effort,
+  verbosity = null,
+  executables,
+  sessionInstruction,
+}) {
   const workspace = path.join(attemptDir, 'workspace');
   const tmp = path.join(attemptDir, 'tmp');
-  const launch = launchFor(engine, { model, effort, verbosity, workspace, sourceRoot, attemptDir, sessionInstruction }, executables);
-  return { attemptDir, workspace, tmp, argv: launch.argv, cwd: launch.cwd, promptFile: path.join(attemptDir, 'prompt.md'), sessionInstruction: launch.sessionInstruction, verbosity: launch.verbosity };
+  const launch = launchFor(
+    engine,
+    { model, effort, verbosity, workspace, sourceRoot, attemptDir, sessionInstruction },
+    executables,
+  );
+  return {
+    attemptDir,
+    workspace,
+    tmp,
+    argv: launch.argv,
+    cwd: launch.cwd,
+    promptFile: path.join(attemptDir, 'prompt.md'),
+    sessionInstruction: launch.sessionInstruction,
+    verbosity: launch.verbosity,
+  };
 }
 
 /**
@@ -37,10 +68,37 @@ export function planAttempt({ attemptDir, sourceRoot, engine, model, effort, ver
  * recorded as status `transport-failure` with its reason; nothing is retried
  * here.
  */
-export function runAttempt({ attemptDir, sourceRoot, suite, caseDef, engine: engineName, model, effort, verbosity = null, replicate, retryOf = null, executables = {}, timeoutSeconds, now = Date.now, spawn = spawnSync, identity = {}, sessionInstruction }) {
-  if (fs.existsSync(attemptDir)) throw new Error(`attempt directory ${attemptDir} already exists; attempts are never overwritten`);
+export function runAttempt({
+  attemptDir,
+  sourceRoot,
+  suite,
+  caseDef,
+  engine: engineName,
+  model,
+  effort,
+  verbosity = null,
+  replicate,
+  retryOf = null,
+  executables = {},
+  timeoutSeconds,
+  now = Date.now,
+  spawn = spawnSync,
+  identity = {},
+  sessionInstruction,
+}) {
+  if (fs.existsSync(attemptDir))
+    throw new Error(`attempt directory ${attemptDir} already exists; attempts are never overwritten`);
   const engine = engineFor(engineName);
-  const plan = planAttempt({ attemptDir, sourceRoot, engine: engineName, model, effort, verbosity, executables, sessionInstruction });
+  const plan = planAttempt({
+    attemptDir,
+    sourceRoot,
+    engine: engineName,
+    model,
+    effort,
+    verbosity,
+    executables,
+    sessionInstruction,
+  });
   fs.mkdirSync(attemptDir, { recursive: true });
   fs.mkdirSync(plan.tmp);
   fs.writeFileSync(plan.promptFile, caseDef.prompt);
@@ -86,7 +144,9 @@ export function runAttempt({ attemptDir, sourceRoot, suite, caseDef, engine: eng
   const stderr = result.stderr ? Buffer.from(result.stderr) : Buffer.alloc(0);
   fs.writeFileSync(path.join(attemptDir, 'trace.jsonl'), stdout);
   fs.writeFileSync(path.join(attemptDir, 'stderr.txt'), stderr);
-  const timedOut = result.error?.code === 'ETIMEDOUT' || (result.signal !== null && result.signal !== undefined && result.status === null && result.error !== undefined);
+  const timedOut =
+    result.error?.code === 'ETIMEDOUT' ||
+    (result.signal !== null && result.signal !== undefined && result.status === null && result.error !== undefined);
   const exit = {
     status: result.status ?? null,
     signal: result.signal ?? null,
@@ -102,13 +162,38 @@ export function runAttempt({ attemptDir, sourceRoot, suite, caseDef, engine: eng
   const finalReply = engine.finalReply(attemptDir, events);
   if (finalReply !== null && engineName === 'claude') fs.writeFileSync(path.join(attemptDir, 'final.txt'), finalReply);
   const effective = engine.effectiveSettings(events);
-  const inspection = inspectAttempt({ caseDef, skills: suite.skills, events, finalReply, workspace: plan.workspace, fixtureManifest, exit, effective, signatures: skillSignatures(sourceRoot, suite.skills), sourceRoot, now });
+  const inspection = inspectAttempt({
+    caseDef,
+    skills: suite.skills,
+    events,
+    finalReply,
+    workspace: plan.workspace,
+    fixtureManifest,
+    exit,
+    effective,
+    signatures: skillSignatures(sourceRoot, suite.skills),
+    sourceRoot,
+    now,
+  });
   inspection.suite = { hash: suite.hash, recorded: suite.hash };
   writeJson(path.join(attemptDir, 'inspection.json'), inspection);
 
   const record = attemptRecord({
-    attemptDir, caseDef, engine: engineName, model, effort, verbosity: plan.verbosity.requested, replicate, retryOf, timeoutSeconds,
-    exit, finalReply, effective, inspection, stderr: stderr.toString('utf8'), startedAt,
+    attemptDir,
+    caseDef,
+    engine: engineName,
+    model,
+    effort,
+    verbosity: plan.verbosity.requested,
+    replicate,
+    retryOf,
+    timeoutSeconds,
+    exit,
+    finalReply,
+    effective,
+    inspection,
+    stderr: stderr.toString('utf8'),
+    startedAt,
   });
   writeJson(path.join(attemptDir, 'attempt.json'), record);
   return record;
@@ -122,15 +207,39 @@ export function runAttempt({ attemptDir, sourceRoot, suite, caseDef, engine: eng
  * value or `engine-default`; the engine's attestation, when any, is in
  * `effective`.
  */
-export function attemptRecord({ attemptDir, caseDef, engine, model, effort, verbosity = ENGINE_DEFAULT_VERBOSITY, replicate, retryOf, timeoutSeconds, exit, finalReply, effective, inspection, stderr, startedAt }) {
+export function attemptRecord({
+  attemptDir,
+  caseDef,
+  engine,
+  model,
+  effort,
+  verbosity = ENGINE_DEFAULT_VERBOSITY,
+  replicate,
+  retryOf,
+  timeoutSeconds,
+  exit,
+  finalReply,
+  effective,
+  inspection,
+  stderr,
+  startedAt,
+}) {
   let status = 'behavioral';
   let reason = null;
-  if (exit.spawnError) { status = 'transport-failure'; reason = `cannot start engine: ${exit.spawnError}`; }
-  else if (exit.timedOut) { status = 'transport-failure'; reason = `timed out after ${timeoutSeconds}s`; }
-  else if (exit.signal) { status = 'transport-failure'; reason = `terminated by ${exit.signal}`; }
-  else if (finalReply === null) {
+  if (exit.spawnError) {
     status = 'transport-failure';
-    const errors = inspection.engineErrors.length ? `; engine errors: ${inspection.engineErrors.join(' | ').slice(0, 400)}` : '';
+    reason = `cannot start engine: ${exit.spawnError}`;
+  } else if (exit.timedOut) {
+    status = 'transport-failure';
+    reason = `timed out after ${timeoutSeconds}s`;
+  } else if (exit.signal) {
+    status = 'transport-failure';
+    reason = `terminated by ${exit.signal}`;
+  } else if (finalReply === null) {
+    status = 'transport-failure';
+    const errors = inspection.engineErrors.length
+      ? `; engine errors: ${inspection.engineErrors.join(' | ').slice(0, 400)}`
+      : '';
     const stderrLine = stderr.split('\n').find((line) => line.trim()) ?? '';
     reason = `no final reply (exit ${exit.status})${errors}${stderrLine ? `; stderr: ${stderrLine.slice(0, 200)}` : ''}`;
   }

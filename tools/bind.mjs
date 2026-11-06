@@ -69,8 +69,24 @@ import { sourceRoot, usage } from './lib/cli.mjs';
 import { canonicalLocation } from './lib/paths.mjs';
 
 const {
-  BINDING_FILE, bindingFileState, checkoutFacts, compareManifests, discoverCandidates, establishLocalStorage, excludeFile, hasExcludeRule, ignoreCoverage,
-  LOCAL_DIRECTORY, localStorageChild, namedStorageOccupant, outputDestinationProblem, qualitySelection, readManifest, sourceManifest, SOURCES_FILE, trackedLocalPaths,
+  BINDING_FILE,
+  bindingFileState,
+  checkoutFacts,
+  compareManifests,
+  discoverCandidates,
+  establishLocalStorage,
+  excludeFile,
+  hasExcludeRule,
+  ignoreCoverage,
+  LOCAL_DIRECTORY,
+  localStorageChild,
+  namedStorageOccupant,
+  outputDestinationProblem,
+  qualitySelection,
+  readManifest,
+  sourceManifest,
+  SOURCES_FILE,
+  trackedLocalPaths,
   workflowSourceIdentity,
 } = await import('./lib/bind.mjs').catch((error) => {
   if (error.name !== 'MissingDependencyError') throw error;
@@ -78,8 +94,9 @@ const {
   process.exit(1);
 });
 
-const USAGE = 'node tools/bind.mjs inspect --repo <checkout> | exclude --repo <checkout> | '
-  + 'sources --repo <checkout> [--compare <manifest>] [--out <file>] <path>...';
+const USAGE =
+  'node tools/bind.mjs inspect --repo <checkout> | exclude --repo <checkout> | ' +
+  'sources --repo <checkout> [--compare <manifest>] [--out <file>] <path>...';
 
 const [command, ...rest] = process.argv.slice(2);
 if (!['inspect', 'exclude', 'sources'].includes(command)) usage(USAGE);
@@ -110,23 +127,42 @@ function comparisonWith(file, current, scope) {
   try {
     occupied = namedStorageOccupant(current.checkout, file);
   } catch (error) {
-    return { usable: false, current: false, scope, path: file, reason: `local storage protection could not be established: ${error.cause?.code ?? error.code ?? error.message}` };
+    return {
+      usable: false,
+      current: false,
+      scope,
+      path: file,
+      reason: `local storage protection could not be established: ${error.cause?.code ?? error.code ?? error.message}`,
+    };
   }
-  if (occupied) return { usable: false, current: false, scope, path: file, reason: 'local storage path occupied', occupied };
+  if (occupied)
+    return { usable: false, current: false, scope, path: file, reason: 'local storage path occupied', occupied };
   const recorded = readManifest(file);
-  if (recorded.error) return { usable: false, current: false, scope, path: recorded.error.path, reason: recorded.error.reason };
-  return { usable: true, scope, ...checkoutComparison(recorded.manifest, current.checkout), ...compareManifests(recorded.manifest, current) };
+  if (recorded.error)
+    return { usable: false, current: false, scope, path: recorded.error.path, reason: recorded.error.reason };
+  return {
+    usable: true,
+    scope,
+    ...checkoutComparison(recorded.manifest, current.checkout),
+    ...compareManifests(recorded.manifest, current),
+  };
 }
 
 /** Checkout provenance is separate from content currentness; unknown stays unknown. */
 function checkoutComparison(recorded, checkout) {
   const recordedCheckout = recorded.checkout ?? null;
   try {
-    if (typeof recordedCheckout !== 'string' || !path.isAbsolute(recordedCheckout)) throw new Error('recorded checkout is not an absolute path');
+    if (typeof recordedCheckout !== 'string' || !path.isAbsolute(recordedCheckout))
+      throw new Error('recorded checkout is not an absolute path');
     const recordedCheckoutCanonical = canonicalLocation(recordedCheckout);
     return { recordedCheckout, recordedCheckoutCanonical, checkoutMatches: recordedCheckoutCanonical === checkout };
   } catch (error) {
-    return { recordedCheckout, recordedCheckoutCanonical: null, checkoutMatches: null, checkoutMatchError: error.code ?? error.message };
+    return {
+      recordedCheckout,
+      recordedCheckoutCanonical: null,
+      checkoutMatches: null,
+      checkoutMatchError: error.code ?? error.message,
+    };
   }
 }
 
@@ -139,46 +175,79 @@ try {
     const coverage = ignoreCoverage(checkout);
     const bindingPath = path.join(local, BINDING_FILE);
     const sourcesPath = path.join(local, SOURCES_FILE);
-    const state = coverage.occupied ? { kind: 'unavailable', present: null, reason: 'local storage path occupied' } : bindingFileState(bindingPath);
-    const sourcesState = coverage.occupied ? { kind: 'unavailable', present: null, reason: 'local storage path occupied' } : bindingFileState(sourcesPath);
-    const recorded = coverage.occupied ? null
+    const state = coverage.occupied
+      ? { kind: 'unavailable', present: null, reason: 'local storage path occupied' }
+      : bindingFileState(bindingPath);
+    const sourcesState = coverage.occupied
+      ? { kind: 'unavailable', present: null, reason: 'local storage path occupied' }
+      : bindingFileState(sourcesPath);
+    const recorded = coverage.occupied
+      ? null
       : !['file', 'absent'].includes(sourcesState.kind)
-        ? { error: { path: sourcesPath, reason: `binding manifest ${sourcesState.kind}: ${sourcesState.error ?? 'resolve the occupied child before refresh'}` } }
+        ? {
+            error: {
+              path: sourcesPath,
+              reason: `binding manifest ${sourcesState.kind}: ${sourcesState.error ?? 'resolve the occupied child before refresh'}`,
+            },
+          }
         : readManifest(sourcesPath);
-    const binding = coverage.occupied ? {
-      path: bindingPath, present: null, state, sourcesPath, sourcesPresent: null, sourcesState,
-      manifest: { path: sourcesPath, usable: false, reason: 'local storage unavailable: path occupied' },
-    } : {
-      path: bindingPath,
-      present: state.present,
-      state,
-      sourcesPath,
-      sourcesPresent: sourcesState.present,
-      sourcesState,
-      manifest: recorded.error
-        ? { path: sourcesPath, usable: false, reason: recorded.error.reason }
-        : { path: sourcesPath, usable: true, format: recorded.manifest.format, version: recorded.manifest.version },
-    };
+    const binding = coverage.occupied
+      ? {
+          path: bindingPath,
+          present: null,
+          state,
+          sourcesPath,
+          sourcesPresent: null,
+          sourcesState,
+          manifest: { path: sourcesPath, usable: false, reason: 'local storage unavailable: path occupied' },
+        }
+      : {
+          path: bindingPath,
+          present: state.present,
+          state,
+          sourcesPath,
+          sourcesPresent: sourcesState.present,
+          sourcesState,
+          manifest: recorded.error
+            ? { path: sourcesPath, usable: false, reason: recorded.error.reason }
+            : { path: sourcesPath, usable: true, format: recorded.manifest.format, version: recorded.manifest.version },
+        };
     if (recorded?.manifest) {
-      const current = sourceManifest(checkout, recorded.manifest.sources.map((entry) => entry.path), { workflowSource: sourceRoot });
+      const current = sourceManifest(
+        checkout,
+        recorded.manifest.sources.map((entry) => entry.path),
+        { workflowSource: sourceRoot },
+      );
       binding.recordedHead = recorded.manifest.head ?? null;
       binding.recordedWorkflowSource = recorded.manifest.workflowSource ?? null;
       Object.assign(binding, checkoutComparison(recorded.manifest, checkout));
       binding.comparison = { usable: true, scope: 'recorded', ...compareManifests(recorded.manifest, current) };
       if (!binding.comparison.complete) process.exitCode = 1;
     } else if (recorded && sourcesState.kind !== 'absent') {
-      binding.comparison = { usable: false, current: false, scope: 'recorded', path: sourcesPath, reason: recorded.error.reason };
+      binding.comparison = {
+        usable: false,
+        current: false,
+        scope: 'recorded',
+        path: sourcesPath,
+        reason: recorded.error.reason,
+      };
     }
     if (!coverage.occupied && [state, sourcesState].some((entry) => !['file', 'absent'].includes(entry.kind))) {
-      binding.conflict = { reason: 'binding children must be plain files; resolve occupied entries or restore access before adoption or refresh', paths: [
-        ...(!['file', 'absent'].includes(state.kind) ? [bindingPath] : []),
-        ...(!['file', 'absent'].includes(sourcesState.kind) ? [sourcesPath] : []),
-      ] };
+      binding.conflict = {
+        reason:
+          'binding children must be plain files; resolve occupied entries or restore access before adoption or refresh',
+        paths: [
+          ...(!['file', 'absent'].includes(state.kind) ? [bindingPath] : []),
+          ...(!['file', 'absent'].includes(sourcesState.kind) ? [sourcesPath] : []),
+        ],
+      };
     }
     const exclude = excludeFile(checkout);
     let rulePresent = false;
     let ruleError;
-    try { rulePresent = hasExcludeRule(fs.readFileSync(exclude, 'utf8')); } catch (error) {
+    try {
+      rulePresent = hasExcludeRule(fs.readFileSync(exclude, 'utf8'));
+    } catch (error) {
       // Only a missing file establishes absence; other read failures are unknown.
       if (error.code !== 'ENOENT') {
         rulePresent = null;
@@ -190,7 +259,13 @@ try {
       workflowSource: workflowSourceIdentity(sourceRoot),
       ...facts,
       localDirectory: local,
-      localStorage: { tracked: trackedLocalPaths(checkout), ...coverage, excludeFile: exclude, rulePresent, ...(ruleError ? { ruleError } : {}) },
+      localStorage: {
+        tracked: trackedLocalPaths(checkout),
+        ...coverage,
+        excludeFile: exclude,
+        rulePresent,
+        ...(ruleError ? { ruleError } : {}),
+      },
       binding,
       quality: qualitySelection(checkout),
       candidates,
@@ -202,7 +277,8 @@ try {
     if (!['ignored', 'added'].includes(result.status)) process.exitCode = 1;
   } else {
     const manifest = sourceManifest(checkout, positionals, { workflowSource: sourceRoot });
-    const comparison = values.compare !== undefined ? comparisonWith(path.resolve(values.compare), manifest, 'listed') : undefined;
+    const comparison =
+      values.compare !== undefined ? comparisonWith(path.resolve(values.compare), manifest, 'listed') : undefined;
     if (!manifest.complete || comparison?.complete === false) process.exitCode = 1;
     if (values.out !== undefined) {
       const out = path.resolve(values.out);
@@ -211,12 +287,24 @@ try {
       let childError = null;
       try {
         // A binding child named under any spelling the filesystem treats as it.
-        if (!destinationProblem?.occupied) localChild = localStorageChild(checkout, path.join(canonicalLocation(path.dirname(out)), path.basename(out)));
-      } catch (error) { childError = error; }
+        if (!destinationProblem?.occupied)
+          localChild = localStorageChild(checkout, path.join(canonicalLocation(path.dirname(out)), path.basename(out)));
+      } catch (error) {
+        childError = error;
+      }
       const childState = localChild ? bindingFileState(localChild) : null;
-      const problem = childState && !['file', 'absent'].includes(childState.kind)
-        ? { reason: 'binding output child must be a plain file; resolve the occupied entry or restore access before refresh', state: childState }
-        : destinationProblem ?? (childError && { reason: 'destination protection could not be established; resolve the reported cause before exporting', error: childError.cause?.code ?? childError.code ?? childError.message });
+      const problem =
+        childState && !['file', 'absent'].includes(childState.kind)
+          ? {
+              reason:
+                'binding output child must be a plain file; resolve the occupied entry or restore access before refresh',
+              state: childState,
+            }
+          : (destinationProblem ??
+            (childError && {
+              reason: 'destination protection could not be established; resolve the reported cause before exporting',
+              error: childError.cause?.code ?? childError.code ?? childError.message,
+            }));
       if (problem) {
         manifest.written = null;
         manifest.refused = { out, ...problem, checkout };

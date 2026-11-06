@@ -21,9 +21,8 @@ export function pathFor(platform) {
 export function skillScopes({ platform, env, home }) {
   const p = pathFor(platform);
   requireHome(home, p);
-  const claudeConfig = env.CLAUDE_CONFIG_DIR && p.isAbsolute(env.CLAUDE_CONFIG_DIR)
-    ? env.CLAUDE_CONFIG_DIR
-    : p.join(home, '.claude');
+  const claudeConfig =
+    env.CLAUDE_CONFIG_DIR && p.isAbsolute(env.CLAUDE_CONFIG_DIR) ? env.CLAUDE_CONFIG_DIR : p.join(home, '.claude');
   return [
     { engine: 'codex', dir: p.join(home, '.agents', 'skills') },
     { engine: 'claude', dir: p.join(claudeConfig, 'skills') },
@@ -68,7 +67,9 @@ export function machineBase({ platform, env, home }) {
   if (platform === 'win32') {
     const local = env.LOCALAPPDATA;
     if (!local || !p.isAbsolute(local)) {
-      throw new Error('LOCALAPPDATA is not set to an absolute path; cannot locate the machine-local workflow directory');
+      throw new Error(
+        'LOCALAPPDATA is not set to an absolute path; cannot locate the machine-local workflow directory',
+      );
     }
     return p.join(local, 'PeerSkillsAndWorkflows');
   }
@@ -85,7 +86,11 @@ export function machineBase({ platform, env, home }) {
  * apart. Pass the canonical checkout so every alias of it gets the same key.
  */
 export function repositoryKey(checkout, platform = process.platform) {
-  const name = pathFor(platform).basename(checkout).normalize('NFC').replace(/[^\p{L}\p{N}._-]+/gu, '-') || 'repository';
+  const name =
+    pathFor(platform)
+      .basename(checkout)
+      .normalize('NFC')
+      .replace(/[^\p{L}\p{N}._-]+/gu, '-') || 'repository';
   const digest = crypto.createHash('sha256').update(checkout, 'utf8').digest('hex').slice(0, 16);
   return `${name}-${digest}`;
 }
@@ -119,14 +124,22 @@ export function runRoot(checkout, runId, platform = process.platform) {
  */
 export function scratchRoot(host, checkout, runId) {
   checkRunId(runId);
-  return pathFor(host.platform).join(machineBase(host), 'scratch', 'repositories',
-    repositoryKey(checkout, host.platform), 'runs', runId);
+  return pathFor(host.platform).join(
+    machineBase(host),
+    'scratch',
+    'repositories',
+    repositoryKey(checkout, host.platform),
+    'runs',
+    runId,
+  );
 }
 
 export function checkRunId(runId, label = 'run id') {
   if (typeof runId !== 'string' || !RUN_ID.test(runId) || runId.includes('..')) {
-    throw new Error(`${label} '${runId}' must start with a letter or digit, contain only letters, digits, '.', '_' `
-      + "or '-', and not contain '..'");
+    throw new Error(
+      `${label} '${runId}' must start with a letter or digit, contain only letters, digits, '.', '_' ` +
+        "or '-', and not contain '..'",
+    );
   }
 }
 

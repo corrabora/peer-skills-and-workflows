@@ -184,8 +184,8 @@ node tools/generate-writing-references.mjs
 ```
 
 Both marketplace catalogs install the generated `plugins/peer` directory.
-Edit the authoring files at the repository root, then regenerate and commit
-the payload with them:
+Install the [contributor toolchain](#verify), edit the authoring files at the
+repository root, then regenerate and commit the payload with them:
 
 ```sh
 node tools/generate-plugin.mjs
@@ -193,29 +193,99 @@ node tools/generate-plugin.mjs
 
 The generator copies the runtime files selected in
 [plugin-payload.mjs](tools/lib/plugin-payload.mjs), preserving their bytes and
-executable modes. It excludes Git metadata, tests and authoring-only tools,
-and refuses links in selected source paths or existing output. Do not edit
-`plugins/peer` directly. Linked development installations continue to use the
-authoring checkout.
+executable modes. It excludes Git metadata, tests, authoring-only tools and the
+root lockfile. The root `package.json` is the development manifest, so the
+payload receives a derived `package.json` with only its runtime fields: name,
+privacy, license, description and the Node.js engine. Development fields are
+removed, and an unclassified field refuses generation. Before copying, it lints every authored JavaScript source
+selected for the payload and refuses generation if lint fails or the toolchain
+is missing. The gate proves those sources are all lint targets, then checks
+payload byte and mode parity. Third-party `node_modules` remain manifest-pinned
+and excluded from lint. The generator also refuses links in selected source
+paths or existing output. Do not edit `plugins/peer` directly. Linked development
+installations continue to use the authoring checkout.
 
 ## Verify
 
+Contributor verification requires Node.js `^22.13 || >=24`, declared as the
+root `devEngines`; CI uses Node 24. Installed plugin and linked runtime tools
+keep their Node.js 22 minimum and need no authoring dependency install. The
+authoring toolchain is the root package's locked development dependencies.
+A new Orca worktree installs it automatically; otherwise install it once per
+checkout, and again when `package-lock.json` changes:
+
+```sh
+npm ci --ignore-scripts
+```
+
+The root `.npmrc` disables dependency lifecycle scripts for every install,
+including Orca's. `npm run lint`, `npm run verify` and `npm test` run the
+commands below.
+
 ```sh
 node tools/verify.mjs                   # complete local gate
+node tools/lint.mjs                     # authored JavaScript and formatting
 node tools/validate.mjs                 # skill metadata
 node tools/generate-writing-references.mjs --check
 node tools/generate-plugin.mjs --check   # generated payload membership, bytes and modes
 node tools/generate-vendor.mjs --check  # needs npm and registry access or --cache
-node --test                             # offline tool and harness tests
 ```
 
-The complete gate checks metadata, generated writing references, the vendored
-dependencies, native plugin declarations, generated payload parity, package
-links and all offline tests. Runtime references must also resolve inside the
-installed payload. It does not require personal skill installation.
+The complete gate runs lint first, then metadata, generated writing references,
+vendored dependencies, native plugin declarations, payload lint coverage and
+parity, package links and all offline tests. Missing authoring tools fail with
+the install command; verification never installs them. Runtime references must
+also resolve inside the installed payload. The gate does not require personal
+skill installation.
 `install.mjs check [<set>]` additionally checks personal links and hook definitions.
 The [behavioral suites](tests/skills/README.md) document paid model runs started
 separately; offline checks do not establish model behavior.
+
+Lint selects tracked and unignored authored `.js`, `.mjs` and `.cjs` files plus
+`.githooks/commit-msg`. It excludes every `node_modules` directory and the
+generated `plugins/peer` copy, whose sources it checks instead. ESLint applies
+JavaScript recommended and Node module rules against the Node.js 22 runtime
+floor, with explicit CommonJS handling for the commit hook. Prettier runs last,
+using single quotes and 120 columns. Any warning fails, and inline disables
+cannot bypass the gate. Fix findings; rule exceptions belong in the explicit,
+justified configuration in [eslint.config.mjs](eslint.config.mjs).
+
+Run lint before a focused test, for example:
+
+```sh
+node tools/lint.mjs && node --test tools/test/lint.test.mjs
+```
+
+## Dependency security
+
+After installing the authoring toolchain, run the network-dependent review:
+
+```sh
+node tools/security-review.mjs
+```
+
+It checks vendor integrity and generated payload parity before reviewing two
+graphs: development dependencies locked at the root, and shipped runtime
+dependencies locked in `tools/vendor`. Runtime review installs the lockfile in isolated
+temporary staging with scripts disabled, requires the installed bytes to
+reproduce the committed vendor manifest, then checks the staged graph with npm's
+hidden lock retained. It never runs npm inside `tools/vendor`. The identical
+plugin copy is covered by parity rather than scanned as a third graph.
+
+The command prints JSON evidence to stdout and verdict summaries to stderr.
+Completed graph scans record their lockfile hash, scan time, Node/npm identity,
+advisory findings and signature coverage; failed runtime installs retain their
+lockfile hash and installation evidence. Exit status 0 requires both graphs and integrity
+checks to pass: any advisory severity, invalid or missing signature, incomplete
+coverage, malformed report or unavailable scanner fails with status 1. Usage
+errors exit 2. Available attestation evidence is retained; a passing signature
+verdict does not assert that every package has an attestation. The review never
+runs `audit fix` or applies suppressions.
+
+The separate [security workflow](.github/workflows/security.yml) runs weekly,
+on manual dispatch and on dependency, scanner or security-workflow changes in
+pull requests. It pins npm 11.16.0, whose scanner flags and report shapes were
+verified with Node 24. Security stays outside the offline gate and commit hook.
 
 ## Commit gate
 
@@ -226,10 +296,12 @@ Install the repository hook once per clone:
 node tools/install-hooks.mjs
 ```
 
-Each commit attempt lints the message and runs the complete local gate. The hook
-tests the working checkout; when staging only part of a change, ensure the
-staged change is complete. `node tools/commit-verify.mjs <message-file>` runs the
-same gate directly. Git commit hooks are separate from the agent support hooks.
+Each commit attempt lints the message and runs the complete local gate. Install
+the authoring toolchain from [Verify](#verify) first; the hook fails if it is
+missing and never installs packages. The hook tests the working checkout; when
+staging only part of a change, ensure the staged change is complete.
+`node tools/commit-verify.mjs <message-file>` runs the same gate directly. Git
+commit hooks are separate from the agent support hooks.
 
 ## Workflow references
 

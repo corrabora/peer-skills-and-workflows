@@ -15,8 +15,12 @@ const scratch = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'aw
 after(() => fs.rmSync(scratch, { recursive: true, force: true }));
 
 const PLUGIN_FILES = [
-  'hooks/claude.json', 'hooks/codex.json', '.claude-plugin/plugin.json', '.codex-plugin/plugin.json',
-  '.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json',
+  'hooks/claude.json',
+  'hooks/codex.json',
+  '.claude-plugin/plugin.json',
+  '.codex-plugin/plugin.json',
+  '.claude-plugin/marketplace.json',
+  '.agents/plugins/marketplace.json',
 ];
 
 test('hook and native manifest edits change the workflow source identity of an installed copy', () => {
@@ -46,17 +50,35 @@ test('source inspection preserves the Git index of a stat-dirty installed packag
   const readme = path.join(source, 'README.md');
   fs.writeFileSync(readme, 'Installed package fixture.\n');
   git('add', 'README.md');
-  git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'commit.gpgSign=false', 'commit', '--no-verify', '-qm', 'Fixture');
+  git(
+    '-c',
+    'user.name=Fixture',
+    '-c',
+    'user.email=fixture@example.invalid',
+    '-c',
+    'commit.gpgSign=false',
+    'commit',
+    '--no-verify',
+    '-qm',
+    'Fixture',
+  );
   const stat = fs.statSync(readme);
   fs.utimesSync(readme, stat.atime, new Date(stat.mtimeMs - 60_000));
   const index = path.join(source, '.git/index');
   const before = fs.readFileSync(index);
   const program = `import { workflowSourceIdentity } from ${JSON.stringify(new URL('../lib/bind.mjs', import.meta.url).href)};
 console.log(JSON.stringify(workflowSourceIdentity(process.argv[1])));`;
-  const inspected = spawnSync(process.execPath, ['--input-type=module', '-e', program, source], { env, input: '', encoding: 'utf8' });
+  const inspected = spawnSync(process.execPath, ['--input-type=module', '-e', program, source], {
+    env,
+    input: '',
+    encoding: 'utf8',
+  });
   assert.equal(inspected.status, 0, inspected.stderr);
   const identity = JSON.parse(inspected.stdout);
   assert.match(identity.digest, /^sha256:/);
   assert.deepEqual(identity.dirty, []);
-  assert.ok(fs.readFileSync(index).equals(before), 'source inspection must not rewrite the installed Git index and invalidate hook trust');
+  assert.ok(
+    fs.readFileSync(index).equals(before),
+    'source inspection must not rewrite the installed Git index and invalidate hook trust',
+  );
 });

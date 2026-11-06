@@ -1,8 +1,9 @@
 // Run verification with the same Node executable as the caller, without a shell.
 import { spawnSync } from 'node:child_process';
 
-export function runNode(args, cwd) {
-  const env = { ...process.env };
+/** Run Node with `args` in `cwd`; `environment` defaults to the caller's. */
+export function runNode(args, cwd, environment = process.env) {
+  const env = { ...environment };
   // The test suite exercises the real hook in fixture repositories. Node sets
   // this internal marker in test workers; inheriting it can disable a nested
   // --test invocation instead of running the fixture's suite.

@@ -28,7 +28,7 @@ export function readLayerFile(file, { allowPhases = false } = {}) {
   try {
     data = parseYaml(text.replace(/^\uFEFF/, ''));
   } catch (error) {
-    if (error instanceof YamlError) throw new Error(`${file}: ${error.message}`);
+    if (error instanceof YamlError) throw new Error(`${file}: ${error.message}`, { cause: error });
     throw error;
   }
   return checkLayer(data ?? {}, file, { allowPhases });
@@ -36,7 +36,9 @@ export function readLayerFile(file, { allowPhases = false } = {}) {
 
 /** Validate the shape of one layer and return it with empty sections filled in. */
 export function checkLayer(data, origin, { allowPhases = false } = {}) {
-  const fail = (message) => { throw new Error(`${origin}: ${message}`); };
+  const fail = (message) => {
+    throw new Error(`${origin}: ${message}`);
+  };
   if (!isMapping(data)) fail('configuration must be a mapping');
   const allowed = ['profiles', 'roles', 'review-seats', ...(allowPhases ? ['phases'] : [])];
   for (const key of Object.keys(data)) {
@@ -45,8 +47,10 @@ export function checkLayer(data, origin, { allowPhases = false } = {}) {
   const layer = { profiles: dictionary(), roles: dictionary(), 'review-seats': dictionary(), phases: dictionary() };
   for (const [name, profile] of entries(own(data, 'profiles'), 'profiles', fail)) {
     if (!NAME.test(name)) {
-      fail(`profile name '${name}' must start with a letter or digit and contain only letters, digits, '.', '_' or '-'`
-        + spacesInName(name));
+      fail(
+        `profile name '${name}' must start with a letter or digit and contain only letters, digits, '.', '_' or '-'` +
+          spacesInName(name),
+      );
     }
     if (!isMapping(profile)) fail(`profile '${name}' must be a mapping of ${PROFILE_FIELDS.join(', ')}`);
     for (const key of Object.keys(profile)) {
@@ -58,7 +62,10 @@ export function checkLayer(data, origin, { allowPhases = false } = {}) {
     }
     layer.profiles[name] = { agent: profile.agent, model: profile.model, effort: profile.effort };
   }
-  const sections = [['roles', ROLES, 'review-seats', SEATS], ['review-seats', SEATS, 'roles', ROLES]];
+  const sections = [
+    ['roles', ROLES, 'review-seats', SEATS],
+    ['review-seats', SEATS, 'roles', ROLES],
+  ];
   for (const [section, known, other, otherKnown] of sections) {
     for (const [key, profile] of entries(own(data, section), section, fail)) {
       if (!known.includes(key)) {
@@ -99,7 +106,8 @@ export function resolveConfiguration(layers) {
     const assignment = own(assignments, key);
     if (!assignment) throw new Error(`no profile is assigned to '${key}'`);
     const profile = own(profiles, assignment.profile);
-    if (!profile) throw new Error(`'${key}' (from ${assignment.source}) names undefined profile '${assignment.profile}'`);
+    if (!profile)
+      throw new Error(`'${key}' (from ${assignment.source}) names undefined profile '${assignment.profile}'`);
     effective[key] = {
       profile: assignment.profile,
       agent: profile.agent,
@@ -124,8 +132,10 @@ export function operatorLayer(profileArgs, assignArgs) {
     const match = /^([^=]+)=(.+)$/.exec(arg);
     if (!match) throw new Error(`--assign '${arg}' must be role=profile or seat=profile`);
     if (!ROLES.includes(match[1]) && !SEATS.includes(match[1])) {
-      throw new Error(`--assign '${arg}' names unknown role or seat '${match[1]}' `
-        + `(roles: ${ROLES.join(', ')}; seats: ${SEATS.join(', ')})`);
+      throw new Error(
+        `--assign '${arg}' names unknown role or seat '${match[1]}' ` +
+          `(roles: ${ROLES.join(', ')}; seats: ${SEATS.join(', ')})`,
+      );
     }
     const section = SEATS.includes(match[1]) ? 'review-seats' : 'roles';
     data[section][match[1]] = match[2];
@@ -138,9 +148,13 @@ export function operatorLayer(profileArgs, assignArgs) {
 function spacesInName(name) {
   const spaces = typeof name === 'string' ? revealTextSpaces(name) : null;
   if (!spaces) return '';
-  const [it, looks] = spaces.plural ? ['them', 'they look like spaces but are'] : ['it', 'it looks like a space but is'];
-  return `; the name is "${spaces.shown}" with ${spaces.named} written as \\uXXXX: ${looks} part of `
-    + `the name, and profile names cannot contain spaces, so delete ${it}`;
+  const [it, looks] = spaces.plural
+    ? ['them', 'they look like spaces but are']
+    : ['it', 'it looks like a space but is'];
+  return (
+    `; the name is "${spaces.shown}" with ${spaces.named} written as \\uXXXX: ${looks} part of ` +
+    `the name, and profile names cannot contain spaces, so delete ${it}`
+  );
 }
 
 function dictionary() {
