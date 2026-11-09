@@ -184,8 +184,10 @@ are prerequisites of the ledger, not work done on the instruction.
   final human-disposition judgments and mandatory-change check under
   `workflow/ADJUDICATION.md` (Human disposition judgment); a **yes** from
   either requires disposition. A PC-chosen or changed recommendation requires
-  disposition. The operator can override the classifications from the full
-  report; automatic status never supplies execution permission.
+  disposition, except an unchanged swap selection classified by the
+  adjudicators' judgments under `workflow/ADJUDICATION.md` (Swap closure).
+  The operator can override the classifications from the full report;
+  automatic status never supplies execution permission.
   Stay on each finding until the operator gives a clear
   disposition, record it in the ledger and the findings log, and only then
   present the next, as
@@ -199,19 +201,24 @@ are prerequisites of the ledger, not work done on the instruction.
   `workflow/PROCESS.md` (Planning and phases) to load `maintain-glossary` or
   `record-decision` at that point. Route maintained edits to an authorized RP;
   keep the ledger's exact operator guidance separate from the durable prose.
-- Facilitate the peers without deciding for them: answer each blocking `ask` as
-  `workflow/ORCA.md` describes, giving both the same current frozen pair and
-  finding map, with each finding's state, basis and completed-round count, at
-  every completed paired checkpoint, with any closure alongside them, never
-  instead. Close a finding whose frozen pair differs only in requirement
-  strength, or, after at least one completed paired round, only in severity (at
-  the higher grade, recording both actual grades and the round count), as the
-  operator's rules in `workflow/ADJUDICATION.md` direct; that applies the rules
-  and decides no substantive dispute. The three-round limit and the operator
+- Facilitate the peers without deciding for them, applying the operator's
+  settlement rules: answer each blocking `ask` as `workflow/ORCA.md` describes,
+  giving both the same current frozen pair and finding map, with each finding's
+  state, basis and completed-round count, at every completed paired checkpoint,
+  with any closure alongside them, never instead. Close a finding whose frozen
+  pair differs only in requirement strength, or, after at least one completed
+  paired round, only in severity (at the higher grade, recording both actual
+  grades and the round count), as the operator's rules in
+  `workflow/ADJUDICATION.md` direct; that applies the rules and decides no
+  substantive dispute. At a completed checkpoint, close a swap, select one
+  position and request both judgments under that page's Swap closure and ORCA's
+  barrier; the selection is the PC's. The three-round limit and the operator
   gate are unchanged. Preserve unresolved disagreement in the adjudication
-  result. At the operator gate, give your own concrete recommendation as
-  RECORDS' Operator dispositions directs, without attributing it to the peers
-  or presenting agreement as authorization.
+  result. For a hedge, conditional or vague remedy or dissent, make your own
+  concrete recommendation under `workflow/ADJUDICATION.md` (PC selection): only
+  the adjudicators' options, grounded in the target's sources and plan. Present
+  it at the operator gate as RECORDS' Operator dispositions directs, without
+  attributing it to the peers or presenting agreement as authorization.
 - Do not edit the candidate. Release settled workers after preserving their
   reports.
 

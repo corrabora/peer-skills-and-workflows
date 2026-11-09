@@ -395,7 +395,9 @@ every finding of every severity, `note` included and whichever set raised it,
 and records, separately: the source sets and grades as reported; the peer
 result (agreed, by explicit assent, under the requirement-strength rule or
 under the severity rule with both actual grades and the completed-round count
-([ADJUDICATION.md](ADJUDICATION.md#reconciliation)); dissent; needs operator
+([ADJUDICATION.md](ADJUDICATION.md#reconciliation)); resolved by swap under
+operator rule, with no adjudicator agreement and the PC's selected position
+([Swap closure](ADJUDICATION.md#swap-closure)); dissent; needs operator
 decision); both human-disposition judgments and reasons, the resulting
 classification and its basis ([ADJUDICATION.md](ADJUDICATION.md#human-disposition-judgment));
 the operator's decision, summarized with the
@@ -416,8 +418,9 @@ findings, with their sets and grades as reported) and **Recommendation**, then
 the substantive rationale, applicable objectives and clauses, evidence and its
 limits, initial and final peer positions, agreement and its basis (for the
 severity rule: both actual grades, the agreed higher grade and the
-completed-round count) or dissent, alternatives and tradeoffs, and the exact
-operator decision, quoted with its ledger entry ID, or remaining work. The report must read on its own without
+completed-round count), swap resolution under
+[Swap closure](ADJUDICATION.md#swap-closure) or dissent, alternatives and
+tradeoffs, and the exact operator decision, quoted with its ledger entry ID, or remaining work. The report must read on its own without
 opening worker reports. The operator reaches the current one through the
 run-root [operator entry](#operator-entry).
 
@@ -449,7 +452,10 @@ operator calls up for disposition. A changed recommendation, including one
 the PC chooses from ambiguous options, requires disposition rather than
 inheriting the old pair's automatic classification. A `note` uses the same
 judgment as any other severity; being informational or from outside its
-reviewer's set never makes the review clean.
+reviewer's set never makes the review clean. An unchanged swap selection is
+the exception to the PC-choice requirement: the adjudicators' judgments on it
+classify it under [Swap closure](ADJUDICATION.md#swap-closure). A later change
+to that selection requires disposition.
 
 1. **Present one finding.** The operator reads the published report alongside
    the conversation, so present the finding briefly without reciting its
@@ -458,14 +464,22 @@ reviewer's set never makes the review clean.
    - **Finding:** its ID, severity and the exact problem: what is wrong and
      where.
    - **Recommendation:** one concrete action. Give the adjudicators' agreed
-     action when it is concrete. When they left alternatives, a conditional or
-     vague remedy, or no agreement, choose one concrete action and label it as
-     the PC's recommendation, not theirs.
+     action when it is concrete. For a swap, give the position already selected
+     under [Swap closure](ADJUDICATION.md#swap-closure), labelled as the PC's.
+     When they left alternatives, a conditional or vague remedy, or no
+     agreement, give the PC's recommendation under
+     [PC selection](ADJUDICATION.md#pc-selection): only their offered options,
+     with a reason grounded in the sources, labelled as the PC's. If that rule
+     found no supported concrete option, give the stated gap instead of
+     inventing a remedy.
    - **Why:** the reason, only when it does not follow plainly from the
      finding.
    - **Adjudicators:** whether they agreed, naming the requirement-strength or
-     severity rule when either produced the agreement; otherwise say they did
-     not agree and name the decisive difference.
+     severity rule when either produced the agreement. For a swap, say
+     **resolved by swap under operator rule**: they swapped positions and
+     reached no agreement, and the selected position is the PC's. Otherwise
+     say they did not agree. For either non-agreement result, name the decisive
+     difference between the positions.
    - **Decision needed:** the exact disposition asked for, with any condition,
      proof gap or proposed change to plan intent, scope, design or architecture that
      bears on it. When a finding is an unmet condition of an accepted

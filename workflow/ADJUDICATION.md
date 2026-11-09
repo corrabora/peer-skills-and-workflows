@@ -102,20 +102,109 @@ unresolved finding:
 - A pair that differs in both requirement strength and severity has no sole
   difference: neither rule applies, alone or combined, and the finding
   continues through reconciliation.
-- At most three completed rounds per finding. After the third without agreement,
-  preserve the dissent: each position, shared facts, disputed premises,
-  alternatives and consequences, and remaining proof gaps.
+- Swapped positions close under [Swap closure](#swap-closure), after applying
+  the sole-difference rules above.
+- At most three completed rounds per finding. After the third without agreement
+  or swap closure, preserve the dissent: each position, shared facts, disputed
+  premises, alternatives and consequences, and remaining proof gaps.
 
 No vote, forced compromise, deference to the PC, or assent inferred from
 silence; the requirement-strength and severity rules are the operator's
-settlements of single differences, not any of these. A missing peer or response
-is a blocker, not a round, a dissent, an optional position or a grade; the PC
-recovers it as [ORCA.md](ORCA.md#adjudicator-recovery) describes.
+settlements of single differences, and the swap rule settles positions that
+cross without converging. These are not votes, compromises or inferred assent.
+A missing peer or response is a blocker, not a round, a dissent, an optional
+position or a grade; the PC recovers it as
+[ORCA.md](ORCA.md#adjudicator-recovery) describes.
 
 If a peer raises a new issue during discussion, it gets a stable ID. The other
 peer's first response to it is necessarily informed by the raiser's position;
 label it as an informed first response rather than staging an artificial blind
 assessment. Discussion rounds for that issue follow as above.
+
+## Swap closure
+
+At a completed paired checkpoint, the PC compares both frozen responses with
+the prior pair they answered. A swap occurs when each response adopted the
+other peer's prior position whole and unchanged: applicability, remedy and
+conditions, severity and requirement strength. The human-disposition judgment
+is excluded from the match because it is reconciled separately.
+
+- The prior pair may be the initial reports; the observed round counts as
+  completed. A swap at the third round closes as a swap, not dissent at the
+  limit. For a new issue, the informed first response answers the raiser;
+  the first possible swap is at the completed discussion round that follows.
+- The sole-difference rules take precedence: a pair differing solely in
+  requirement strength, or after a completed round solely in severity, closes
+  under those rules even with swapped wording.
+- Revision, combination, partial or conditional adoption, an unclear match or
+  merely similar wording is not a swap; the finding continues under the round
+  limit. One-sided adoption is ordinary agreement to confirm explicitly.
+- Facts and check results are never settled by swap; resolve them by
+  verification, with an investigator when needed.
+
+In the reply sharing the completed pair, the PC closes the finding with no
+further round as **resolved by swap under operator rule**, naming by path the
+prior position each response adopted. In the same reply it selects one of the
+two swapped positions, unchanged, under [PC selection](#pc-selection), and
+sends the identical selection and reason to both adjudicators. The selected
+position is the PC's; the adjudicators reached no agreement. Reports state both
+facts alongside **resolved by swap under operator rule** and never call it
+agreement, assent or dissent at the limit.
+
+The closure reply asks both adjudicators for their human-disposition judgment
+on the selected position. Each answers in its next frozen response, which may
+also address other open findings. It judges only whether that selection
+requires human disposition, without reopening the substance or adding a
+discussion round for this finding. The PC's next reply gives both adjudicators
+the same pair of judgments and the resulting classification under
+[Human disposition judgment](#human-disposition-judgment), including its
+mandatory-change rule. Do not invite final reports until both judgments are
+frozen; a missing judgment is a blocker, not a judgment.
+
+An adjudicator that disputes the PC's match names, in that response and
+instead of a judgment, what differs between the frozen texts. The PC rechecks
+the frozen responses against the named difference. A real difference withdraws
+the selection and reopens the finding with its completed-round count
+preserved. Otherwise the closure stands: the PC's next identical reply to both
+adjudicators explains why the frozen texts match and asks the objecting
+adjudicator again for its judgment on the unchanged selection. The objection
+adds no round: a finding reopened at three completed rounds goes to ordinary
+limit handling, not a fourth round.
+
+## PC selection
+
+When this workflow directs the PC to select a recommendation, it chooses by
+principle from the target's own sources: the applicable guidance,
+specifications, quality selection and extensions, accepted decisions (ADRs when
+present) and the plan and phase, read from the candidate, and the applicable
+local preferences in the wave's binding snapshot. A source counts only as far
+as it actually applies; selecting confers no new authority on it or on the PC.
+
+The PC records its reason, citing the sources that decide the choice. Which
+adjudicator or engine held an option, convenience and the PC's own preference
+are not reasons. When the sources do not distinguish the options, the PC says
+so and states its decisive consideration as its own judgment, not as a source
+mandate.
+
+The PC also selects when the adjudicators' result hedges: alternatives or an
+either/or, a conditional or vague remedy, or dissent at the round limit.
+Before publishing the report, it reduces the hedge to one concrete
+recommendation using only what the adjudicators offered: one offered
+alternative, a condition settled from the sources to one of its branches, or
+one peer's final position. It makes a vague remedy concrete only within the
+adjudicators' options, reasons and cited sources, and never invents a remedy.
+The result is the PC's recommendation, labelled as such. It always requires
+human disposition, inherits no automatic classification and asks nothing
+further of the adjudicators. A swap selection that itself contains unresolved
+options stays unchanged when selected; reducing them later is this ordinary PC
+choice.
+
+If the sources support none of the offered options or cannot settle the
+condition, the PC invents none. It states the offered option the sources come
+closest to supporting, or that none is supported, and presents the missing
+fact or judgment as the decision asked of the operator. It may launch an
+investigator for a missing fact before publishing. This reports a gap; it
+neither reopens adjudication nor claims a supported resolution.
 
 ## Human disposition judgment
 
@@ -131,8 +220,11 @@ Continue any substantive dispute through the normal reconciliation limit.
 
 An automatic pair must have a settled concrete recommendation and both final
 judgments of **no**; an unresolved remedy or a recommendation chosen later by
-the PC requires human disposition. A missing judgment or peer is a blocker for
-the PC to recover, not agreement or an automatic classification. Before
+the PC requires human disposition. The sole exception to that PC-choice rule
+is an unchanged swap selection: the adjudicators judge that exact selection
+under [Swap closure](#swap-closure), and their judgments classify it under the
+rules above. A missing judgment or peer is a blocker for the PC to recover,
+not agreement or an automatic classification. Before
 publishing, the PC checks the mandatory rule: a change to recorded intent,
 scope, design or architecture requires disposition even if both peers said
 no. Preserve their actual judgments and record the mandatory-change rule as
@@ -148,15 +240,22 @@ instruction never bypasses a pair requiring human disposition.
 
 ## Result
 
-When every finding has agreed or reached its limit, both peers freeze final
-reports with initial and final positions, the agreed rationale or dissent, the
-basis of each agreement (explicit assent, the requirement-strength rule or the
-severity rule, with both actual grades and the completed-round count), round
-history and proof limits, and each finding/recommendation pair's human
-disposition judgment: both final votes and reasons, the resulting
-automatic or disposition-required classification and whether it came from
-matching judgments or promotion under the operator's rule. Every kind of
-agreement is a recommendation.
+When every finding has agreed, been resolved by swap with both judgments on
+the selection frozen and no match objection pending, or reached its limit,
+both peers freeze final reports. Include initial and final positions, the
+agreed rationale or dissent, the basis of each agreement (explicit assent,
+the requirement-strength rule or the severity rule, with both actual grades
+and the completed-round count), round history and proof limits. For a swap,
+record both positions before and after with their reasons, the completed-round
+count, and the PC's selected position and reason, reporting it as
+[Swap closure](#swap-closure) requires, separately from agreement and dissent.
+
+For every finding/recommendation pair, include both final human-disposition
+judgments and reasons, the exact recommendation judged, the resulting
+automatic or disposition-required classification and its basis, including
+promotion or the mandatory-change rule where applicable. For a swap these
+are the judgments on the PC's selection. Every kind of agreement, and a PC
+selection, remains a recommendation.
 The PC writes the report and applies the operator gate under RECORDS' Operator
 dispositions. Proposed changes to
 plan intent, scope, design or architecture are labelled as needing an operator

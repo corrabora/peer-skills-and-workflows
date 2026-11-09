@@ -51,7 +51,11 @@ complete briefs below. Write "None" when there are no automatic pairs.>
 
 **Underlying findings.** [<seat> <local ID>](<relative link to source finding>) (<set and severity as reported>); …
 
-**Recommendation.** <The recommended result.>
+**Recommendation.** <The recommended result. When the PC selected it, by swap
+or by reducing a hedge under ADJUDICATION.md (PC selection), label it the PC's
+recommendation with its reason and governing sources. If no offered option is
+supported, state that gap and the missing fact or judgment instead; never an
+invented remedy.>
 
 **Rationale.** <Why, from verified facts.>
 
@@ -59,16 +63,18 @@ complete briefs below. Write "None" when there are no automatic pairs.>
 
 **Evidence and limits.** <What was inspected or shown, and what remains unproven.>
 
-**Peer positions.** Initial: <A> / <B>. Final: <A> / <B>. <Each with its severity and reasons.>
+**Peer positions.** Initial: <A> / <B>. Final: <A> / <B>. <Each with its severity and reasons; for a swap, both positions before and after it.>
 
-**Agreement.** <Agreed in round n on resolution and rationale; agreed in round n, required under the requirement-strength rule, with both positions above; agreed at the higher grade under the severity rule after n (at least 1) completed rounds, with both actual grades and their reasons above; or dissent preserved: residual positions and disputed premises.>
+**Agreement.** <Agreed in round n on resolution and rationale; agreed in round n, required under the requirement-strength rule, with both positions above; agreed at the higher grade under the severity rule after n (at least 1) completed rounds, with both actual grades and their reasons above; resolved by swap under operator rule after n completed rounds: the adjudicators reached no agreement, and the selected position, with its reason, is the PC's; or dissent preserved: residual positions and disputed premises.>
 
 **Human disposition required.** <A: yes/no and reason with governing sources;
 B: yes/no and reason with governing sources. Result: automatic (both no on the
 same concrete resolution), or yes (both yes, promoted because either said yes,
 or required by the mandatory-change rule despite the actual votes). Preserve
 differing judgments; changes to recorded intent, scope, design or architecture
-always require yes. Identify the exact recommendation judged.>
+always require yes. Identify the exact recommendation judged; for a swap,
+the judgments are on the PC's unchanged selection. A hedge the PC reduced is a
+PC choice: yes, whatever the earlier votes.>
 
 **Alternatives and tradeoffs.** <Options considered and their consequences.>
 
