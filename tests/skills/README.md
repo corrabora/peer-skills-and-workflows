@@ -18,8 +18,8 @@ The suite files own case definitions and criteria:
 | [write-pr](suites/write-pr/suite.json) | Full-change descriptions, issue criteria and verification evidence |
 | [successor](suites/successor/suite.json) | Continuation writing, source fidelity and authority boundaries |
 
-The peer skills, the paired responsible party and live succession also have
-[acceptance scenarios](scenarios). A prose suite, offline helper test and live
+The peer skills, the paired responsible party, review adjudication and live
+succession also have [acceptance scenarios](scenarios). A prose suite, offline helper test and live
 Orca or hook exercise establish different evidence; none substitutes for another.
 [AW-SK-EV4](../../docs/qualities/skill-evidence.md#aw-sk-ev4) defines this
 repository's required behavioral proof.

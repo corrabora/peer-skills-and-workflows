@@ -64,8 +64,11 @@ Use the live Orca preamble for communication.
   `workflow/ADJUDICATION.md`), and preserve dissent after three completed
   discussion rounds. Reassess human disposition for the final pair; a **yes**
   from either peer promotes that judgment to **yes** without another round
-  for that difference. Label proposals that change plan intent, scope, design
-  or architecture as needing an operator decision.
+  for that difference. On a swap closure, judge the PC's exact selection
+  without reopening the substance, or name the difference if disputing the
+  match, under `workflow/ADJUDICATION.md` (Swap closure). Label proposals that
+  change plan intent, scope, design or architecture as needing an operator
+  decision.
 - Never overwrite a published report, the peer's files, the reviews or the
   PC's records.
 
@@ -77,6 +80,9 @@ report with the workflow source and revision you loaded, the binding snapshot
 you worked under, the operator-guidance IDs you applied, initial and final positions, agreed rationale or dissent, the basis of each agreement (for the
 severity rule, both actual grades and the completed-round count), round
 history and proof limits, both human-disposition judgments and their reasons,
-and the resulting classification and its basis. Check PC follow-ups, send one
-`worker_done` with the final report path and explicit outcome, and end the
-turn. Waiting for the peer is not failure.
+and the resulting classification and its basis. For a swap, record both
+positions before and after, their reasons, the count, the PC's selection and
+reason, and both judgments on it as Swap closure requires: resolved by swap
+under operator rule, no adjudicator agreement, the selected position is the
+PC's. Check PC follow-ups, send one `worker_done` with the final report path
+and explicit outcome, and end the turn. Waiting for the peer is not failure.

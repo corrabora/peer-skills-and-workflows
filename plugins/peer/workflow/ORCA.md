@@ -248,21 +248,33 @@ Adjudicators stay in their Dispatch through the whole wave and use blocking
    and stay blocked. When both responses of the round are frozen, the PC replies
    to both peers with the same finding map and the same current frozen pair
    (the two responses just given, by path), stating for each finding whether it
-   is open, agreed (and on which basis) or at its round limit, and its
-   completed-round count, plus both human-disposition judgments and their
+   is open, agreed (and on which basis), resolved by swap or at its round
+   limit, and its completed-round count, plus both human-disposition judgments and their
    resulting classification for the current recommendation. A finding that
    pair settles under the
    requirement-strength rule, or, now that a round has completed on it, under
    the severity rule ([ADJUDICATION.md](ADJUDICATION.md#reconciliation)), is
    closed in the same reply, counting the round just completed, without a
-   confirmation round. When no finding remains open, that reply also closes
-   reconciliation explicitly; closure accompanies the pair and never replaces
-   it, since each final reports the other peer's current position and reasons.
-5. Only after closure does each peer freeze its final report and send
+   confirmation round. A finding settled by
+   [Swap closure](ADJUDICATION.md#swap-closure) is also closed in this reply,
+   counting the round just completed; give both peers the PC's identical
+   selection and reason and request their judgments on it under that rule.
+5. After a swap selection, peers freeze their judgments or match objections
+   and ask "response ready" through the same barrier. This adds no discussion
+   round for that finding. The PC's next reply gives both peers the same pair
+   of judgments and classification, or the frozen-text recheck outcome under
+   Swap closure, requesting any outstanding judgment as that rule directs.
+   Keep reconciliation open while either judgment is missing or a match
+   objection awaits recheck. When no finding remains open and these exchanges
+   are complete, the PC explicitly closes reconciliation in its reply.
+   Closure accompanies the current pair and never replaces it, since each
+   final reports the other peer's current position and reasons.
+6. Only after closure does each peer freeze its final report and send
    `worker_done`.
 
 The PC keeps what it sends at each checkpoint, the frozen pair, finding map
-and any closure, in the wave's adjudication checkpoints
+and any closure, including the swap selection and reason, judgments and any
+recheck outcome, in the wave's adjudication checkpoints
 ([RECORDS.md](RECORDS.md#layout)).
 
 Initial assessments are not discussion rounds; each finding has at most three
